@@ -26,16 +26,181 @@ import {
   Crown,
   UserCircle,
   MessageCircle,
-  Languages
+  Languages,
+  Phone,
+  Bug,
+  Leaf,
+  FlaskConical,
+  Info,
+  Droplets as Water,
+  ArrowLeft
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
 type Language = 'en' | 'ny';
 type Tab = 'info' | 'market' | 'community' | 'account';
 
+const marketplaceListings = [
+  {
+    id: 1,
+    title: "Fresh Organic Maize",
+    price: 45000,
+    image: "https://picsum.photos/seed/maize/800/600",
+    description: "High quality, sun-dried organic maize. Harvested last week. Available in 50kg bags.",
+    seller: {
+      name: "Chifundo Phiri",
+      avatar: "https://picsum.photos/seed/seller1/100/100",
+      location: "Lilongwe, Area 25",
+      phone: "265888123456"
+    }
+  },
+  {
+    id: 2,
+    title: "Red Kidney Beans",
+    price: 1200,
+    image: "https://picsum.photos/seed/beans/800/600",
+    description: "Grade A red kidney beans. Very clean and well-sorted. Price per kg.",
+    seller: {
+      name: "Grace Mwale",
+      avatar: "https://picsum.photos/seed/seller2/100/100",
+      location: "Dedza Boma",
+      phone: "265999654321"
+    }
+  },
+  {
+    id: 3,
+    title: "Hybrid Tomato Seedlings",
+    price: 5000,
+    image: "https://picsum.photos/seed/tomatoes/800/600",
+    description: "Strong, disease-resistant tomato seedlings ready for transplanting. Tray of 50.",
+    seller: {
+      name: "John Banda",
+      avatar: "https://picsum.photos/seed/seller3/100/100",
+      location: "Ntcheu",
+      phone: "265881112233"
+    }
+  }
+];
+
+const cropGuides = [
+  {
+    id: 'maize',
+    name: "Maize (Chimanga)",
+    image: "https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Nov - Dec (Rain-fed)",
+    spacing: "75cm x 25cm (1 seed per station)",
+    fertilizer: "Basal: 23:21:0+4S (at planting). Top: Urea (3-4 weeks after).",
+    tips: "Keep field weed-free during the first 6 weeks."
+  },
+  {
+    id: 'tobacco',
+    name: "Tobacco (Fodya)",
+    image: "https://images.unsplash.com/photo-1500673922987-e212871fec22?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Dec - Jan",
+    spacing: "120cm x 60cm",
+    fertilizer: "Basal: Compound D. Top: CAN or Nitrate of Soda.",
+    tips: "Requires careful nursery management before transplanting."
+  },
+  {
+    id: 'soya',
+    name: "Soya Beans (Soya)",
+    image: "https://images.unsplash.com/photo-1589927986089-35812388d1f4?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Nov - Dec",
+    spacing: "45cm x 5cm",
+    fertilizer: "Inoculum (Rhizobium) at planting. Single Super Phosphate if needed.",
+    tips: "Inoculation is key for high yields and nitrogen fixation."
+  },
+  {
+    id: 'cotton',
+    name: "Cotton (Thonje)",
+    image: "https://images.unsplash.com/photo-1594904351111-a072f80b1a71?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Nov - Dec",
+    spacing: "60cm x 20cm",
+    fertilizer: "Basal: Compound L. Boron application is often necessary.",
+    tips: "Requires intensive pest management throughout the season."
+  },
+  {
+    id: 'tomatoes',
+    name: "Tomatoes (Mapichesi/Matimati)",
+    image: "https://images.unsplash.com/photo-1592924357228-91a4daadcfea?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Year-round (Irrigation preferred)",
+    spacing: "60cm x 45cm",
+    fertilizer: "Basal: Compound S. Top: CAN at flowering.",
+    tips: "Staking helps prevent fruit rot and diseases."
+  },
+  {
+    id: 'groundnuts',
+    name: "Groundnuts (Mtedza)",
+    image: "https://images.unsplash.com/photo-1563636619-e9107b1c196e?auto=format&fit=crop&q=80&w=800",
+    plantingDates: "Nov - Dec",
+    spacing: "30cm x 15cm",
+    fertilizer: "Gypsum (Calcium Sulfate) at flowering for pod filling.",
+    tips: "Earth up plants to encourage more pods."
+  }
+];
+
+const pestsData = [
+  {
+    id: 'fall-armyworm',
+    name: "Fall Armyworm",
+    symptoms: "Holes in leaves, sawdust-like droppings in the whorl.",
+    organicControl: "Neem oil spray, hand-picking, or putting sand/ash in the whorl.",
+    chemicalControl: "Cypermethrin or Belt (Flubendiamide).",
+    image: "https://images.unsplash.com/photo-1502622645662-320b7671aa42?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    id: 'aphids',
+    name: "Aphids",
+    symptoms: "Curled leaves, sticky honeydew, stunted growth.",
+    organicControl: "Strong water spray, soap water solution, or garlic spray.",
+    chemicalControl: "Imidacloprid or Dimethoate.",
+    image: "https://images.unsplash.com/photo-1605000797499-95a51c5269ae?auto=format&fit=crop&q=80&w=800"
+  },
+  {
+    id: 'tuta-absoluta',
+    name: "Tomato Leaf Miner (Tuta)",
+    symptoms: "Blotches on leaves, tunnels in stems and fruits.",
+    organicControl: "Pheromone traps, removing infested leaves.",
+    chemicalControl: "Spinosad or Coragen.",
+    image: "https://images.unsplash.com/photo-1589365278144-c9e705f843ba?auto=format&fit=crop&q=80&w=800"
+  }
+];
+
+const organicFertilizerGuides = [
+  {
+    id: 'compost',
+    name: "Compost Manure (Manyowa a Khola)",
+    steps: [
+      "Select a shaded site.",
+      "Layer 1: Dry stalks/grass (15cm).",
+      "Layer 2: Green leaves/waste (15cm).",
+      "Layer 3: Animal manure (5cm).",
+      "Layer 4: Topsoil (2cm).",
+      "Water each layer and repeat until 1.5m high.",
+      "Turn every 3-4 weeks. Ready in 3 months."
+    ],
+    benefits: "Improves soil structure and water retention."
+  },
+  {
+    id: 'liquid-manure',
+    name: "Liquid Manure (Manyowa a Madzi)",
+    steps: [
+      "Fill a sack with 10kg of fresh animal manure.",
+      "Suspend the sack in a 50L drum of water.",
+      "Cover and let it ferment for 14 days.",
+      "Dilute 1 part manure to 3 parts water before applying.",
+      "Apply directly to the base of plants."
+    ],
+    benefits: "Fast-acting nutrient boost for growing crops."
+  }
+];
+
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
   const [activeTab, setActiveTab] = useState<Tab>('info');
+  const [infoCategory, setInfoCategory] = useState<'crops' | 'pests' | 'organic'>('crops');
+  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [searchQuery, setSearchQuery] = useState('');
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [user, setUser] = useState<{ name: string; tier: string } | null>(null);
   const [isChatOpen, setIsChatOpen] = useState(false);
@@ -53,7 +218,7 @@ export default function App() {
 
     // Simulate login
     const timer = setTimeout(() => {
-      setUser({ name: 'John Phiri', tier: 'Premium' });
+      setUser({ name: 'John Phiri', tier: 'Verified Seller' });
     }, 3000);
 
     return () => {
@@ -108,8 +273,12 @@ export default function App() {
                 <UserCircle className="w-4 h-4 mr-2 opacity-70" /> {user ? user.name : t('Guest', 'Mlendo')}
               </span>
               {user && (
-                <span className="px-4 py-1.5 bg-accent text-white rounded-full text-sm font-bold shadow-lg flex items-center">
-                  <Crown className="w-4 h-4 mr-2" /> {user.tier}
+                <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-lg flex items-center ${user.tier === 'Verified Seller' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white border border-white/20'}`}>
+                  {user.tier === 'Verified Seller' ? (
+                    <><ThumbsUp className="w-4 h-4 mr-2" /> {t('Verified', 'Wotsimikizika')}</>
+                  ) : (
+                    <><UserCircle className="w-4 h-4 mr-2 opacity-70" /> {t('Free', 'Waulere')}</>
+                  )}
                 </span>
               )}
               <div className={`px-4 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 shadow-sm border ${isOnline ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' : 'bg-rose-500/20 text-rose-400 border-rose-500/30'}`}>
@@ -138,6 +307,119 @@ export default function App() {
       </div>
 
       {/* Navigation - Desktop (Top) & Mobile (Bottom) */}
+      {/* Detail Modal */}
+      <AnimatePresence>
+        {selectedItem && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setSelectedItem(null)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              <div className="relative h-64 shrink-0">
+                {selectedItem.image && (
+                  <img src={selectedItem.image} alt={selectedItem.name} className="w-full h-full object-cover" referrerPolicy="no-referrer" />
+                )}
+                {!selectedItem.image && (
+                  <div className="w-full h-full bg-emerald-500 flex items-center justify-center">
+                    <FlaskConical className="w-20 h-20 text-white/50" />
+                  </div>
+                )}
+                <button 
+                  onClick={() => setSelectedItem(null)}
+                  className="absolute top-4 right-4 bg-black/40 hover:bg-black/60 text-white p-2 rounded-full backdrop-blur-md transition-colors"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
+                  <h2 className="text-3xl font-bold text-white font-serif">{selectedItem.name}</h2>
+                </div>
+              </div>
+
+              <div className="p-8 overflow-y-auto space-y-6">
+                {selectedItem.type === 'crop' && (
+                  <>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">{t('Planting Dates', 'Nthawi Yobzyala')}</h4>
+                        <p className="font-medium">{selectedItem.plantingDates}</p>
+                      </div>
+                      <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                        <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">{t('Spacing', 'Mipata')}</h4>
+                        <p className="font-medium">{selectedItem.spacing}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">{t('Fertilizer Requirements', 'Manyowa Ofunika')}</h4>
+                      <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+                        <p className="text-indigo-900 dark:text-indigo-200 font-medium">{selectedItem.fertilizer}</p>
+                      </div>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-primary uppercase tracking-wider mb-2">{t('Expert Tips', 'Malangizo a Akatswiri')}</h4>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{selectedItem.tips}</p>
+                    </div>
+                  </>
+                )}
+
+                {selectedItem.type === 'pest' && (
+                  <>
+                    <div>
+                      <h4 className="text-xs font-bold text-rose-500 uppercase tracking-wider mb-2">{t('Symptoms', 'Zizindikiro')}</h4>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{selectedItem.symptoms}</p>
+                    </div>
+                    <div className="space-y-4">
+                      <div className="bg-emerald-50 dark:bg-emerald-900/20 p-4 rounded-2xl border border-emerald-100 dark:border-emerald-800">
+                        <h4 className="text-sm font-bold text-emerald-700 dark:text-emerald-300 mb-2 flex items-center">
+                          <Leaf className="w-4 h-4 mr-2" /> {t('Organic Control', 'Njira za Zachilengedwe')}
+                        </h4>
+                        <p className="text-emerald-800 dark:text-emerald-200">{selectedItem.organicControl}</p>
+                      </div>
+                      <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800">
+                        <h4 className="text-sm font-bold text-blue-700 dark:text-blue-300 mb-2 flex items-center">
+                          <FlaskConical className="w-4 h-4 mr-2" /> {t('Chemical Control', 'Njira za Mankhwala')}
+                        </h4>
+                        <p className="text-blue-800 dark:text-blue-200">{selectedItem.chemicalControl}</p>
+                      </div>
+                    </div>
+                  </>
+                )}
+
+                {selectedItem.type === 'organic' && (
+                  <>
+                    <div>
+                      <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-2">{t('Benefits', 'Ubwino Wake')}</h4>
+                      <p className="text-gray-600 dark:text-gray-300 leading-relaxed">{selectedItem.benefits}</p>
+                    </div>
+                    <div>
+                      <h4 className="text-xs font-bold text-emerald-500 uppercase tracking-wider mb-2">{t('Preparation Steps', 'Mmene Mungapangire')}</h4>
+                      <div className="space-y-3">
+                        {selectedItem.steps.map((step: string, i: number) => (
+                          <div key={i} className="flex gap-3 items-start">
+                            <span className="w-6 h-6 shrink-0 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center text-xs font-bold">
+                              {i + 1}
+                            </span>
+                            <p className="text-sm text-gray-700 dark:text-gray-200">{step}</p>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-gray-700 z-50 md:relative md:bottom-auto md:bg-transparent md:border-none md:mt-6">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-around md:justify-center items-center gap-1 md:gap-4 py-2 md:py-0">
@@ -179,80 +461,112 @@ export default function App() {
               exit={{ opacity: 0, y: -20 }}
               className="space-y-6"
             >
+              {/* Category Navigation */}
+              <div className="flex gap-2 overflow-x-auto pb-2 hide-scrollbar">
+                <button 
+                  onClick={() => setInfoCategory('crops')}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all ${infoCategory === 'crops' ? 'bg-primary text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700'}`}
+                >
+                  <Leaf className="w-4 h-4" /> {t('Crop Guides', 'Malangizo a Mbewu')}
+                </button>
+                <button 
+                  onClick={() => setInfoCategory('pests')}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all ${infoCategory === 'pests' ? 'bg-primary text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700'}`}
+                >
+                  <Bug className="w-4 h-4" /> {t('Pests & Diseases', 'Tizilombo ndi Matenda')}
+                </button>
+                <button 
+                  onClick={() => setInfoCategory('organic')}
+                  className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold whitespace-nowrap transition-all ${infoCategory === 'organic' ? 'bg-primary text-white shadow-lg' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700'}`}
+                >
+                  <FlaskConical className="w-4 h-4" /> {t('Organic Fertilizer', 'Manyowa a Zachilengedwe')}
+                </button>
+              </div>
+
               {/* Search Section */}
               <section className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="text-2xl font-bold flex items-center">
-                    <span className="bg-primary text-white p-2 rounded-lg mr-2 shadow-sm">
-                      <Sprout className="w-6 h-6" />
-                    </span>
-                    {t('Farming Information Hub', 'Malo a Zidziwitso za Ulimi')}
-                  </h2>
-                  <button className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary-dark transition-colors shadow-sm flex items-center">
-                    <PlusCircle className="w-4 h-4 mr-2" />
-                    {t('Add Tip', 'Onjezani Malangizo')}
-                  </button>
-                </div>
-                
                 <div className="mb-6">
                   <div className="relative">
                     <Search className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
                     <input 
                       type="text" 
-                      placeholder={t('Search crops, practices, diseases...', 'Sakani mbewu, njira, matenda...')}
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                      placeholder={t('Search for information...', 'Sakani zidziwitso...')}
                       className="w-full px-10 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
                     />
-                    <Mic className="absolute right-3 top-3.5 text-gray-400 cursor-pointer hover:text-primary transition-colors w-5 h-5" />
-                  </div>
-                  
-                  <div className="flex flex-wrap gap-2 mt-3">
-                    {['#Maize', '#Irrigation', '#OrganicFarming', '#Fertilizers'].map(tag => (
-                      <span key={tag} className="bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full text-sm font-medium cursor-pointer hover:bg-primary hover:text-white transition-colors">
-                        {tag}
-                      </span>
-                    ))}
                   </div>
                 </div>
 
-                {/* Crop Cards */}
+                {/* Content Grid */}
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  <CropCard 
-                    title={t('Maize (Chimanga)', 'Chimanga')}
-                    image="https://images.unsplash.com/photo-1551754655-cd27e38d2076?auto=format&fit=crop&q=80&w=400"
-                    badge={t('Popular Crop', 'Mbewu Yotchuka')}
-                    rating={4.0}
-                    reviews={120}
-                    description={t("Malawi's staple crop, best planted at the beginning of rainy season.", "Mbewu yofunika kwambiri ku Malawi, ibzyalidwa pa nthawi ya mvula.")}
-                    status={t('Plant Now', 'Bzalani Tsopano')}
-                    t={t}
-                  />
-                  <CropCard 
-                    title={t('Beans (Nyemba)', 'Nyemba')}
-                    image="https://images.unsplash.com/photo-1550989460-0adf9ea622e2?auto=format&fit=crop&q=80&w=400"
-                    badge={t('Season Special', "Yam'mwambovo")}
-                    rating={4.5}
-                    reviews={98}
-                    description={t("Great nitrogen fixer, ideal for crop rotation with maize.", "Ibzyala natroje mthaka, yabwino kubzyala pakadutsa chimanga.")}
-                    status={t('Plant Now', 'Bzalani Tsopano')}
-                    t={t}
-                  />
-                  <CropCard 
-                    title={t('Cassava (Chinangwa)', 'Chinangwa')}
-                    image="https://images.unsplash.com/photo-1621460245180-873539824696?auto=format&fit=crop&q=80&w=400"
-                    badge={t('Drought Resistant', 'Yopilira Chilala')}
-                    rating={4.0}
-                    reviews={85}
-                    description={t("Drought-tolerant root crop, ideal for food security.", "Mbewu yopilila chilala, yabwino kuti chakudya chisasowe.")}
-                    status={t('Plant Soon', 'Bzalani Posachedwa')}
-                    t={t}
-                  />
-                </div>
+                  {infoCategory === 'crops' && cropGuides
+                    .filter(crop => crop.name.toLowerCase().includes(searchQuery.toLowerCase()) || crop.tips.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(crop => (
+                    <div 
+                      key={crop.id} 
+                      onClick={() => setSelectedItem({ ...crop, type: 'crop' })}
+                      className="group cursor-pointer bg-gray-50 dark:bg-gray-700/50 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="h-40 overflow-hidden relative">
+                        <img src={crop.image} alt={crop.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                          <h3 className="text-white font-bold text-lg">{crop.name}</h3>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <div className="flex items-center text-xs text-gray-500 mb-2">
+                          <Calendar className="w-3 h-3 mr-1" /> {crop.plantingDates}
+                        </div>
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2">{crop.tips}</p>
+                        <div className="mt-4 flex items-center text-primary font-bold text-sm">
+                          {t('View Guide', 'Onani Malangizo')} <ArrowRight className="w-4 h-4 ml-1" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
 
-                <div className="mt-8 flex justify-center">
-                  <button className="bg-white text-primary border border-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white transition-colors shadow-sm flex items-center">
-                    {t('Load More Crops', 'Onetsani Zambiri')}
-                    <ArrowDown className="w-4 h-4 ml-2" />
-                  </button>
+                  {infoCategory === 'pests' && pestsData
+                    .filter(pest => pest.name.toLowerCase().includes(searchQuery.toLowerCase()) || pest.symptoms.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(pest => (
+                    <div 
+                      key={pest.id} 
+                      onClick={() => setSelectedItem({ ...pest, type: 'pest' })}
+                      className="group cursor-pointer bg-gray-50 dark:bg-gray-700/50 rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="h-40 overflow-hidden relative">
+                        <img src={pest.image} alt={pest.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" referrerPolicy="no-referrer" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent flex items-end p-4">
+                          <h3 className="text-white font-bold text-lg">{pest.name}</h3>
+                        </div>
+                      </div>
+                      <div className="p-4">
+                        <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-2 mb-4">{pest.symptoms}</p>
+                        <div className="flex items-center text-rose-500 font-bold text-sm">
+                          {t('Control Methods', 'Njira Zolimbirana')} <ArrowRight className="w-4 h-4 ml-1" />
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+
+                  {infoCategory === 'organic' && organicFertilizerGuides
+                    .filter(guide => guide.name.toLowerCase().includes(searchQuery.toLowerCase()) || guide.benefits.toLowerCase().includes(searchQuery.toLowerCase()))
+                    .map(guide => (
+                    <div 
+                      key={guide.id} 
+                      onClick={() => setSelectedItem({ ...guide, type: 'organic' })}
+                      className="group cursor-pointer bg-gray-50 dark:bg-gray-700/50 rounded-2xl p-6 border border-gray-100 dark:border-gray-700 hover:shadow-xl transition-all duration-300"
+                    >
+                      <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-4 text-emerald-600 dark:text-emerald-400">
+                        <FlaskConical className="w-6 h-6" />
+                      </div>
+                      <h3 className="text-lg font-bold mb-2">{guide.name}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300 line-clamp-3 mb-4">{guide.benefits}</p>
+                      <div className="flex items-center text-emerald-600 font-bold text-sm">
+                        {t('How to Prepare', 'Mmene Mungapangire')} <ArrowRight className="w-4 h-4 ml-1" />
+                      </div>
+                    </div>
+                  ))}
                 </div>
               </section>
 
@@ -335,24 +649,42 @@ export default function App() {
               key="market"
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="space-y-6"
+              className="space-y-8"
             >
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8 text-center">
-                <div className="text-6xl mb-4">🛒</div>
-                <h2 className="text-2xl font-bold">{t('Marketplace & Prices', 'Msika ndi Mitengo')}</h2>
-                <p className="text-gray-500 mt-2">{t('Browse products and check daily market prices across Malawi.', 'Onani zokolola ndi mitengo ya tsiku ndi tsiku m\'Malawi muno.')}</p>
-                <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="p-6 bg-indigo-50 dark:bg-indigo-900/20 rounded-xl border border-indigo-100 dark:border-indigo-800">
-                    <Store className="w-8 h-8 text-primary mx-auto mb-3" />
-                    <h3 className="font-bold">{t('Marketplace', 'Msika')}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{t('Buy and sell farm produce', 'Gulani kapena gulisani zokolola')}</p>
-                  </div>
-                  <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800">
+                <div className="text-6xl mb-4">📈</div>
+                <h2 className="text-2xl font-bold">{t('Market Prices', 'Mitengo ya pa Msika')}</h2>
+                <p className="text-gray-500 mt-2">{t('Check daily market prices across Malawi.', 'Onani mitengo ya tsiku ndi tsiku m\'Malawi muno.')}</p>
+                <div className="mt-8 flex justify-center">
+                  <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800 max-w-md w-full">
                     <ChartLine className="w-8 h-8 text-accent mx-auto mb-3" />
                     <h3 className="font-bold">{t('Market Prices', 'Mitengo')}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{t('Daily price updates', 'Mitengo ya tsiku ndi tsiku')}</p>
+                    <p className="text-sm text-gray-500 mt-1">{t('Daily price updates across all districts', 'Mitengo ya tsiku ndi tsiku m\'maboma onse')}</p>
                   </div>
                 </div>
+              </div>
+
+              <div className="flex justify-between items-center">
+                <h2 className="text-2xl font-bold">{t('Recent Listings', 'Zokolola Zaposachedwa')}</h2>
+                <button 
+                  onClick={() => {
+                    if (user?.tier === 'Verified Seller') {
+                      alert(t('Opening product creation form...', 'Tikutsegula fomu yowonjezera zokolola...'));
+                    } else {
+                      alert(t('Only Verified Sellers can add products. Please upgrade in your account settings.', 'Alimi otsimikizika okha ndi omwe angathe kuwonjezera zokolola. Chonde sinthani mu akaunti yanu.'));
+                    }
+                  }}
+                  className="text-primary font-bold flex items-center gap-1 hover:underline group"
+                >
+                  {t('Add Product', 'Wonjezani')} 
+                  <PlusCircle className={`w-5 h-5 ${user?.tier !== 'Verified Seller' ? 'opacity-50' : ''}`} />
+                </button>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {marketplaceListings.map(item => (
+                  <MarketListingCard key={item.id} item={item} t={t} />
+                ))}
               </div>
             </motion.div>
           )}
@@ -384,7 +716,9 @@ export default function App() {
                   </div>
                   <div>
                     <h2 className="text-2xl font-bold">{user ? user.name : t('Guest User', 'Mlendo')}</h2>
-                    <p className="text-gray-500">{user ? `${user.tier} Member` : t('Sign in to access all features', 'Lowani kuti mupeze zonse')}</p>
+                    <p className="text-gray-500">
+                      {user ? (user.tier === 'Verified Seller' ? t('Verified Seller', 'Wogulitsa Wotsimikizika') : t('Free Member', 'Membala Waulere')) : t('Sign in to access all features', 'Lowani kuti mupeze zonse')}
+                    </p>
                   </div>
                 </div>
                 
@@ -392,17 +726,22 @@ export default function App() {
                   <button 
                     onClick={() => {
                       if (user) {
-                        const newTier = user.tier === 'Premium' ? 'Free' : 'Premium';
+                        const newTier = user.tier === 'Verified Seller' ? 'Free' : 'Verified Seller';
                         setUser({ ...user, tier: newTier });
-                        alert(t(`Your tier has been updated to ${newTier}!`, `Gulu lanu lasinthidwa kukhala ${newTier}!`));
+                        const msg = newTier === 'Verified Seller' 
+                          ? t('You are now a Verified Seller!', 'Tsopano ndinu Wogulitsa Wotsimikizika!')
+                          : t('Your status has been updated to Free Member.', 'Gulu lanu lasinthidwa kukhala Membala Waulere.');
+                        alert(msg);
                       } else {
-                        alert(t('Please sign in to upgrade to Premium.', 'Chonde lowani kuti mukhale membala wa Premium.'));
+                        alert(t('Please sign in to verify your account.', 'Chonde lowani kuti mutsimikizire akaunti yanu.'));
                       }
                     }}
                     className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 transition-colors"
                   >
-                    <Star className="w-5 h-5 mr-3 text-accent" />
-                    <span className="font-medium">{user?.tier === 'Premium' ? t('Manage Subscription', 'Sinthani Kulembetsa') : t('Upgrade to Premium', 'Khalani Membala wa Premium')}</span>
+                    <Star className={`w-5 h-5 mr-3 ${user?.tier === 'Verified Seller' ? 'text-emerald-500' : 'text-accent'}`} />
+                    <span className="font-medium">
+                      {user?.tier === 'Verified Seller' ? t('Manage Seller Status', 'Sinthani Udindo wa Wogulitsa') : t('Become a Verified Seller', 'Khalani Wogulitsa Wotsimikizika')}
+                    </span>
                   </button>
                   <button className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 transition-colors">
                     <Clock className="w-5 h-5 mr-3 text-primary" />
@@ -572,6 +911,53 @@ export default function App() {
             </span>
           </button>
         </motion.div>
+      </div>
+    </div>
+  );
+}
+
+function MarketListingCard({ item, t }: any) {
+  return (
+    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden border border-gray-100 dark:border-gray-700 hover:shadow-lg transition-all duration-300 group">
+      <div className="relative h-48 overflow-hidden">
+        <img 
+          src={item.image} 
+          alt={item.title} 
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" 
+          referrerPolicy="no-referrer" 
+        />
+        <div className="absolute top-3 right-3 bg-white/90 dark:bg-gray-900/90 backdrop-blur-sm px-3 py-1 rounded-full text-xs font-bold text-primary shadow-sm">
+          MK {item.price.toLocaleString()}
+        </div>
+      </div>
+      <div className="p-5">
+        <div className="flex items-center gap-3 mb-4">
+          <img 
+            src={item.seller.avatar} 
+            alt={item.seller.name} 
+            className="w-10 h-10 rounded-full object-cover border-2 border-primary/20" 
+            referrerPolicy="no-referrer" 
+          />
+          <div className="flex-1 min-w-0">
+            <h4 className="text-sm font-bold text-gray-900 dark:text-gray-100 truncate">{item.seller.name}</h4>
+            <p className="text-[10px] text-gray-500 uppercase tracking-wider truncate">{item.seller.location}</p>
+          </div>
+        </div>
+        
+        <h3 className="text-lg font-bold mb-2 text-gray-900 dark:text-gray-100 line-clamp-1">{item.title}</h3>
+        <p className="text-sm text-gray-600 dark:text-gray-300 mb-6 line-clamp-2 h-10">
+          {item.description}
+        </p>
+        
+        <a 
+          href={`https://wa.me/${item.seller.phone}?text=Hello ${item.seller.name}, I am interested in your ${item.title} on FarmKit.`}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="flex items-center justify-center w-full py-3 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-xl font-bold transition-all gap-2 shadow-lg shadow-green-500/20 active:scale-95"
+        >
+          <MessageCircle className="w-5 h-5" />
+          {t('WhatsApp Seller', 'Lankhulani pa WhatsApp')}
+        </a>
       </div>
     </div>
   );
