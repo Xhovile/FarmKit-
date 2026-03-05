@@ -43,7 +43,20 @@ import {
   FlaskConical,
   Info,
   Droplets as Water,
-  ArrowLeft
+  ArrowLeft,
+  CheckCircle2,
+  AlertCircle,
+  Package,
+  Tag,
+  Coins,
+  ChevronLeft,
+  Camera,
+  Save,
+  X,
+  HelpCircle,
+  LogOut,
+  Settings,
+  Map
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 
@@ -220,14 +233,78 @@ const priceTrendData = [
   { month: 'May', maize: 850, beans: 1500, rice: 1800 },
 ];
 
+const tourSteps = [
+  {
+    title: "Welcome to FarmKit!",
+    titleNy: "Takulandirani ku FarmKit!",
+    content: "Your all-in-one digital companion for modern farming in Malawi.",
+    contentNy: "Mnzanu wapamtima pa ulimi wamakono m'Malawi muno.",
+    icon: <Sprout className="w-12 h-12 text-white" />,
+    color: "bg-primary"
+  },
+  {
+    title: "Farming Info",
+    titleNy: "Zidziwitso za Ulimi",
+    content: "Get expert guides on crops, pests, and organic fertilizers.",
+    contentNy: "Pezani malangizo a akatswiri pa mbewu, tizilombo, ndi manyowa.",
+    icon: <Book className="w-12 h-12 text-white" />,
+    color: "bg-emerald-500"
+  },
+  {
+    title: "Marketplace",
+    titleNy: "Msika",
+    content: "Check daily market prices and list your produce for sale.",
+    contentNy: "Onani mitengo ya tsiku ndi tsiku ndipo gulitsani zokolola zanu.",
+    icon: <Store className="w-12 h-12 text-white" />,
+    color: "bg-amber-500"
+  },
+  {
+    title: "Community",
+    titleNy: "Gulu",
+    content: "Connect with other farmers and share your success stories.",
+    contentNy: "Lumikizanani ndi alimi ena ndipo gawanani nzeru zanu.",
+    icon: <Users className="w-12 h-12 text-white" />,
+    color: "bg-indigo-500"
+  }
+];
+
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
   const [activeTab, setActiveTab] = useState<Tab>('info');
   const [infoCategory, setInfoCategory] = useState<'crops' | 'pests' | 'organic'>('crops');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [marketSearchQuery, setMarketSearchQuery] = useState('');
+  const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [formStep, setFormStep] = useState(1);
+  const [formData, setFormData] = useState({
+    title: '',
+    category: 'Crops',
+    price: '',
+    quantity: '',
+    location: '',
+    phone: '',
+    description: ''
+  });
+  const [formErrors, setFormErrors] = useState<Record<string, string>>({});
   const [isOnline, setIsOnline] = useState(navigator.onLine);
-  const [user, setUser] = useState<{ name: string; tier: string } | null>(null);
+  const [user, setUser] = useState<{ 
+    name: string; 
+    tier: string; 
+    location: string; 
+    phone: string; 
+    avatar?: string;
+    bio?: string;
+  } | null>(null);
+  const [isEditingProfile, setIsEditingProfile] = useState(false);
+  const [profileFormData, setProfileFormData] = useState({
+    name: '',
+    location: '',
+    phone: '',
+    bio: ''
+  });
+  const [showTour, setShowTour] = useState(false);
+  const [tourStep, setTourStep] = useState(0);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
@@ -243,7 +320,27 @@ export default function App() {
 
     // Simulate login
     const timer = setTimeout(() => {
-      setUser({ name: 'John Phiri', tier: 'Verified Seller' });
+      const userData = { 
+        name: 'John Phiri', 
+        tier: 'Verified Seller',
+        location: 'Dedza Boma',
+        phone: '0999 123 456',
+        avatar: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100',
+        bio: 'Passionate maize and soya farmer from Dedza. Always looking for better ways to improve yield.'
+      };
+      setUser(userData);
+      setProfileFormData({
+        name: userData.name,
+        location: userData.location,
+        phone: userData.phone,
+        bio: userData.bio
+      });
+
+      // Check if first time (simulated)
+      const hasSeenTour = localStorage.getItem('hasSeenTour');
+      if (!hasSeenTour) {
+        setShowTour(true);
+      }
     }, 3000);
 
     return () => {
@@ -445,6 +542,314 @@ export default function App() {
         )}
       </AnimatePresence>
 
+      {/* Add Product Modal */}
+      <AnimatePresence>
+        {isAddProductModalOpen && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsAddProductModalOpen(false)}
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-lg w-full max-h-[90vh] overflow-hidden flex flex-col"
+              onClick={e => e.stopPropagation()}
+            >
+              {/* Header */}
+              <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-primary text-white">
+                <h2 className="text-xl font-bold">{t('Add New Product', 'Wonjezani Zokolola')}</h2>
+                <button 
+                  onClick={() => setIsAddProductModalOpen(false)}
+                  className="p-2 hover:bg-white/10 rounded-full transition-colors"
+                >
+                  <ArrowLeft className="w-6 h-6" />
+                </button>
+              </div>
+
+              {/* Progress Bar */}
+              <div className="px-6 pt-6">
+                <div className="flex justify-between mb-2">
+                  {[1, 2, 3].map(step => (
+                    <div 
+                      key={step}
+                      className={`w-1/3 h-1.5 rounded-full mx-0.5 transition-all duration-300 ${formStep >= step ? 'bg-primary' : 'bg-gray-200 dark:bg-gray-700'}`}
+                    />
+                  ))}
+                </div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-widest">
+                  {t(`Step ${formStep} of 3`, `Gawo ${formStep} pa 3`)}
+                </p>
+              </div>
+
+              {/* Form Content */}
+              <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                {formStep === 1 && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        {t('Product Category', 'Gulu la Zokolola')}
+                      </label>
+                      <div className="grid grid-cols-2 gap-2">
+                        {['Crops', 'Livestock', 'Inputs', 'Services'].map(cat => (
+                          <button
+                            key={cat}
+                            onClick={() => setFormData({ ...formData, category: cat })}
+                            className={`p-3 rounded-xl border text-sm font-medium transition-all ${formData.category === cat ? 'bg-primary/10 border-primary text-primary shadow-sm' : 'bg-gray-50 dark:bg-gray-700 border-gray-100 dark:border-gray-600 text-gray-600 dark:text-gray-400 hover:border-primary/50'}`}
+                          >
+                            {cat}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        {t('Product Title', 'Dzina la Zokolola')}
+                      </label>
+                      <div className="relative">
+                        <Package className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="text"
+                          value={formData.title}
+                          onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+                          placeholder={t('e.g. Hybrid Maize', 'mwachitsanzo Chimanga cha Hybrid')}
+                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.title ? 'border-rose-500 ring-rose-500' : 'border-gray-100 dark:border-gray-600'}`}
+                        />
+                      </div>
+                      {formErrors.title && <p className="text-xs text-rose-500 mt-1 font-medium">{formErrors.title}</p>}
+                    </div>
+                  </motion.div>
+                )}
+
+                {formStep === 2 && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-4"
+                  >
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                          {t('Price (MK)', 'Mtengo (MK)')}
+                        </label>
+                        <div className="relative">
+                          <Coins className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                          <input 
+                            type="number"
+                            value={formData.price}
+                            onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                            placeholder="5000"
+                            className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.price ? 'border-rose-500 ring-rose-500' : 'border-gray-100 dark:border-gray-600'}`}
+                          />
+                        </div>
+                        {formErrors.price && <p className="text-xs text-rose-500 mt-1 font-medium">{formErrors.price}</p>}
+                      </div>
+                      <div>
+                        <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                          {t('Quantity', 'Kuchuluka')}
+                        </label>
+                        <div className="relative">
+                          <Tag className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                          <input 
+                            type="text"
+                            value={formData.quantity}
+                            onChange={(e) => setFormData({ ...formData, quantity: e.target.value })}
+                            placeholder="e.g. 50kg bag"
+                            className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+
+                {formStep === 3 && (
+                  <motion.div 
+                    initial={{ opacity: 0, x: 20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    className="space-y-4"
+                  >
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        {t('Location', 'Malo')}
+                      </label>
+                      <div className="relative">
+                        <MapPin className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="text"
+                          value={formData.location}
+                          onChange={(e) => setFormData({ ...formData, location: e.target.value })}
+                          placeholder={t('e.g. Dedza Boma', 'mwachitsanzo Dedza Boma')}
+                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.location ? 'border-rose-500 ring-rose-500' : 'border-gray-100 dark:border-gray-600'}`}
+                        />
+                      </div>
+                      {formErrors.location && <p className="text-xs text-rose-500 mt-1 font-medium">{formErrors.location}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        {t('Phone Number', 'Nambala ya Foni')}
+                      </label>
+                      <div className="relative">
+                        <Phone className="absolute left-3 top-3 text-gray-400 w-5 h-5" />
+                        <input 
+                          type="tel"
+                          value={formData.phone}
+                          onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                          placeholder="0999 123 456"
+                          className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary ${formErrors.phone ? 'border-rose-500 ring-rose-500' : 'border-gray-100 dark:border-gray-600'}`}
+                        />
+                      </div>
+                      {formErrors.phone && <p className="text-xs text-rose-500 mt-1 font-medium">{formErrors.phone}</p>}
+                    </div>
+                    <div>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-1">
+                        {t('Description', 'Kufotokozera')}
+                      </label>
+                      <textarea 
+                        value={formData.description}
+                        onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-primary"
+                        placeholder={t('Tell buyers more about your product...', 'Uzani ogula zambiri za zokolola zanu...')}
+                      />
+                    </div>
+                  </motion.div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                {formStep > 1 && (
+                  <button 
+                    onClick={() => setFormStep(prev => prev - 1)}
+                    className="flex-1 py-3 px-4 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-gray-200 transition-colors"
+                  >
+                    <ChevronLeft className="w-5 h-5" /> {t('Back', 'Bwererani')}
+                  </button>
+                )}
+                <button 
+                  onClick={() => {
+                    // Validation
+                    const errors: Record<string, string> = {};
+                    if (formStep === 1) {
+                      if (!formData.title) errors.title = t('Title is required', 'Dzina ndilofunika');
+                      if (Object.keys(errors).length === 0) setFormStep(2);
+                    } else if (formStep === 2) {
+                      if (!formData.price || isNaN(Number(formData.price)) || Number(formData.price) <= 0) {
+                        errors.price = t('Enter a valid price', 'Lowetsani mtengo woyenera');
+                      }
+                      if (Object.keys(errors).length === 0) setFormStep(3);
+                    } else if (formStep === 3) {
+                      if (!formData.location) errors.location = t('Location is required', 'Malo ndiofunika');
+                      if (!formData.phone || formData.phone.length < 9) errors.phone = t('Enter a valid phone number', 'Lowetsani nambala yafoni yoyenera');
+                      
+                      if (Object.keys(errors).length === 0) {
+                        alert(t('Product listed successfully!', 'Zokolola zawonjezedwa bwino!'));
+                        setIsAddProductModalOpen(false);
+                        setFormStep(1);
+                        setFormData({ title: '', category: 'Crops', price: '', quantity: '', location: '', phone: '', description: '' });
+                      }
+                    }
+                    setFormErrors(errors);
+                  }}
+                  className="flex-[2] py-3 px-4 bg-primary text-white font-bold rounded-xl flex items-center justify-center gap-2 hover:bg-primary/90 shadow-lg shadow-primary/20 transition-all"
+                >
+                  {formStep === 3 ? t('Submit Listing', 'Tumizani') : t('Next Step', 'Gawo Lotsatira')}
+                  {formStep < 3 && <ChevronRight className="w-5 h-5" />}
+                  {formStep === 3 && <CheckCircle2 className="w-5 h-5" />}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Welcome Tour Modal */}
+      <AnimatePresence>
+        {showTour && (
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md"
+          >
+            <motion.div 
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              className="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl max-w-sm w-full overflow-hidden flex flex-col relative"
+            >
+              <button 
+                onClick={() => {
+                  setShowTour(false);
+                  localStorage.setItem('hasSeenTour', 'true');
+                }}
+                className="absolute top-6 right-6 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 z-10"
+              >
+                <X className="w-6 h-6" />
+              </button>
+
+              <div className={`h-48 flex items-center justify-center transition-colors duration-500 ${tourSteps[tourStep].color}`}>
+                <motion.div
+                  key={tourStep}
+                  initial={{ scale: 0.5, opacity: 0 }}
+                  animate={{ scale: 1, opacity: 1 }}
+                  transition={{ type: "spring", stiffness: 200 }}
+                >
+                  {tourSteps[tourStep].icon}
+                </motion.div>
+              </div>
+
+              <div className="p-8 text-center space-y-4">
+                <motion.div
+                  key={`text-${tourStep}`}
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  <h2 className="text-2xl font-bold mb-2">
+                    {lang === 'en' ? tourSteps[tourStep].title : tourSteps[tourStep].titleNy}
+                  </h2>
+                  <p className="text-gray-500 dark:text-gray-400 leading-relaxed">
+                    {lang === 'en' ? tourSteps[tourStep].content : tourSteps[tourStep].contentNy}
+                  </p>
+                </motion.div>
+
+                <div className="flex justify-center gap-1.5 py-4">
+                  {tourSteps.map((_, i) => (
+                    <div 
+                      key={i}
+                      className={`h-1.5 rounded-full transition-all duration-300 ${tourStep === i ? 'w-8 bg-primary' : 'w-1.5 bg-gray-200 dark:bg-gray-700'}`}
+                    />
+                  ))}
+                </div>
+
+                <button 
+                  onClick={() => {
+                    if (tourStep < tourSteps.length - 1) {
+                      setTourStep(prev => prev + 1);
+                    } else {
+                      setShowTour(false);
+                      localStorage.setItem('hasSeenTour', 'true');
+                    }
+                  }}
+                  className="w-full py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/30 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                >
+                  {tourStep === tourSteps.length - 1 ? t("Get Started", "Yambani Tsopano") : t("Next", "Chotsatira")}
+                  <ChevronRight className="w-5 h-5" />
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <nav className="fixed bottom-0 left-0 right-0 bg-white dark:bg-dark-800 border-t border-gray-200 dark:border-gray-700 z-50 md:relative md:bottom-auto md:bg-transparent md:border-none md:mt-6">
         <div className="max-w-7xl mx-auto px-4">
           <div className="flex justify-around md:justify-center items-center gap-1 md:gap-4 py-2 md:py-0">
@@ -605,25 +1010,40 @@ export default function App() {
                 </h2>
 
                 <div className="space-y-4">
-                  <TipCard 
-                    author="James Banda"
-                    avatar="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100"
-                    time="2 days ago"
-                    content={t("When planting maize, ensure spacing of 75cm between rows and 25cm between plants for optimal yield.", "Pobzyala chimanga, siyani mpata wa 75cm pakati pa mizere ndi 25cm pakati pa mbewu kuti zokolola zikhale zambiri.")}
-                    likes={45}
-                    comments={12}
-                    t={t}
-                  />
-                  <TipCard 
-                    author="Grace Mbewe"
-                    avatar="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100"
-                    time="5 days ago"
-                    content={t("Mix wood ash with your compost to add potassium and reduce acidity. Great for tomatoes and peppers!", "Sakanizani phulusa ndi manyowa kuti muonjezere potassium ndikuchotsa acidity. Zabwino kwa mapuno ndi tsabola!")}
-                    image="https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&q=80&w=400"
-                    likes={78}
-                    comments={23}
-                    t={t}
-                  />
+                  {[
+                    {
+                      author: "James Banda",
+                      avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100",
+                      time: "2 days ago",
+                      content: t("When planting maize, ensure spacing of 75cm between rows and 25cm between plants for optimal yield.", "Pobzyala chimanga, siyani mpata wa 75cm pakati pa mizere ndi 25cm pakati pa mbewu kuti zokolola zikhale zambiri."),
+                      likes: 45,
+                      comments: 12
+                    },
+                    {
+                      author: "Grace Mbewe",
+                      avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100",
+                      time: "5 days ago",
+                      content: t("Mix wood ash with your compost to add potassium and reduce acidity. Great for tomatoes and peppers!", "Sakanizani phulusa ndi manyowa kuti muonjezere potassium ndikuchotsa acidity. Zabwino kwa mapuno ndi tsabola!"),
+                      image: "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&q=80&w=400",
+                      likes: 78,
+                      comments: 23
+                    }
+                  ].filter(tip => 
+                    tip.content.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                    tip.author.toLowerCase().includes(searchQuery.toLowerCase())
+                  ).map((tip, i) => (
+                    <TipCard 
+                      key={i}
+                      author={tip.author}
+                      avatar={tip.avatar}
+                      time={tip.time}
+                      content={tip.content}
+                      image={tip.image}
+                      likes={tip.likes}
+                      comments={tip.comments}
+                      t={t}
+                    />
+                  ))}
                 </div>
 
                 <div className="mt-6 flex justify-center">
@@ -777,12 +1197,26 @@ export default function App() {
                 </div>
               </div>
 
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-6">
+                <div className="relative">
+                  <Search className="absolute left-3 top-3.5 text-gray-400 w-5 h-5" />
+                  <input 
+                    type="text" 
+                    value={marketSearchQuery}
+                    onChange={(e) => setMarketSearchQuery(e.target.value)}
+                    placeholder={t('Search products or locations (e.g. Maize, Dedza)...', 'Sakani zokolola kapena malo (mwachitsanzo Chimanga, Dedza)...')}
+                    className="w-full px-10 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl shadow-inner focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent"
+                  />
+                </div>
+              </div>
+
               <div className="flex justify-between items-center">
                 <h2 className="text-2xl font-bold">{t('Recent Listings', 'Zokolola Zaposachedwa')}</h2>
                 <button 
                   onClick={() => {
                     if (user?.tier === 'Verified Seller') {
-                      alert(t('Opening product creation form...', 'Tikutsegula fomu yowonjezera zokolola...'));
+                      setIsAddProductModalOpen(true);
+                      setFormStep(1);
                     } else {
                       alert(t('Only Verified Sellers can add products. Please upgrade in your account settings.', 'Alimi otsimikizika okha ndi omwe angathe kuwonjezera zokolola. Chonde sinthani mu akaunti yanu.'));
                     }
@@ -795,9 +1229,16 @@ export default function App() {
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                {marketplaceListings.map(item => (
-                  <MarketListingCard key={item.id} item={item} t={t} />
-                ))}
+                {marketplaceListings
+                  .filter(item => 
+                    item.title.toLowerCase().includes(marketSearchQuery.toLowerCase()) || 
+                    item.description.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
+                    item.seller.location.toLowerCase().includes(marketSearchQuery.toLowerCase())
+                  )
+                  .map(item => (
+                    <MarketListingCard key={item.id} item={item} t={t} />
+                  ))
+                }
               </div>
             </motion.div>
           )}
@@ -822,46 +1263,218 @@ export default function App() {
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-6"
             >
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8">
-                <div className="flex items-center gap-6 mb-8">
-                  <div className="w-20 h-20 bg-indigo-100 dark:bg-indigo-900 rounded-full flex items-center justify-center">
-                    <User className="w-10 h-10 text-primary" />
-                  </div>
-                  <div>
-                    <h2 className="text-2xl font-bold">{user ? user.name : t('Guest User', 'Mlendo')}</h2>
-                    <p className="text-gray-500">
-                      {user ? (user.tier === 'Verified Seller' ? t('Verified Seller', 'Wogulitsa Wotsimikizika') : t('Free Member', 'Membala Waulere')) : t('Sign in to access all features', 'Lowani kuti mupeze zonse')}
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl overflow-hidden">
+                {/* Profile Header */}
+                <div className="h-32 bg-gradient-to-r from-primary to-emerald-600 relative">
                   <button 
-                    onClick={() => {
-                      if (user) {
-                        const newTier = user.tier === 'Verified Seller' ? 'Free' : 'Verified Seller';
-                        setUser({ ...user, tier: newTier });
-                        const msg = newTier === 'Verified Seller' 
-                          ? t('You are now a Verified Seller!', 'Tsopano ndinu Wogulitsa Wotsimikizika!')
-                          : t('Your status has been updated to Free Member.', 'Gulu lanu lasinthidwa kukhala Membala Waulere.');
-                        alert(msg);
-                      } else {
-                        alert(t('Please sign in to verify your account.', 'Chonde lowani kuti mutsimikizire akaunti yanu.'));
-                      }
-                    }}
-                    className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 transition-colors"
+                    onClick={() => setIsEditingProfile(!isEditingProfile)}
+                    className="absolute top-4 right-4 bg-white/20 hover:bg-white/30 text-white p-2 rounded-full backdrop-blur-md transition-all"
                   >
-                    <Star className={`w-5 h-5 mr-3 ${user?.tier === 'Verified Seller' ? 'text-emerald-500' : 'text-accent'}`} />
-                    <span className="font-medium">
-                      {user?.tier === 'Verified Seller' ? t('Manage Seller Status', 'Sinthani Udindo wa Wogulitsa') : t('Become a Verified Seller', 'Khalani Wogulitsa Wotsimikizika')}
-                    </span>
+                    {isEditingProfile ? <X className="w-5 h-5" /> : <Settings className="w-5 h-5" />}
                   </button>
-                  <button className="flex items-center p-4 bg-gray-50 dark:bg-gray-700 rounded-xl hover:bg-gray-100 transition-colors">
-                    <Clock className="w-5 h-5 mr-3 text-primary" />
-                    <span className="font-medium">{t('My Activity', 'Zochitika Zanga')}</span>
-                  </button>
+                </div>
+
+                <div className="px-8 pb-8">
+                  <div className="relative -mt-16 mb-6 flex justify-between items-end">
+                    <div className="relative group">
+                      <div className="w-32 h-32 rounded-3xl border-4 border-white dark:border-gray-800 overflow-hidden shadow-xl bg-gray-100">
+                        {user?.avatar ? (
+                          <img src={user.avatar} alt={user.name} className="w-full h-full object-cover" />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <User className="w-12 h-12" />
+                          </div>
+                        )}
+                      </div>
+                      {isEditingProfile && (
+                        <button className="absolute inset-0 bg-black/40 flex items-center justify-center text-white opacity-0 group-hover:opacity-100 transition-opacity rounded-3xl">
+                          <Camera className="w-8 h-8" />
+                        </button>
+                      )}
+                    </div>
+                    
+                    {!isEditingProfile && (
+                      <div className="flex gap-2 mb-2">
+                        <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${user?.tier === 'Verified Seller' ? 'bg-emerald-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
+                          {user?.tier === 'Verified Seller' ? t('Verified Seller', 'Wotsimikizika') : t('Free Member', 'Waulere')}
+                        </span>
+                      </div>
+                    )}
+                  </div>
+
+                  {isEditingProfile ? (
+                    <motion.div 
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      className="space-y-4"
+                    >
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div>
+                          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Full Name', 'Dzina Lonse')}</label>
+                          <input 
+                            type="text" 
+                            value={profileFormData.name}
+                            onChange={e => setProfileFormData({...profileFormData, name: e.target.value})}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Location', 'Malo')}</label>
+                          <input 
+                            type="text" 
+                            value={profileFormData.location}
+                            onChange={e => setProfileFormData({...profileFormData, location: e.target.value})}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Phone Number', 'Nambala ya Foni')}</label>
+                          <input 
+                            type="tel" 
+                            value={profileFormData.phone}
+                            onChange={e => setProfileFormData({...profileFormData, phone: e.target.value})}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('Bio / About Farm', 'Za Ife / Famu Yathu')}</label>
+                          <textarea 
+                            value={profileFormData.bio}
+                            onChange={e => setProfileFormData({...profileFormData, bio: e.target.value})}
+                            rows={1}
+                            className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                          />
+                        </div>
+                      </div>
+                      <div className="flex gap-3 pt-4">
+                        <button 
+                          onClick={() => setIsEditingProfile(false)}
+                          className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                        >
+                          {t('Cancel', 'Tiyeni Tileke')}
+                        </button>
+                        <button 
+                          onClick={() => {
+                            if (user) {
+                              setUser({
+                                ...user,
+                                name: profileFormData.name,
+                                location: profileFormData.location,
+                                phone: profileFormData.phone,
+                                bio: profileFormData.bio
+                              });
+                              setIsEditingProfile(false);
+                              alert(t('Profile updated successfully!', 'Mbiri yanu yasinthidwa bwino!'));
+                            }
+                          }}
+                          className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                        >
+                          <Save className="w-5 h-5" /> {t('Save Changes', 'Sungani')}
+                        </button>
+                      </div>
+                    </motion.div>
+                  ) : (
+                    <div className="space-y-6">
+                      <div>
+                        <h2 className="text-3xl font-bold mb-1">{user?.name}</h2>
+                        <p className="text-gray-500 flex items-center gap-1.5">
+                          <MapPin className="w-4 h-4 text-primary" /> {user?.location}
+                        </p>
+                      </div>
+
+                      {user?.bio && (
+                        <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-2xl border border-gray-100 dark:border-gray-700">
+                          <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">{t('About', 'Za Ife')}</h4>
+                          <p className="text-gray-600 dark:text-gray-300 leading-relaxed italic">"{user.bio}"</p>
+                        </div>
+                      )}
+
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
+                          <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
+                            <Package className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400 font-bold uppercase">{t('Listings', 'Zokolola')}</p>
+                            <p className="text-lg font-bold">12</p>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
+                          <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
+                            <Star className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400 font-bold uppercase">{t('Rating', 'Mulingo')}</p>
+                            <p className="text-lg font-bold">4.8/5</p>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
+                          <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center">
+                            <ThumbsUp className="w-5 h-5" />
+                          </div>
+                          <div>
+                            <p className="text-xs text-gray-400 font-bold uppercase">{t('Followers', 'Otsatira')}</p>
+                            <p className="text-lg font-bold">156</p>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
+                          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+                            <Settings className="w-6 h-6" />
+                          </div>
+                          <span className="text-xs font-bold text-gray-500">{t('Settings', 'Zosintha')}</span>
+                        </button>
+                        <button 
+                          onClick={() => setShowTour(true)}
+                          className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
+                        >
+                          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+                            <HelpCircle className="w-6 h-6" />
+                          </div>
+                          <span className="text-xs font-bold text-gray-500">{t('Help Tour', 'Thandizo')}</span>
+                        </button>
+                        <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
+                          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+                            <Share2 className="w-6 h-6" />
+                          </div>
+                          <span className="text-xs font-bold text-gray-500">{t('Share Profile', 'Gawanani')}</span>
+                        </button>
+                        <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
+                          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center transition-all">
+                            <LogOut className="w-6 h-6" />
+                          </div>
+                          <span className="text-xs font-bold text-rose-500">{t('Logout', 'Tulukani')}</span>
+                        </button>
+                      </div>
+                    </div>
+                  )}
                 </div>
               </div>
+
+              {/* Verified Seller CTA */}
+              {!isEditingProfile && user?.tier !== 'Verified Seller' && (
+                <div className="bg-gradient-to-br from-indigo-600 to-primary p-8 rounded-3xl text-white shadow-xl relative overflow-hidden group">
+                  <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
+                  <div className="relative z-10">
+                    <Crown className="w-10 h-10 mb-4 text-amber-300" />
+                    <h3 className="text-2xl font-bold mb-2">{t('Upgrade to Verified Seller', 'Khalani Wogulitsa Wotsimikizika')}</h3>
+                    <p className="text-indigo-100 mb-6 max-w-md">
+                      {t('Get a verified badge, list unlimited products, and reach more buyers across Malawi.', 'Pezani chizindikiro chotsimikizika, lembani zokolola zambiri, ndipo pezani ogula ambiri m\'Malawi muno.')}
+                    </p>
+                    <button 
+                      onClick={() => {
+                        setUser({...user!, tier: 'Verified Seller'});
+                        alert(t('Congratulations! You are now a Verified Seller.', 'Zabwino zonse! Tsopano ndinu Wogulitsa Wotsimikizika.'));
+                      }}
+                      className="px-8 py-3 bg-white text-primary font-bold rounded-xl shadow-lg hover:bg-indigo-50 transition-all"
+                    >
+                      {t('Upgrade Now', 'Sinthani Tsopano')}
+                    </button>
+                  </div>
+                </div>
+              )}
             </motion.div>
           )}
         </AnimatePresence>
