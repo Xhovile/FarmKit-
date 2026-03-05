@@ -1,0 +1,5 @@
+{
+  "name": "FarmKit Pro",
+  "description": "Complete Agricultural Platform for Malawi providing farming info, marketplace, and market prices.",
+  "requestFramePermissions": ["geolocation"]
+}
