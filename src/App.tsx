@@ -1,5 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import { 
+  LineChart, 
+  Line, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend, 
+  ResponsiveContainer 
+} from 'recharts';
+import { 
   Book, 
   Store, 
   ChartLine, 
@@ -193,6 +203,21 @@ const organicFertilizerGuides = [
     ],
     benefits: "Fast-acting nutrient boost for growing crops."
   }
+];
+
+const marketPricesData = [
+  { commodity: 'Maize (Chimanga)', limbe: 850, lilongwe: 800, mzuzu: 750, unit: 'kg' },
+  { commodity: 'Beans (Nyemba)', limbe: 1500, lilongwe: 1400, mzuzu: 1300, unit: 'kg' },
+  { commodity: 'Rice (Mpunga)', limbe: 1800, lilongwe: 1750, mzuzu: 1700, unit: 'kg' },
+  { commodity: 'Soya Beans', limbe: 900, lilongwe: 850, mzuzu: 800, unit: 'kg' },
+];
+
+const priceTrendData = [
+  { month: 'Jan', maize: 600, beans: 1200, rice: 1500 },
+  { month: 'Feb', maize: 650, beans: 1250, rice: 1550 },
+  { month: 'Mar', maize: 750, beans: 1300, rice: 1600 },
+  { month: 'Apr', maize: 800, beans: 1400, rice: 1700 },
+  { month: 'May', maize: 850, beans: 1500, rice: 1800 },
 ];
 
 export default function App() {
@@ -651,15 +676,103 @@ export default function App() {
               animate={{ opacity: 1, scale: 1 }}
               className="space-y-8"
             >
-              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md p-8 text-center">
-                <div className="text-6xl mb-4">📈</div>
-                <h2 className="text-2xl font-bold">{t('Market Prices', 'Mitengo ya pa Msika')}</h2>
-                <p className="text-gray-500 mt-2">{t('Check daily market prices across Malawi.', 'Onani mitengo ya tsiku ndi tsiku m\'Malawi muno.')}</p>
-                <div className="mt-8 flex justify-center">
-                  <div className="p-6 bg-amber-50 dark:bg-amber-900/20 rounded-xl border border-amber-100 dark:border-amber-800 max-w-md w-full">
-                    <ChartLine className="w-8 h-8 text-accent mx-auto mb-3" />
-                    <h3 className="font-bold">{t('Market Prices', 'Mitengo')}</h3>
-                    <p className="text-sm text-gray-500 mt-1">{t('Daily price updates across all districts', 'Mitengo ya tsiku ndi tsiku m\'maboma onse')}</p>
+              {/* Market Prices Section */}
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-md overflow-hidden">
+                <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    <ChartLine className="w-6 h-6 text-primary" />
+                    {t('Market Prices (MK)', 'Mitengo ya pa Msika (MK)')}
+                  </h2>
+                  <span className="text-xs text-gray-400 font-medium uppercase tracking-wider">
+                    {t('Updated: Today', 'Zasinthidwa: Lero')}
+                  </span>
+                </div>
+                
+                <div className="p-6">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse">
+                      <thead>
+                        <tr className="border-b border-gray-100 dark:border-gray-700">
+                          <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">{t('Commodity', 'Zokolola')}</th>
+                          <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">Limbe</th>
+                          <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">Lilongwe</th>
+                          <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">Mzuzu</th>
+                          <th className="py-4 px-2 text-sm font-bold text-gray-500 uppercase tracking-wider">{t('Unit', 'Muyeso')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {marketPricesData.map((row, i) => (
+                          <tr key={i} className="border-b border-gray-50 dark:border-gray-700/50 hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
+                            <td className="py-4 px-2 font-bold">{row.commodity}</td>
+                            <td className="py-4 px-2 text-primary font-medium">{row.limbe.toLocaleString()}</td>
+                            <td className="py-4 px-2 text-primary font-medium">{row.lilongwe.toLocaleString()}</td>
+                            <td className="py-4 px-2 text-primary font-medium">{row.mzuzu.toLocaleString()}</td>
+                            <td className="py-4 px-2 text-gray-500 text-sm">per {row.unit}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                {/* Price Trends Chart */}
+                <div className="p-6 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-100 dark:border-gray-700">
+                  <h3 className="text-lg font-bold mb-6 flex items-center gap-2">
+                    <div className="w-2 h-2 bg-primary rounded-full animate-pulse" />
+                    {t('Price Trends (Last 5 Months)', 'Kayendedwe ka Mitengo (Myezi 5 Yapitayi)')}
+                  </h3>
+                  <div className="h-64 w-full">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={priceTrendData}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#e5e7eb" vertical={false} />
+                        <XAxis 
+                          dataKey="month" 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#9ca3af', fontSize: 12 }} 
+                        />
+                        <YAxis 
+                          axisLine={false} 
+                          tickLine={false} 
+                          tick={{ fill: '#9ca3af', fontSize: 12 }}
+                          tickFormatter={(value) => `MK${value}`}
+                        />
+                        <Tooltip 
+                          contentStyle={{ 
+                            backgroundColor: '#fff', 
+                            borderRadius: '12px', 
+                            border: 'none', 
+                            boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1)' 
+                          }} 
+                        />
+                        <Legend iconType="circle" />
+                        <Line 
+                          type="monotone" 
+                          dataKey="maize" 
+                          name={t('Maize', 'Chimanga')} 
+                          stroke="#10b981" 
+                          strokeWidth={3} 
+                          dot={{ r: 4, fill: '#10b981' }} 
+                          activeDot={{ r: 6 }} 
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="beans" 
+                          name={t('Beans', 'Nyemba')} 
+                          stroke="#f59e0b" 
+                          strokeWidth={3} 
+                          dot={{ r: 4, fill: '#f59e0b' }} 
+                        />
+                        <Line 
+                          type="monotone" 
+                          dataKey="rice" 
+                          name={t('Rice', 'Mpunga')} 
+                          stroke="#6366f1" 
+                          strokeWidth={3} 
+                          dot={{ r: 4, fill: '#6366f1' }} 
+                        />
+                      </LineChart>
+                    </ResponsiveContainer>
                   </div>
                 </div>
               </div>
