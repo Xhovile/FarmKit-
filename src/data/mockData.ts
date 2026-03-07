@@ -177,7 +177,7 @@ export const tourSteps = [
     titleNy: "Takulandirani ku FarmKit!",
     content: "Your all-in-one digital companion for modern farming in Malawi.",
     contentNy: "Mnzanu wapamtima pa ulimi wamakono m'Malawi muno.",
-    icon: React.createElement(Sprout, { className: "w-12 h-12 text-white" }),
+    icon: Sprout,
     color: "bg-primary"
   },
   {
@@ -185,7 +185,7 @@ export const tourSteps = [
     titleNy: "Zidziwitso za Ulimi",
     content: "Get expert guides on crops, pests, and organic fertilizers.",
     contentNy: "Pezani malangizo a akatswiri pa mbewu, tizilombo, ndi manyowa.",
-    icon: React.createElement(Book, { className: "w-12 h-12 text-white" }),
+    icon: Book,
     color: "bg-emerald-500"
   },
   {
@@ -193,7 +193,7 @@ export const tourSteps = [
     titleNy: "Msika",
     content: "Check daily market prices and list your produce for sale.",
     contentNy: "Onani mitengo ya tsiku ndi tsiku ndipo gulitsani zokolola zanu.",
-    icon: React.createElement(Store, { className: "w-12 h-12 text-white" }),
+    icon: Store,
     color: "bg-amber-500"
   },
   {
@@ -201,7 +201,7 @@ export const tourSteps = [
     titleNy: "Gulu",
     content: "Connect with other farmers and share your success stories.",
     contentNy: "Lumikizanani ndi alimi ena ndipo gawanani nzeru zanu.",
-    icon: React.createElement(Users, { className: "w-12 h-12 text-white" }),
+    icon: Users,
     color: "bg-indigo-500"
   }
 ];
