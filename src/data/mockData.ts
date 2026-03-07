@@ -171,6 +171,132 @@ export const priceTrendData = [
   { month: 'May', maize: 850, beans: 1500, rice: 1800 },
 ];
 
+export const livestockGuides = [
+  {
+    id: 'poultry',
+    name: "Poultry (Nkhuku)",
+    image: "https://images.unsplash.com/photo-1548550023-2bdb3c5beed7?auto=format&fit=crop&q=80&w=800",
+    housing: "Well-ventilated house with 1sqm per 5-7 birds.",
+    feeding: "Starter mash (0-4 weeks), Grower mash (4-8 weeks), Layer/Broiler mash (8+ weeks).",
+    health: "Vaccinate against Newcastle, Gumboro, and Fowl Pox.",
+    tips: "Provide clean water at all times and maintain high hygiene."
+  },
+  {
+    id: 'goats',
+    name: "Goats (Mbuzi)",
+    image: "https://images.unsplash.com/photo-1524024973431-2ad916746881?auto=format&fit=crop&q=80&w=800",
+    housing: "Raised floor house to keep them dry and clean.",
+    feeding: "Browsing/grazing plus supplementary salt licks and legumes.",
+    health: "Deworm every 3 months. Watch for foot rot during rainy season.",
+    tips: "Boer crossbreeds grow faster and produce more meat."
+  },
+  {
+    id: 'pigs',
+    name: "Pigs (Nkhumba)",
+    image: "https://images.unsplash.com/photo-1544027993-37dbfe43562a?auto=format&fit=crop&q=80&w=800",
+    housing: "Concrete floor with good drainage and separate sleeping/feeding areas.",
+    feeding: "Pig starter, weaner, and finisher meal. Can supplement with kitchen waste (boiled).",
+    health: "Protect from African Swine Fever by restricting visitors and maintaining biosecurity.",
+    tips: "Pigs need plenty of shade and water to stay cool."
+  }
+];
+
+export const performingMarkets = [
+  {
+    id: 1,
+    name: "Limbe Market",
+    location: "Blantyre",
+    status: "High Demand",
+    statusNy: "Zofunika Kwambiri",
+    topCommodities: ["Maize", "Beans", "Rice"],
+    trend: "Upward",
+    description: "Currently the best market for grain sellers in the Southern Region."
+  },
+  {
+    id: 2,
+    name: "Tsangano Market",
+    location: "Ntcheu",
+    status: "Performing",
+    statusNy: "Zikuyenda Bwino",
+    topCommodities: ["Irish Potatoes", "Cabbage", "Onions"],
+    trend: "Stable",
+    description: "The hub for horticultural products. Prices are stable this week."
+  },
+  {
+    id: 3,
+    name: "Mzuzu Central Market",
+    location: "Mzuzu",
+    status: "High Demand",
+    statusNy: "Zofunika Kwambiri",
+    topCommodities: ["Soya Beans", "Groundnuts"],
+    trend: "Upward",
+    description: "High demand for legumes due to export processing activities."
+  }
+];
+
+export const verifiedTraining = [
+  {
+    id: 1,
+    title: "Climate-Smart Agriculture",
+    provider: "Ministry of Agriculture",
+    duration: "4 Weeks (Online/Field)",
+    image: "https://images.unsplash.com/photo-1464226184884-fa280b87c399?auto=format&fit=crop&q=80&w=800",
+    description: "Learn techniques to maintain yields despite changing weather patterns.",
+    link: "#"
+  },
+  {
+    id: 2,
+    title: "Agribusiness Management",
+    provider: "LUANAR",
+    duration: "6 Weeks (Online)",
+    image: "https://images.unsplash.com/photo-1454165833767-027ffea9e778?auto=format&fit=crop&q=80&w=800",
+    description: "Transform your farm into a profitable business with proper records and planning.",
+    link: "#"
+  },
+  {
+    id: 3,
+    title: "Organic Certification",
+    provider: "Malawi Organic Growers Association",
+    duration: "2 Weeks (Field)",
+    image: "https://images.unsplash.com/photo-1594904351111-a072f80b1a71?auto=format&fit=crop&q=80&w=800",
+    description: "Step-by-step guide to getting your farm certified for premium markets.",
+    link: "#"
+  }
+];
+
+export const seasonalAlerts = [
+  {
+    id: 1,
+    type: "Weather",
+    title: "Early Rains Expected",
+    titleNy: "Mvula Yoyambirira Ikuyembekezeka",
+    severity: "High",
+    content: "Meteorological department predicts rains starting mid-November. Prepare your fields now.",
+    contentNy: "Dipatimenti ya zanyengo ikuneneratu kuti mvula iyamba pakati pa mwezi wa November. Konzani minda yanu tsopano.",
+    date: "Nov 10, 2025"
+  },
+  {
+    id: 2,
+    type: "Pest",
+    title: "Fall Armyworm Outbreak",
+    titleNy: "Kuphulika kwa Chiwombankhanga",
+    severity: "Critical",
+    content: "Reports of FAW in Salima and Dedza. Scout your maize fields daily.",
+    contentNy: "Pali malipoti a chiwombankhanga ku Salima ndi Dedza. Yang'anirani minda yanu ya chimanga tsiku lililonse.",
+    date: "Nov 12, 2025"
+  },
+  {
+    id: 3,
+    type: "Market",
+    title: "Maize Price Inflation",
+    titleNy: "Kukwera kwa Mtengo wa Chimanga",
+    severity: "Medium",
+    content: "Maize prices have risen by 15% in Limbe. Consider selling now if you have surplus.",
+    contentNy: "Mitengo ya chimanga yakwera ndi 15% ku Limbe. Ganizirani zogulitsa tsopano ngati muli ndi zotsala.",
+    date: "Nov 14, 2025"
+  }
+];
+
 export const tourSteps = [
   {
     title: "Welcome to FarmKit!",

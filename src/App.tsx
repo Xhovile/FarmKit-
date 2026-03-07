@@ -31,7 +31,7 @@ type Tab = 'info' | 'market' | 'community' | 'account';
 export default function App() {
   const [lang, setLang] = useState<Language>('en');
   const [activeTab, setActiveTab] = useState<Tab>('info');
-  const [infoCategory, setInfoCategory] = useState<'crops' | 'pests' | 'organic'>('crops');
+  const [infoCategory, setInfoCategory] = useState<'overview' | 'crops' | 'livestock' | 'prices' | 'markets' | 'training' | 'alerts'>('overview');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [marketSearchQuery, setMarketSearchQuery] = useState('');

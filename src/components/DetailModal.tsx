@@ -72,9 +72,61 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                 )}
               </div>
               <div className="prose dark:prose-invert max-w-none">
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg">
+                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg mb-6">
                   {t(selectedItem.description || selectedItem.content, selectedItem.descriptionNy || selectedItem.contentNy)}
                 </p>
+
+                {selectedItem.type === 'livestock' && (
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Housing', 'Nyumba')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.housing}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Feeding', 'Chakudya')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.feeding}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Health', 'Umoyo')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.health}</p>
+                    </div>
+                  </div>
+                )}
+
+                {selectedItem.type === 'crop' && (
+                  <div className="space-y-6">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Planting Dates', 'Nthawi Yodzala')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.plantingDates}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Spacing', 'Mipata')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.spacing}</p>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
+                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full" />
+                        {t('Fertilizer', 'Feteleza')}
+                      </h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.fertilizer}</p>
+                    </div>
+                  </div>
+                )}
               </div>
               <div className="flex gap-4 mt-10">
                 <button className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
