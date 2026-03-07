@@ -4,7 +4,7 @@ import {
   Droplets,
   Wifi
 } from 'lucide-react';
-import { AnimatePresence } from 'motion/react';
+import { AnimatePresence, motion } from 'motion/react';
 import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
@@ -23,6 +23,7 @@ import { WelcomeTour } from './components/WelcomeTour';
 import { DetailModal } from './components/DetailModal';
 import { FAQSection } from './components/FAQSection';
 import { Footer } from './components/Footer';
+import { AddListingForm, AddRequestForm } from './components/MarketplaceForms';
 import { tourSteps, experts, successStories } from './data/mockData';
 
 type Language = 'en' | 'ny';
@@ -256,6 +257,53 @@ export default function App() {
         messages={messages} 
         setMessages={setMessages} 
       />
+
+      {/* Marketplace Modal */}
+      {isAddProductModalOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4">
+          <motion.div 
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            onClick={() => setIsAddProductModalOpen(false)}
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div 
+            initial={{ opacity: 0, scale: 0.9, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl overflow-hidden"
+          >
+            <div className="p-8 md:p-10">
+              {formStep < 10 ? (
+                <AddListingForm 
+                  t={t} 
+                  user={user} 
+                  step={formStep} 
+                  setStep={setFormStep} 
+                  onClose={() => setIsAddProductModalOpen(false)} 
+                  onSubmit={(data) => {
+                    console.log('New Listing:', data);
+                    setIsAddProductModalOpen(false);
+                    // In a real app, we would save to Firestore here
+                  }} 
+                />
+              ) : (
+                <AddRequestForm 
+                  t={t} 
+                  user={user} 
+                  step={formStep} 
+                  setStep={setFormStep} 
+                  onClose={() => setIsAddProductModalOpen(false)} 
+                  onSubmit={(data) => {
+                    console.log('New Request:', data);
+                    setIsAddProductModalOpen(false);
+                    // In a real app, we would save to Firestore here
+                  }} 
+                />
+              )}
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

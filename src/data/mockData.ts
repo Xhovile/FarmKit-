@@ -1,44 +1,115 @@
 import React from 'react';
 import { Sprout, Book, Store, GraduationCap } from 'lucide-react';
 
+export const marketCategories = [
+  { id: 'grains', name: 'Grains & Cereals', nameNy: 'Zambewu' },
+  { id: 'legumes', name: 'Legumes', nameNy: 'Nyemba' },
+  { id: 'vegetables', name: 'Vegetables', nameNy: 'Masamba' },
+  { id: 'fruits', name: 'Fruits', nameNy: 'Zipatso' },
+  { id: 'livestock', name: 'Livestock', nameNy: 'Ziweto' },
+  { id: 'inputs', name: 'Farm Inputs', nameNy: 'Zofunika pa Famu' },
+];
+
+export const deliveryMethods = [
+  { id: 'pickup', name: 'Self Pickup', nameNy: 'Kutenga Nokha' },
+  { id: 'seller_delivery', name: 'Seller Delivery', nameNy: 'Wogulitsa Adzipereka' },
+  { id: 'third_party', name: 'Third-party Transport', nameNy: 'Mayendedwe a Ena' },
+];
+
+export const buyerRequests = [
+  {
+    id: 1,
+    buyerName: "Malawi Grain Processors Ltd",
+    commodity: "Soya Beans",
+    quantity: "500",
+    unit: "Metric Tons",
+    location: "Lilongwe, Kanengo",
+    priceRange: "MK 800 - MK 950 per kg",
+    deliveryPreference: "Seller Delivery",
+    contactMethod: "Phone/WhatsApp",
+    phone: "265888000111",
+    status: "Active"
+  },
+  {
+    id: 2,
+    buyerName: "Grace Mwale",
+    commodity: "Hybrid Maize",
+    quantity: "50",
+    unit: "Bags (50kg)",
+    location: "Blantyre, Limbe",
+    priceRange: "MK 40,000 - MK 45,000 per bag",
+    deliveryPreference: "Self Pickup",
+    contactMethod: "WhatsApp",
+    phone: "265999222333",
+    status: "Active"
+  }
+];
+
 export const marketplaceListings = [
   {
     id: 1,
     title: "Fresh Organic Maize",
+    category: "grains",
     price: 45000,
+    unit: "50kg Bag",
+    stockStatus: "In Stock",
+    quantity: 100,
     image: "https://picsum.photos/seed/maize/800/600",
     description: "High quality, sun-dried organic maize. Harvested last week. Available in 50kg bags.",
+    deliveryMethod: "seller_delivery",
     seller: {
+      id: "s1",
       name: "Chifundo Phiri",
+      businessName: "Phiri Grain Supplies",
       avatar: "https://picsum.photos/seed/seller1/100/100",
       location: "Lilongwe, Area 25",
-      phone: "265888123456"
+      phone: "265888123456",
+      type: "Smallholder Farmer",
+      verified: true
     }
   },
   {
     id: 2,
     title: "Red Kidney Beans",
+    category: "legumes",
     price: 1200,
+    unit: "kg",
+    stockStatus: "Low Stock",
+    quantity: 25,
     image: "https://picsum.photos/seed/beans/800/600",
     description: "Grade A red kidney beans. Very clean and well-sorted. Price per kg.",
+    deliveryMethod: "pickup",
     seller: {
+      id: "s2",
       name: "Grace Mwale",
+      businessName: "Mwale Agro-Enterprises",
       avatar: "https://picsum.photos/seed/seller2/100/100",
       location: "Dedza Boma",
-      phone: "265999654321"
+      phone: "265999654321",
+      type: "Commercial Farmer",
+      verified: false
     }
   },
   {
     id: 3,
     title: "Hybrid Tomato Seedlings",
+    category: "inputs",
     price: 5000,
+    unit: "Tray (50)",
+    stockStatus: "In Stock",
+    quantity: 500,
     image: "https://picsum.photos/seed/tomatoes/800/600",
     description: "Strong, disease-resistant tomato seedlings ready for transplanting. Tray of 50.",
+    deliveryMethod: "third_party",
     seller: {
+      id: "s3",
       name: "John Banda",
+      businessName: "Banda Seedlings",
       avatar: "https://picsum.photos/seed/seller3/100/100",
       location: "Ntcheu",
-      phone: "265881112233"
+      phone: "265881112233",
+      type: "Nursery Specialist",
+      verified: true
     }
   }
 ];

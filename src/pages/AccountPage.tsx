@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'framer-motion';
+import { motion } from 'motion/react';
 import { 
   UserCircle, 
   Settings, 
@@ -16,11 +16,16 @@ import {
   Star,
   ThumbsUp,
   Crown,
-  ArrowRight
+  ArrowRight,
+  ClipboardList,
+  TrendingUp,
+  Building2,
+  CheckCircle2
 } from 'lucide-react';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
+import { marketplaceListings, buyerRequests } from '../data/mockData';
 
 interface AccountPageProps {
   t: (en: string, ny: string) => string;
@@ -275,6 +280,127 @@ export const AccountPage: React.FC<AccountPageProps> = ({
               </div>
             </div>
           )}
+        </div>
+      </div>
+
+      {/* Seller Dashboard (Only for Verified Sellers) */}
+      {user?.tier === 'Verified Seller' && (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-2xl flex items-center justify-center">
+                <TrendingUp className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black">{t('Seller Insights', 'Zotsatira za Malonda')}</h3>
+                <p className="text-xs text-gray-500 uppercase tracking-widest">{t('Performance Overview', 'Momwe Mukugulitsira')}</p>
+              </div>
+            </div>
+            <div className="space-y-4">
+              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
+                <span className="text-sm font-bold text-gray-500">{t('Total Views', 'Omwe Aona')}</span>
+                <span className="text-lg font-black">1,240</span>
+              </div>
+              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
+                <span className="text-sm font-bold text-gray-500">{t('Active Leads', 'Ochita Chidwi')}</span>
+                <span className="text-lg font-black text-primary">42</span>
+              </div>
+              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
+                <span className="text-sm font-bold text-gray-500">{t('Conversion Rate', 'Kugula')}</span>
+                <span className="text-lg font-black text-emerald-600">8.4%</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+            <div className="flex items-center gap-4 mb-6">
+              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center">
+                <Building2 className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-xl font-black">{t('Business Profile', 'Mbiri ya Bizinesi')}</h3>
+                <p className="text-xs text-gray-500 uppercase tracking-widest">{t('Public Identity', 'Momwe Mukudziwikira')}</p>
+              </div>
+            </div>
+            <div className="space-y-3">
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="font-bold">{t('Verified Status', 'Mwatitsimikizira')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="font-bold">{t('Listing Priority', 'Zokolola Zidzaoneka Pamwamba')}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
+                <span className="font-bold">{t('Direct WhatsApp Leads', 'Mauthenga a WhatsApp')}</span>
+              </div>
+              <button className="w-full mt-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all">
+                {t('Edit Business Details', 'Sinthani Zambiri')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* My Listings & Requests */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-black flex items-center gap-2">
+              <Package className="w-6 h-6 text-primary" />
+              {t('My Listings', 'Zokolola Zanga')}
+            </h3>
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[10px] font-black uppercase tracking-widest">
+              {marketplaceListings.filter(l => l.seller.id === 's1').length} {t('Active', 'Zomwe Zilipo')}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {marketplaceListings.filter(l => l.seller.id === 's1').map(listing => (
+              <div key={listing.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <img src={listing.image} alt={listing.title} className="w-12 h-12 rounded-xl object-cover" />
+                <div className="flex-1 min-w-0">
+                  <h4 className="text-sm font-bold truncate">{listing.title}</h4>
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">MK {listing.price.toLocaleString()} / {listing.unit}</p>
+                </div>
+                <button className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all">
+                  <ArrowRight className="w-4 h-4 text-primary" />
+                </button>
+              </div>
+            ))}
+            <button className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 font-bold text-sm hover:border-primary hover:text-primary transition-all">
+              + {t('Add New Listing', 'Wonjezani Zogulitsa')}
+            </button>
+          </div>
+        </div>
+
+        <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
+          <div className="flex justify-between items-center mb-6">
+            <h3 className="text-xl font-black flex items-center gap-2">
+              <ClipboardList className="w-6 h-6 text-indigo-600" />
+              {t('My Requests', 'Zofunika Zanga')}
+            </h3>
+            <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[10px] font-black uppercase tracking-widest">
+              2 {t('Active', 'Zomwe Zilipo')}
+            </span>
+          </div>
+          <div className="space-y-3">
+            {buyerRequests.slice(0, 2).map(request => (
+              <div key={request.id} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700">
+                <div className="flex justify-between items-start mb-2">
+                  <h4 className="text-sm font-bold">{request.commodity}</h4>
+                  <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{request.status}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{request.quantity} {request.unit}</p>
+                  <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{request.priceRange.split('per')[0]}</p>
+                </div>
+              </div>
+            ))}
+            <button className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 font-bold text-sm hover:border-indigo-600 hover:text-indigo-600 transition-all">
+              + {t('Post New Request', 'Lembani Chofunika')}
+            </button>
+          </div>
         </div>
       </div>
 
