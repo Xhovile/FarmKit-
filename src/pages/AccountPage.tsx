@@ -25,7 +25,9 @@ import {
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
-import { marketplaceListings, buyerRequests } from '../data/mockData';
+// Real data states (placeholders for now)
+const marketplaceListings: any[] = [];
+const buyerRequests: any[] = [];
 
 interface AccountPageProps {
   t: (key: string) => string;

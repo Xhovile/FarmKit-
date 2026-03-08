@@ -18,15 +18,14 @@ import {
   Map as MapIcon,
   Crown
 } from 'lucide-react';
-import { 
-  cropGuides, 
-  livestockGuides, 
-  performingMarkets, 
-  verifiedTraining, 
-  seasonalAlerts,
-  priceTrendData,
-  marketPricesData
-} from '../data/mockData';
+// Real data states (placeholders for now)
+const cropGuides: any[] = [];
+const livestockGuides: any[] = [];
+const performingMarkets: any[] = [];
+const verifiedTraining: any[] = [];
+const seasonalAlerts: any[] = [];
+const priceTrendData: any[] = [];
+const marketPricesData: any[] = [];
 import { TipCard } from '../components/Cards';
 import { 
   LineChart, 
@@ -124,19 +123,21 @@ export const HomePage: React.FC<HomePageProps> = ({
           {infoCategory === 'overview' && (
             <div className="col-span-full grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {/* Seasonal Alert Summary */}
-              <div 
-                onClick={() => setInfoCategory('alerts')}
-                className="bg-rose-50 dark:bg-rose-900/10 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/20 cursor-pointer hover:shadow-lg transition-all"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <div className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center">
-                    <AlertTriangle className="w-6 h-6" />
+              {seasonalAlerts.length > 0 && (
+                <div 
+                  onClick={() => setInfoCategory('alerts')}
+                  className="bg-rose-50 dark:bg-rose-900/10 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/20 cursor-pointer hover:shadow-lg transition-all"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="w-10 h-10 bg-rose-500 text-white rounded-xl flex items-center justify-center">
+                      <AlertTriangle className="w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">{t('common.activeAlerts')}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-rose-600 uppercase tracking-widest">{t('common.activeAlerts')}</span>
+                  <h3 className="text-lg font-bold mb-2">{lang === 'en' ? seasonalAlerts[0].title : seasonalAlerts[0].titleNy}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{lang === 'en' ? seasonalAlerts[0].content : seasonalAlerts[0].contentNy}</p>
                 </div>
-                <h3 className="text-lg font-bold mb-2">{lang === 'en' ? seasonalAlerts[0].title : seasonalAlerts[0].titleNy}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{lang === 'en' ? seasonalAlerts[0].content : seasonalAlerts[0].contentNy}</p>
-              </div>
+              )}
 
               {/* Price Trend Summary */}
               <div 
@@ -154,19 +155,21 @@ export const HomePage: React.FC<HomePageProps> = ({
               </div>
 
               {/* Training Summary */}
-              <div 
-                onClick={() => setInfoCategory('training')}
-                className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/20 cursor-pointer hover:shadow-lg transition-all"
-              >
-                <div className="flex justify-between items-center mb-4">
-                  <div className="w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center">
-                    <GraduationCap className="w-6 h-6" />
+              {verifiedTraining.length > 0 && (
+                <div 
+                  onClick={() => setInfoCategory('training')}
+                  className="bg-blue-50 dark:bg-blue-900/10 p-6 rounded-3xl border border-blue-100 dark:border-blue-900/20 cursor-pointer hover:shadow-lg transition-all"
+                >
+                  <div className="flex justify-between items-center mb-4">
+                    <div className="w-10 h-10 bg-blue-500 text-white rounded-xl flex items-center justify-center">
+                      <GraduationCap className="w-6 h-6" />
+                    </div>
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{t('common.newTraining')}</span>
                   </div>
-                  <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">{t('common.newTraining')}</span>
+                  <h3 className="text-lg font-bold mb-2">{verifiedTraining[0].title}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{verifiedTraining[0].description}</p>
                 </div>
-                <h3 className="text-lg font-bold mb-2">{verifiedTraining[0].title}</h3>
-                <p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-2">{verifiedTraining[0].description}</p>
-              </div>
+              )}
 
               {/* Quick Links to Modules */}
               <div className="col-span-full grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">

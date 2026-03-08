@@ -13,7 +13,9 @@ import {
   CheckCircle2,
   X
 } from 'lucide-react';
-import { pesticideSellers, authenticityGuidance } from '../data/mockData';
+import { authenticityGuidance } from '../data/constants';
+// Real data states (placeholders for now)
+const pesticideSellers: any[] = [];
 import { toast } from 'react-hot-toast';
 
 interface PesticideMarketMapProps {

@@ -15,7 +15,7 @@ import {
   Plus,
   Camera
 } from 'lucide-react';
-import { marketCategories, deliveryMethods } from '../data/mockData';
+import { marketCategories, deliveryMethods } from '../data/constants';
 
 interface FormProps {
   t: any;

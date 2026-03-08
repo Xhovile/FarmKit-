@@ -24,7 +24,10 @@ import { DetailModal } from './components/DetailModal';
 import { FAQSection } from './components/FAQSection';
 import { Footer } from './components/Footer';
 import { AddListingForm, AddRequestForm } from './components/MarketplaceForms';
-import { tourSteps, experts, successStories } from './data/mockData';
+import { tourSteps } from './data/constants';
+// Real data states (placeholders for now)
+const experts: any[] = [];
+const successStories: any[] = [];
 import { useTranslation } from './hooks/useTranslation';
 
 type Tab = 'info' | 'market' | 'experts' | 'account';
@@ -65,6 +68,10 @@ export default function App() {
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
     { text: 'Hello! How can I help you with your farm today?', isUser: false }
   ]);
+  
+  // Real data states (to replace mock data)
+  const [realExperts, setRealExperts] = useState<any[]>([]);
+  const [realSuccessStories, setRealSuccessStories] = useState<any[]>([]);
 
   useEffect(() => {
     const handleOnline = () => setIsOnline(true);
@@ -229,8 +236,8 @@ export default function App() {
               lang={lang} 
               communityTab={communityTab as any} 
               setCommunityTab={setCommunityTab as any} 
-              experts={experts} 
-              successStories={successStories} 
+              experts={realExperts} 
+              successStories={realSuccessStories} 
               user={user}
               setActiveTab={setActiveTab}
             />

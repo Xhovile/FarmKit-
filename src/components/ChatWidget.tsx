@@ -12,6 +12,8 @@ interface ChatWidgetProps {
   setMessages: (val: any) => void;
 }
 
+import { generateAIResponse } from '../services/geminiService';
+
 export const ChatWidget: React.FC<ChatWidgetProps> = ({
   t,
   isChatOpen,
@@ -30,29 +32,22 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     const userMessage = { text: chatMessage, isUser: true };
     const newMessages = [...messages, userMessage];
     setMessages(newMessages);
+    const currentMessage = chatMessage;
     setChatMessage('');
 
     try {
-      const response = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-          message: chatMessage,
-          history: messages.slice(-5)
-        }),
-      });
-
-      if (!response.ok) throw new Error('Failed to get AI response');
-      const data = await response.json();
+      const aiResponse = await generateAIResponse(currentMessage, messages.slice(-5));
       
       setMessages([...newMessages, { 
-        text: data.text || t("chat.aiResponse"), 
+        text: aiResponse || t("chat.aiResponse"), 
         isUser: false 
       }]);
-    } catch (error) {
+    } catch (error: any) {
       console.error("Chat Error:", error);
       setMessages([...newMessages, { 
-        text: "Sorry, I'm having trouble connecting right now. Please try again later.", 
+        text: error.message?.includes("API key not valid") 
+          ? "I'm having trouble with my connection. Please check back later."
+          : "Sorry, I'm having trouble connecting right now. Please try again later.", 
         isUser: false 
       }]);
     } finally {

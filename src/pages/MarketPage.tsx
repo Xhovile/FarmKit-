@@ -33,13 +33,14 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { 
-  marketPricesData, 
-  priceTrendData, 
-  marketplaceListings, 
-  buyerRequests,
   marketCategories,
   deliveryMethods
-} from '../data/mockData';
+} from '../data/constants';
+// Real data states (placeholders for now)
+const marketPricesData: any[] = [];
+const priceTrendData: any[] = [];
+const marketplaceListings: any[] = [];
+const buyerRequests: any[] = [];
 import { 
   ListingCard, 
   BuyerRequestCard, 
