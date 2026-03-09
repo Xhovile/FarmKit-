@@ -72,7 +72,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   setFormStep,
   setActiveTab
 }) => {
-  const [marketTab, setMarketTab] = React.useState<'supply' | 'demand' | 'trends'>('supply');
+  const [marketTab, setMarketTab] = React.useState<'supply' | 'demand' | 'insights'>('supply');
   const [activeCategory, setActiveCategory] = React.useState('all');
   const [reportingItem, setReportingItem] = React.useState<any>(null);
   const [reportReason, setReportReason] = React.useState('');
@@ -116,16 +116,16 @@ export const MarketPage: React.FC<MarketPageProps> = ({
           <ClipboardList className="w-4 h-4" /> {t('market.demand')}
         </button>
         <button 
-          onClick={() => setMarketTab('trends')}
-          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 relative ${marketTab === 'trends' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          onClick={() => setMarketTab('insights')}
+          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 relative ${marketTab === 'insights' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
           <TrendingUp className="w-4 h-4" /> 
-          {t('market.trends')}
+          {t('market.insights')}
           {!isPremium && <Crown className="w-3 h-3 absolute -top-1 -right-1 text-amber-500 fill-amber-500" />}
         </button>
       </div>
 
-      {marketTab === 'trends' && (
+      {marketTab === 'insights' && (
         <PremiumLock 
           isLocked={!isPremium} 
           t={t} 

@@ -22,9 +22,6 @@ export const Header: React.FC<HeaderProps> = ({ lang, switchLanguage, t, user, s
               <h1 className="text-2xl font-bold tracking-tight font-serif">
                 <span className="text-green-400">Farm</span><span className="text-amber-300">Kit</span>
               </h1>
-              <p className="text-emerald-100/80 text-xs font-medium tracking-wide truncate">
-                {t('common.welcome')}
-              </p>
             </div>
           </div>
           <div className="flex flex-wrap gap-2 items-center justify-center">
@@ -38,18 +35,9 @@ export const Header: React.FC<HeaderProps> = ({ lang, switchLanguage, t, user, s
             </button>
  
             {user ? (
-              <>
-                <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/20 flex items-center shadow-sm">
-                  <UserCircle className="w-4 h-4 mr-2 opacity-70" /> {user.name}
-                </span>
-                <span className={`px-4 py-1.5 rounded-full text-sm font-bold shadow-md flex items-center ${user.tier === 'Verified Seller' ? 'bg-emerald-500 text-white' : 'bg-white/10 text-white border border-white/20'}`}>
-                  {user.tier === 'Verified Seller' ? (
-                    <><ThumbsUp className="w-4 h-4 mr-2" /> {t('common.verifiedSeller')}</>
-                  ) : (
-                    <><UserCircle className="w-4 h-4 mr-2 opacity-70" /> {t('account.free')}</>
-                  )}
-                </span>
-              </>
+              <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/20 flex items-center shadow-sm">
+                <UserCircle className="w-4 h-4 mr-2 opacity-70" /> {user.name}
+              </span>
             ) : (
               <button 
                 onClick={() => setIsAuthModalOpen(true)}

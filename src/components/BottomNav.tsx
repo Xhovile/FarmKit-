@@ -31,26 +31,18 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab, t
             label={t('common.home')} 
           />
           
-          {/* Market Tab */}
-          <div className="relative">
-            <button 
-              onClick={() => setActiveTab('market')}
-              className={`flex flex-col items-center justify-center md:flex-row md:gap-3 px-4 py-2 md:px-6 md:py-3 rounded-2xl transition-all duration-300 ${activeTab === 'market' ? 'bg-primary text-white shadow-md shadow-primary/10 scale-105' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}
-            >
-              <div className={`${activeTab === 'market' ? 'animate-bounce-subtle' : ''}`}>
-                <Store className="w-5 h-5" />
-              </div>
-              <span className={`text-[10px] md:text-sm font-bold uppercase tracking-wider ${activeTab === 'market' ? 'opacity-100' : 'opacity-70'}`}>
-                {t('common.market')}
-              </span>
-            </button>
-          </div>
+          <NavAction 
+            active={activeTab === 'market'} 
+            onClick={() => setActiveTab('market')} 
+            icon={<Store className="w-5 h-5 md:w-4 md:h-4" />} 
+            label={t('common.market')} 
+          />
 
           <NavAction 
-            active={activeTab === 'experts'} 
-            onClick={() => setActiveTab('experts')} 
+            active={activeTab === 'knowledge'} 
+            onClick={() => setActiveTab('knowledge')} 
             icon={<GraduationCap className="w-5 h-5 md:w-4 md:h-4" />} 
-            label={t('common.experts')} 
+            label={t('common.knowledge')} 
           />
           <NavAction 
             active={activeTab === 'account'} 

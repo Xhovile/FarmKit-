@@ -126,6 +126,12 @@ export const en = {
     newTraining: "New Training",
     maizePricesUp: "Maize Prices Up",
     maizePricesUpDesc: "Maize prices have risen by 15% in Limbe this week.",
+    featured: "Featured Insights",
+    weatherAlert: "Heavy Rain Warning",
+    weatherAlertDesc: "Expect heavy rainfall in the Southern Region over the next 48 hours. Protect your harvest.",
+    askAiTitle: "Ask FarmKit AI",
+    askAiDesc: "Get instant answers to your farming questions, from pest control to market timing.",
+    startChat: "Start Chatting",
     viewFullGuide: "View Full Guide",
     managementGuide: "Management Guide",
     marketPriceTrends: "Market Price Trends",
@@ -254,5 +260,15 @@ export const en = {
     askAnything: "Ask anything...",
     welcome: "Hello! How can I help you with your farm today?",
     aiResponse: "That's a great question! Based on current weather in Lilongwe, I recommend checking your soil moisture before applying more fertilizer.",
+  },
+  footer: {
+    tagline: "Empowering farmers across Malawi with information and market access.",
+    quickLinks: "Quick Links",
+    aboutUs: "About Us",
+    contactUs: "Contact Us",
+    faq: "FAQ",
+    community: "FarmKit Community",
+    communityDesc: "Join thousands of farmers across Malawi sharing knowledge and growing together.",
+    allRightsReserved: "All rights reserved.",
   }
 };

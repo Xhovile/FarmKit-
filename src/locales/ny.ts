@@ -126,6 +126,12 @@ export const ny = {
     newTraining: "Maphunziro",
     maizePricesUp: "Chimanga Chakwera",
     maizePricesUpDesc: "Mitengo ya chimanga yakwera ndi 15% ku Limbe sabata ino.",
+    featured: "Zidziwitso Zapamwamba",
+    weatherAlert: "Chenjezo la Mvula Yamphamvu",
+    weatherAlertDesc: "Mvula yamphamvu ikuyembekezeka m'chigawo cha Kumwera m'maola 48 akubwerawa. Tetezani zokolola zanu.",
+    askAiTitle: "Funzani FarmKit AI",
+    askAiDesc: "Pezani mayankho amphindi imodzi pa mafunso anu a ulimi, kuchokera pa kapezedwe ka mankhwala mpaka pa nthawi yogulitsa.",
+    startChat: "Yambani Kulankhula",
     viewFullGuide: "Onani Malangizo",
     managementGuide: "Kasungidwe",
     marketPriceTrends: "Kayendedwe ka Mitengo",
@@ -254,5 +260,15 @@ export const ny = {
     askAnything: "Funzani chilichonse...",
     welcome: "Moni! Ndingakuthandizeni bwanji ndi ulimi wanu lero?",
     aiResponse: "Limenelo ndi funso labwino kwambiri! Potengera nyengo ya ku Lilongwe masiku ano, ndikukulangizani kuti muyese kaye chinyezi cha nthaka musanathire feteleza wina.",
+  },
+  footer: {
+    tagline: "Kupatsapo mphamvu kwa alimi ku Malawi ndi chidziwitso ndi mwayi wofikira misika.",
+    quickLinks: "Maulalo Osavuta",
+    aboutUs: "Za Ife",
+    contactUs: "Tiyenimulumikize",
+    faq: "Mafunso",
+    community: "Gulu la FarmKit",
+    communityDesc: "Lowani nawo alimi masauzande ambiri ku Malawi omwe akugawana nzeru ndikukula limodzi.",
+    allRightsReserved: "Maumwini onse ndi otetezedwa.",
   }
 };
