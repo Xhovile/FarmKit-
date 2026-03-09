@@ -4,8 +4,8 @@
 @theme {
   --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
   --font-serif: "Merriweather", serif;
-  --color-primary: #10b981;
-  --color-primary-dark: #059669;
+  --color-primary: #4338CA;
+  --color-primary-dark: #3730A3;
   --color-secondary: #0f172a;
   --color-accent: #f59e0b;
   --color-dark-800: #1e293b;
@@ -88,13 +88,13 @@ body {
 }
 
 .nav-tab.active {
-  background-color: #10b981;
+  background-color: #4338CA;
   color: white;
-  box-shadow: 0 2px 4px rgba(16, 185, 129, 0.2);
+  box-shadow: 0 2px 4px rgba(67, 56, 202, 0.2);
 }
 
 .weather-widget {
-  background: #059669;
+  background: #3730A3;
   border-radius: 16px;
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
@@ -176,7 +176,7 @@ body {
 }
 
 .markdown-body blockquote {
-  border-left: 3px solid #10b981;
+  border-left: 3px solid #4338CA;
   padding-left: 0.75rem;
   font-style: italic;
   margin: 0.5rem 0;

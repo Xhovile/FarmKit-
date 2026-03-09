@@ -116,17 +116,17 @@ export const HomePage: React.FC<HomePageProps> = ({
             <span className="font-bold text-sm text-emerald-700 dark:text-emerald-300">{t('common.market')}</span>
           </button>
           <button 
-            onClick={() => setActiveTab('knowledge')}
+            onClick={() => setActiveTab('experts')}
             className="flex flex-col items-center gap-3 p-6 bg-blue-50 dark:bg-blue-900/10 rounded-3xl border border-blue-100 dark:border-blue-900/20 hover:shadow-md transition-all"
           >
             <div className="w-12 h-12 bg-blue-500 text-white rounded-2xl flex items-center justify-center shadow-lg">
               <GraduationCap className="w-6 h-6" />
             </div>
-            <span className="font-bold text-sm text-blue-700 dark:text-blue-300">{t('common.knowledge')}</span>
+            <span className="font-bold text-sm text-blue-700 dark:text-blue-300">{t('common.experts')}</span>
           </button>
           <button 
             onClick={() => {
-              setActiveTab('knowledge');
+              setActiveTab('experts');
               setInfoCategory('alerts');
             }}
             className="flex flex-col items-center gap-3 p-6 bg-rose-50 dark:bg-rose-900/10 rounded-3xl border border-rose-100 dark:border-rose-900/20 hover:shadow-md transition-all"
@@ -151,7 +151,7 @@ export const HomePage: React.FC<HomePageProps> = ({
         <div className="space-y-8">
           <div className="flex items-center justify-between">
             <h3 className="text-xl font-bold">{t('home.featured')}</h3>
-            <button onClick={() => setActiveTab('knowledge')} className="text-primary text-sm font-bold hover:underline">
+            <button onClick={() => setActiveTab('experts')} className="text-primary text-sm font-bold hover:underline">
               {t('common.viewAll')}
             </button>
           </div>
@@ -160,7 +160,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Price Trend Summary */}
             <div 
               onClick={() => {
-                setActiveTab('knowledge');
+                setActiveTab('experts');
                 setInfoCategory('prices');
               }}
               className="bg-emerald-50 dark:bg-emerald-900/10 p-6 rounded-3xl border border-emerald-100 dark:border-emerald-900/20 cursor-pointer hover:shadow-lg transition-all"
@@ -178,7 +178,7 @@ export const HomePage: React.FC<HomePageProps> = ({
             {/* Seasonal Alert Summary */}
             <div 
               onClick={() => {
-                setActiveTab('knowledge');
+                setActiveTab('experts');
                 setInfoCategory('alerts');
               }}
               className="bg-rose-50 dark:bg-rose-900/10 p-6 rounded-3xl border border-rose-100 dark:border-rose-900/20 cursor-pointer hover:shadow-lg transition-all"

@@ -55,7 +55,6 @@ export const ny = {
     account: "Akaunti",
     home: "Poyambira",
     market: "Msika",
-    communityTab: "Gulu",
     welcome: "Takulandirani ku FarmKit",
     getStarted: "Yambani Tsopano",
     skip: "Dumphani",
@@ -162,6 +161,9 @@ export const ny = {
     location: "Malo",
     expertVerified: "Otsimikizika ndi Akatswiri",
     premiumNGOContent: "Malangizo a NGO",
+    organizations: "Mabungwe",
+    support: "Thandizo",
+    getSupport: "Pezani Thandizo",
   },
   account: {
     profile: "Profile",

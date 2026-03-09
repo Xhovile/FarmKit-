@@ -55,7 +55,6 @@ export const en = {
     account: "Account",
     home: "Home",
     market: "Market",
-    communityTab: "Community",
     welcome: "Welcome to FarmKit",
     getStarted: "Get Started",
     skip: "Skip",
@@ -162,6 +161,9 @@ export const en = {
     location: "Location",
     expertVerified: "Expert Verified",
     premiumNGOContent: "Premium NGO Content",
+    organizations: "Organizations",
+    support: "Support",
+    getSupport: "Get Support",
   },
   account: {
     profile: "Profile",

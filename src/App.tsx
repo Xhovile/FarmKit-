@@ -14,7 +14,7 @@ import { Header } from './components/Header';
 import { BottomNav } from './components/BottomNav';
 import { HomePage } from './pages/HomePage';
 import { MarketPage } from './pages/MarketPage';
-import { KnowledgePage } from './pages/KnowledgePage';
+import { ExpertPage } from './pages/ExpertPage';
 import { AccountPage } from './pages/AccountPage';
 import { ChatWidget } from './components/ChatWidget';
 import { WelcomeTour } from './components/WelcomeTour';
@@ -28,7 +28,7 @@ const experts: any[] = [];
 const successStories: any[] = [];
 import { useTranslation } from './hooks/useTranslation';
 
-type Tab = 'info' | 'market' | 'knowledge' | 'account';
+type Tab = 'info' | 'market' | 'experts' | 'account';
 
 export default function App() {
   const { t, lang, setLang } = useTranslation();
@@ -60,7 +60,7 @@ export default function App() {
   });
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
-  const [communityTab, setCommunityTab] = useState<'experts' | 'stories' | 'crops' | 'livestock' | 'training' | 'alerts' | 'pesticide_map'>('experts');
+  const [communityTab, setCommunityTab] = useState<'experts' | 'organizations' | 'support' | 'stories'>('experts');
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [chatMessage, setChatMessage] = useState('');
   const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
@@ -210,8 +210,8 @@ export default function App() {
             />
           )}
 
-          {activeTab === 'knowledge' && (
-            <KnowledgePage 
+          {activeTab === 'experts' && (
+            <ExpertPage 
               t={t} 
               lang={lang} 
               communityTab={communityTab as any} 

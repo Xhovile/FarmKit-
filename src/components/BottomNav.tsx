@@ -39,10 +39,10 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab, t
           />
 
           <NavAction 
-            active={activeTab === 'knowledge'} 
-            onClick={() => setActiveTab('knowledge')} 
+            active={activeTab === 'experts'} 
+            onClick={() => setActiveTab('experts')} 
             icon={<GraduationCap className="w-5 h-5 md:w-4 md:h-4" />} 
-            label={t('common.knowledge')} 
+            label={t('common.experts')} 
           />
           <NavAction 
             active={activeTab === 'account'} 
