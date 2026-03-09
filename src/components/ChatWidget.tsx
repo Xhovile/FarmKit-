@@ -1,6 +1,8 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MessageSquare, X, Send } from 'lucide-react';
+import { MessageSquare, X, Send, Sprout } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+import { generateAIResponse } from '../services/geminiService';
 
 interface ChatWidgetProps {
   t: (key: string) => string;
@@ -11,8 +13,6 @@ interface ChatWidgetProps {
   messages: { text: string; isUser: boolean }[];
   setMessages: (val: any) => void;
 }
-
-import { generateAIResponse } from '../services/geminiService';
 
 export const ChatWidget: React.FC<ChatWidgetProps> = ({
   t,
@@ -93,8 +93,14 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
             <div className="flex-1 overflow-y-auto p-4 space-y-4 no-scrollbar">
               {messages.map((msg, i) => (
                 <div key={i} className={`flex ${msg.isUser ? 'justify-end' : 'justify-start'}`}>
-                  <div className={`max-w-[80%] p-3 rounded-2xl text-sm ${msg.isUser ? 'bg-primary text-white rounded-tr-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-tl-none'}`}>
-                    {msg.text}
+                  <div className={`max-w-[85%] p-3 rounded-2xl text-sm ${msg.isUser ? 'bg-primary text-white rounded-tr-none' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-tl-none'}`}>
+                    {msg.isUser ? (
+                      msg.text
+                    ) : (
+                      <div className="markdown-body prose prose-sm dark:prose-invert max-w-none">
+                        <ReactMarkdown>{msg.text}</ReactMarkdown>
+                      </div>
+                    )}
                   </div>
                 </div>
               ))}
@@ -133,5 +139,3 @@ export const ChatWidget: React.FC<ChatWidgetProps> = ({
     </>
   );
 };
-
-import { Sprout } from 'lucide-react';

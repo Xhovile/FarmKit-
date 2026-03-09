@@ -33,7 +33,7 @@ type Tab = 'info' | 'market' | 'experts' | 'account';
 export default function App() {
   const { t, lang, setLang } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('info');
-  const [infoCategory, setInfoCategory] = useState<'overview' | 'crops' | 'livestock' | 'prices' | 'markets' | 'training' | 'alerts'>('overview');
+  const [infoCategory, setInfoCategory] = useState<'overview' | 'crops' | 'livestock' | 'prices' | 'markets' | 'training' | 'alerts' | 'pesticide_map'>('overview');
   const [selectedItem, setSelectedItem] = useState<any>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [marketSearchQuery, setMarketSearchQuery] = useState('');
@@ -162,7 +162,6 @@ export default function App() {
         switchLanguage={setLang} 
         t={t} 
         user={user} 
-        isOnline={isOnline} 
         setIsAuthModalOpen={setIsAuthModalOpen} 
       />
 
@@ -209,6 +208,7 @@ export default function App() {
               user={user} 
               setIsAddProductModalOpen={setIsAddProductModalOpen} 
               setFormStep={setFormStep} 
+              setActiveTab={setActiveTab}
             />
           )}
 

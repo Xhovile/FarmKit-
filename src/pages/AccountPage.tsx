@@ -441,12 +441,12 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             <button 
               onClick={() => {
                 if (user) {
-                  toast.success(t('account.applicationSubmitted', 'Application submitted. Our team will review it shortly.'));
+                  toast.success(t('account.applicationSubmitted'));
                 }
               }}
               className="px-10 py-4 bg-white text-amber-600 font-black rounded-2xl shadow-xl hover:bg-amber-50 transition-all flex items-center gap-2 active:scale-95"
             >
-              {t('account.applyNow', 'Apply Now')} <ArrowRight className="w-5 h-5" />
+              {t('account.applyNow')} <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>
@@ -482,12 +482,12 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             <button 
               onClick={() => {
                 if (user) {
-                  toast.success(t('account.applicationSubmitted', 'Application submitted. Our team will review it shortly.'));
+                  toast.success(t('account.applicationSubmitted'));
                 }
               }}
               className="px-10 py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center gap-2 active:scale-95"
             >
-              {t('account.applyForVerification', 'Apply for Verification')} <ArrowRight className="w-5 h-5" />
+              {t('account.applyForVerification')} <ArrowRight className="w-5 h-5" />
             </button>
           </div>
         </div>

@@ -1,5 +1,5 @@
 import React from 'react';
-import { motion } from 'motion/react';
+import { motion, AnimatePresence } from 'motion/react';
 import { 
   Leaf, 
   Search, 
@@ -64,6 +64,21 @@ export const HomePage: React.FC<HomePageProps> = ({
   const isPremium = user?.tier === 'Premium' || user?.tier === 'Verified Seller';
   const onUpgrade = () => setActiveTab('account');
 
+  const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = React.useState(false);
+
+  const categories = [
+    { id: 'overview', icon: LayoutDashboard, label: t('common.overview') },
+    { id: 'crops', icon: Leaf, label: t('common.cropGuides') },
+    { id: 'livestock', icon: Beef, label: t('common.livestock') },
+    { id: 'prices', icon: TrendingUp, label: t('common.priceTrends') },
+    { id: 'markets', icon: Store, label: t('common.markets'), premium: true },
+    { id: 'pesticide_map', icon: MapIcon, label: t('common.pesticideMap'), premium: true },
+    { id: 'training', icon: GraduationCap, label: t('common.training') },
+    { id: 'alerts', icon: AlertTriangle, label: t('common.alerts') },
+  ];
+
+  const currentCategory = categories.find(c => c.id === infoCategory) || categories[0];
+
   return (
     <motion.div 
       key="info"
@@ -72,32 +87,74 @@ export const HomePage: React.FC<HomePageProps> = ({
       exit={{ opacity: 0, y: -20 }}
       className="space-y-6"
     >
-      {/* Category Navigation */}
-      <div className="flex gap-2 overflow-x-auto pb-4 hide-scrollbar">
-        {[
-          { id: 'overview', icon: LayoutDashboard, label: t('common.overview') },
-          { id: 'crops', icon: Leaf, label: t('common.cropGuides') },
-          { id: 'livestock', icon: Beef, label: t('common.livestock') },
-          { id: 'prices', icon: TrendingUp, label: t('common.priceTrends') },
-          { id: 'markets', icon: Store, label: t('common.markets'), premium: true },
-          { id: 'pesticide_map', icon: MapIcon, label: t('common.pesticideMap'), premium: true },
-          { id: 'training', icon: GraduationCap, label: t('common.training') },
-          { id: 'alerts', icon: AlertTriangle, label: t('common.alerts') },
-        ].map((cat) => (
-          <button 
-            key={cat.id}
-            onClick={() => setInfoCategory(cat.id as any)}
-            className={`flex items-center gap-2 px-5 py-3 rounded-2xl font-bold whitespace-nowrap transition-all relative ${infoCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/30 scale-105' : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-          >
-            <cat.icon className="w-4 h-4" /> 
-            {cat.label}
-            {cat.premium && !isPremium && (
-              <div className="absolute -top-1 -right-1">
-                <Crown className="w-3 h-3 text-amber-500 fill-amber-500" />
-              </div>
-            )}
-          </button>
-        ))}
+      {/* Category Navigation Dropdown */}
+      <div className="relative z-30">
+        <button 
+          onClick={() => setIsCategoryDropdownOpen(!isCategoryDropdownOpen)}
+          className="w-full flex items-center justify-between gap-3 px-6 py-4 bg-white dark:bg-gray-800 rounded-2xl font-bold shadow-sm border border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${infoCategory === currentCategory.id ? 'bg-primary text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-500'}`}>
+              <currentCategory.icon className="w-5 h-5" />
+            </div>
+            <div className="text-left">
+              <p className="text-[10px] text-gray-400 uppercase tracking-widest leading-none mb-1">{t('common.category')}</p>
+              <p className="text-sm text-gray-900 dark:text-white">{currentCategory.label}</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {currentCategory.premium && !isPremium && <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />}
+            <motion.div
+              animate={{ rotate: isCategoryDropdownOpen ? 180 : 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <ArrowRight className="w-5 h-5 text-gray-400 rotate-90" />
+            </motion.div>
+          </div>
+        </button>
+
+        <AnimatePresence>
+          {isCategoryDropdownOpen && (
+            <>
+              <motion.div 
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setIsCategoryDropdownOpen(false)}
+                className="fixed inset-0 z-40 bg-black/5 backdrop-blur-[1px]"
+              />
+              <motion.div 
+                initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                className="absolute top-full left-0 right-0 mt-2 bg-white dark:bg-gray-800 rounded-3xl shadow-2xl border border-gray-100 dark:border-gray-700 overflow-hidden z-50 p-2"
+              >
+                <div className="grid grid-cols-1 gap-1">
+                  {categories.map((cat) => (
+                    <button 
+                      key={cat.id}
+                      onClick={() => {
+                        setInfoCategory(cat.id as any);
+                        setIsCategoryDropdownOpen(false);
+                      }}
+                      className={`flex items-center justify-between w-full p-3 rounded-2xl transition-all ${infoCategory === cat.id ? 'bg-primary/10 text-primary' : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-600 dark:text-gray-400'}`}
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${infoCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/20' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                          <cat.icon className="w-5 h-5" />
+                        </div>
+                        <span className="font-bold text-sm">{cat.label}</span>
+                      </div>
+                      {cat.premium && !isPremium && (
+                        <Crown className="w-4 h-4 text-amber-500 fill-amber-500" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              </motion.div>
+            </>
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Search Section */}
