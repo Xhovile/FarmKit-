@@ -57,6 +57,15 @@ body {
   50% { opacity: .5; }
 }
 
+@keyframes bounce-subtle {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-4px); }
+}
+
+.animate-bounce-subtle {
+  animation: bounce-subtle 2s ease-in-out infinite;
+}
+
 .card {
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border-radius: 16px;

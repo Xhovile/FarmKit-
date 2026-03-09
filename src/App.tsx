@@ -1,7 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import { 
-  CloudSun,
-  Droplets,
   Wifi
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
@@ -167,22 +165,6 @@ export default function App() {
         isOnline={isOnline} 
         setIsAuthModalOpen={setIsAuthModalOpen} 
       />
-
-      {/* Weather Widget */}
-      <div className="max-w-7xl mx-auto px-4 mt-6">
-        <div className="weather-widget text-white p-4 md:p-6">
-          <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-sm md:text-base">
-            <div className="flex items-center bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
-              <CloudSun className="w-5 h-5 mr-3 text-amber-300" />
-              <span className="font-medium">{t('home.lilongweWeather')}</span>
-            </div>
-            <div className="flex items-center bg-white/10 px-4 py-2 rounded-full backdrop-blur-sm border border-white/10">
-              <Droplets className="w-5 h-5 mr-3 text-indigo-300 animate-bounce" />
-              <span className="font-medium">{t('home.rainySeasonAlert')}</span>
-            </div>
-          </div>
-        </div>
-      </div>
 
       <DetailModal 
         t={t} 

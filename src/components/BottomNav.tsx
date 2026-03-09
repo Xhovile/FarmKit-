@@ -30,12 +30,22 @@ export const BottomNav: React.FC<BottomNavProps> = ({ activeTab, setActiveTab, t
             icon={<Book className="w-5 h-5 md:w-4 md:h-4" />} 
             label={t('common.home')} 
           />
-          <NavAction 
-            active={activeTab === 'market'} 
-            onClick={() => setActiveTab('market')} 
-            icon={<Store className="w-5 h-5 md:w-4 md:h-4" />} 
-            label={t('common.market')} 
-          />
+          
+          {/* Market Tab with Bulge */}
+          <div className="relative -top-6 md:top-0">
+            <button 
+              onClick={() => setActiveTab('market')}
+              className={`flex flex-col items-center justify-center w-20 h-20 md:w-auto md:h-auto md:flex-row md:gap-3 md:px-6 md:py-3 rounded-full md:rounded-2xl transition-all duration-300 shadow-2xl md:shadow-lg border-4 border-neutral-50 dark:border-dark-900 md:border-none ${activeTab === 'market' ? 'bg-primary text-white scale-110 md:scale-105' : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400'}`}
+            >
+              <div className={`${activeTab === 'market' ? 'animate-bounce-subtle' : ''}`}>
+                <Store className="w-8 h-8 md:w-5 md:h-5" />
+              </div>
+              <span className={`text-[10px] md:text-sm font-bold uppercase tracking-wider ${activeTab === 'market' ? 'opacity-100' : 'opacity-70'}`}>
+                {t('common.market')}
+              </span>
+            </button>
+          </div>
+
           <NavAction 
             active={activeTab === 'experts'} 
             onClick={() => setActiveTab('experts')} 

@@ -72,7 +72,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   setFormStep,
   setActiveTab
 }) => {
-  const [marketTab, setMarketTab] = React.useState<'supply' | 'demand' | 'trends' | 'verified_sellers' | 'my_activity'>('supply');
+  const [marketTab, setMarketTab] = React.useState<'supply' | 'demand' | 'trends'>('supply');
   const [activeCategory, setActiveCategory] = React.useState('all');
   const [reportingItem, setReportingItem] = React.useState<any>(null);
   const [reportReason, setReportReason] = React.useState('');
@@ -116,24 +116,12 @@ export const MarketPage: React.FC<MarketPageProps> = ({
           <ClipboardList className="w-4 h-4" /> {t('market.demand')}
         </button>
         <button 
-          onClick={() => setMarketTab('verified_sellers')}
-          className={`flex-1 min-w-[130px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${marketTab === 'verified_sellers' ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-500/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-        >
-          <ShieldCheck className="w-4 h-4" /> {t('market.verifiedSellers')}
-        </button>
-        <button 
           onClick={() => setMarketTab('trends')}
           className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 relative ${marketTab === 'trends' ? 'bg-amber-500 text-white shadow-lg shadow-amber-500/20' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
         >
           <TrendingUp className="w-4 h-4" /> 
           {t('market.trends')}
           {!isPremium && <Crown className="w-3 h-3 absolute -top-1 -right-1 text-amber-500 fill-amber-500" />}
-        </button>
-        <button 
-          onClick={() => setMarketTab('my_activity')}
-          className={`flex-1 min-w-[120px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${marketTab === 'my_activity' ? 'bg-gray-900 text-white shadow-lg' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
-        >
-          <History className="w-4 h-4" /> {t('market.myActivity')}
         </button>
       </div>
 
@@ -246,7 +234,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         </PremiumLock>
       )}
 
-      {(marketTab === 'supply' || marketTab === 'demand' || marketTab === 'verified_sellers' || marketTab === 'my_activity') && (
+      {(marketTab === 'supply' || marketTab === 'demand') && (
         <>
           <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm p-6 border border-gray-100 dark:border-gray-700">
             <div className="relative">
@@ -257,9 +245,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 onChange={(e) => setMarketSearchQuery(e.target.value)}
                 placeholder={
                   marketTab === 'supply' ? t('market.searchProducts') : 
-                  marketTab === 'demand' ? t('market.searchRequests') :
-                  marketTab === 'verified_sellers' ? t('market.searchSellers') :
-                  t('market.searchActivity')
+                  t('market.searchRequests')
                 }
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none text-sm"
               />
@@ -270,15 +256,11 @@ export const MarketPage: React.FC<MarketPageProps> = ({
             <div className="flex-1">
               <h2 className="text-2xl font-black text-gray-900 dark:text-white">
                 {marketTab === 'supply' ? t('market.availableSupply') : 
-                 marketTab === 'demand' ? t('market.currentDemand') :
-                 marketTab === 'verified_sellers' ? t('market.verifiedSellers') :
-                 t('market.myActivity')}
+                 t('market.currentDemand')}
               </h2>
               <p className="text-sm text-gray-500">
                 {marketTab === 'supply' ? t('market.browseVerified') : 
-                 marketTab === 'demand' ? t('market.seeWhatBuyersWant') :
-                 marketTab === 'verified_sellers' ? t('market.connectTrusted') :
-                 t('market.manageActivity')}
+                 t('market.seeWhatBuyersWant')}
               </p>
             </div>
             
@@ -343,47 +325,6 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                   <BuyerRequestCard key={req.id} request={req as any} t={t} />
                 ))
               }
-            </div>
-          )}
-
-          {marketTab === 'verified_sellers' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {verifiedSellers
-                .filter(s => 
-                  s?.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
-                  s?.location.toLowerCase().includes(marketSearchQuery.toLowerCase())
-                )
-                .map(seller => (
-                  <SellerCard key={seller?.id} seller={seller as any} t={t} onReport={setReportingItem} />
-                ))
-              }
-            </div>
-          )}
-
-          {marketTab === 'my_activity' && (
-            <div className="space-y-8">
-              <div>
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <Package className="w-5 h-5 text-primary" />
-                  {t('market.myListings')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {marketplaceListings.filter(l => l.seller.id === 's1').map(item => (
-                    <ListingCard key={item.id} listing={item as any} t={t} />
-                  ))}
-                </div>
-              </div>
-              <div>
-                <h3 className="text-lg font-bold mb-4 flex items-center gap-2">
-                  <ClipboardList className="w-5 h-5 text-indigo-600" />
-                  {t('market.myRequests')}
-                </h3>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {buyerRequests.slice(0, 1).map(req => (
-                    <BuyerRequestCard key={req.id} request={req as any} t={t} />
-                  ))}
-                </div>
-              </div>
             </div>
           )}
         </>

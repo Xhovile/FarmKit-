@@ -5,7 +5,6 @@ import {
   Search, 
   Calendar, 
   ArrowRight, 
-  Lightbulb,
   Beef,
   TrendingUp,
   Store,
@@ -26,7 +25,6 @@ const verifiedTraining: any[] = [];
 const seasonalAlerts: any[] = [];
 const priceTrendData: any[] = [];
 const marketPricesData: any[] = [];
-import { TipCard } from '../components/Cards';
 import { 
   LineChart, 
   Line, 
@@ -403,53 +401,6 @@ export const HomePage: React.FC<HomePageProps> = ({
                 {t('common.takeAction')} <ArrowRight className="w-4 h-4" />
               </button>
             </motion.div>
-          ))}
-        </div>
-      </section>
-
-      {/* Community Tips - Now more integrated */}
-      <section className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6">
-        <div className="flex justify-between items-center mb-8">
-          <h2 className="text-2xl font-bold flex items-center gap-3">
-            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center text-primary">
-              <Lightbulb className="w-6 h-6" />
-            </div>
-            {t('common.expertTips')}
-          </h2>
-          <button className="text-sm font-bold text-primary hover:underline">{t('common.viewAll')}</button>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {[
-            {
-              author: "James Banda",
-              avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&q=80&w=100",
-              time: "2 days ago",
-              content: t("chat.aiResponse"),
-              likes: 45,
-              comments: 12
-            },
-            {
-              author: "Grace Mbewe",
-              avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&q=80&w=100",
-              time: "5 days ago",
-              content: t("chat.aiResponse"),
-              image: "https://images.unsplash.com/photo-1591857177580-dc82b9ac4e1e?auto=format&fit=crop&q=80&w=400",
-              likes: 78,
-              comments: 23
-            }
-          ].map((tip, i) => (
-            <TipCard 
-              key={i}
-              author={tip.author}
-              avatar={tip.avatar}
-              time={tip.time}
-              content={tip.content}
-              image={tip.image}
-              likes={tip.likes}
-              comments={tip.comments}
-              t={t}
-            />
           ))}
         </div>
       </section>
