@@ -3,7 +3,7 @@ import {
   Wifi
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { auth, db, storage } from './lib/firebase';
+import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
 import { Toaster } from 'react-hot-toast';
@@ -38,7 +38,6 @@ import { tourSteps } from './data/constants';
 // Real data states (placeholders for now)
 const experts: any[] = [];
 const successStories: any[] = [];
-import { getDownloadURL, ref, uploadBytes } from 'firebase/storage';
 import { useTranslation } from './hooks/useTranslation';
 
 type Tab = 'info' | 'market' | 'experts' | 'account';
@@ -194,6 +193,39 @@ export default function App() {
 
   const t_old = (en: string, ny: string) => lang === 'en' ? en : ny;
 
+  const uploadImageToCloudinary = async (file: File): Promise<string> => {
+    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME;
+    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET;
+
+    if (!cloudName || !uploadPreset) {
+      throw new Error('Cloudinary environment variables are missing.');
+    }
+
+    const formData = new FormData();
+    formData.append('file', file);
+    formData.append('upload_preset', uploadPreset);
+
+    const response = await fetch(
+      `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
+      {
+        method: 'POST',
+        body: formData,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error('Image upload to Cloudinary failed.');
+    }
+
+    const result = await response.json();
+
+    if (!result.secure_url) {
+      throw new Error('Cloudinary did not return an image URL.');
+    }
+
+    return result.secure_url;
+  };
+
   const handleCreateListing = async (data: ListingFormData) => {
     if (!user) {
       throw new Error('You must be signed in to create a listing.');
@@ -224,11 +256,7 @@ export default function App() {
       let imageUrl: string | null = null;
 
       if (data.imageFile) {
-        const fileName = `${Date.now()}-${data.imageFile.name}`;
-        const storageRef = ref(storage, `market_listings/${user.uid}/${fileName}`);
-
-        await uploadBytes(storageRef, data.imageFile);
-        imageUrl = await getDownloadURL(storageRef);
+        imageUrl = await uploadImageToCloudinary(data.imageFile);
       }
 
       await addDoc(collection(db, 'market_listings'), {
