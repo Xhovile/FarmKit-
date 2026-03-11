@@ -1,6 +1,19 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, MapPin, Clock, Share2, MessageCircle, ArrowRight } from 'lucide-react';
+import {
+  X,
+  MapPin,
+  Share2,
+  MessageCircle,
+  Package,
+  Truck,
+  Tag,
+  CheckCircle2,
+  Eye,
+  Bookmark,
+  CalendarDays,
+  Building2,
+} from 'lucide-react';
 
 interface DetailModalProps {
   t: (key: string) => string;
@@ -9,143 +22,272 @@ interface DetailModalProps {
   setSelectedItem: (item: any) => void;
 }
 
+const formatCategoryLabel = (value?: string) => {
+  if (!value) return 'Product';
+  return value.replace(/_/g, ' ');
+};
+
+const renderMarketSpecs = (item: any) => {
+  const category = item.category || '';
+
+  if (
+    category.includes('tractor') ||
+    category.includes('equipment') ||
+    category.includes('tools') ||
+    category.includes('machinery')
+  ) {
+    return [
+      ['Condition', item.condition || 'Not specified'],
+      ['Brand', item.brand || 'Not specified'],
+      ['Model', item.model || 'Not specified'],
+      ['Power / Capacity', item.capacity || 'Not specified'],
+      ['Fuel Type', item.fuelType || 'Not specified'],
+    ];
+  }
+
+  if (
+    category.includes('seed') ||
+    category.includes('seeds')
+  ) {
+    return [
+      ['Seed Type', item.seedType || 'Not specified'],
+      ['Variety', item.variety || 'Not specified'],
+      ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+      ['Season', item.season || 'Not specified'],
+      ['Germination Rate', item.germinationRate || 'Not specified'],
+    ];
+  }
+
+  if (
+    category.includes('livestock') ||
+    category.includes('animal') ||
+    category.includes('goat') ||
+    category.includes('cattle') ||
+    category.includes('chicken')
+  ) {
+    return [
+      ['Breed', item.breed || 'Not specified'],
+      ['Age', item.age || 'Not specified'],
+      ['Sex', item.sex || 'Not specified'],
+      ['Health Status', item.healthStatus || 'Not specified'],
+      ['Vaccination', item.vaccinationStatus || 'Not specified'],
+    ];
+  }
+
+  if (
+    category.includes('fertilizer') ||
+    category.includes('pesticide') ||
+    category.includes('chemical') ||
+    category.includes('input')
+  ) {
+    return [
+      ['Brand', item.brand || 'Not specified'],
+      ['Input Type', item.inputType || 'Not specified'],
+      ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+      ['Usage', item.usage || 'Not specified'],
+      ['Expiry', item.expiryDate || 'Not specified'],
+    ];
+  }
+
+  return [
+    ['Category', formatCategoryLabel(item.category)],
+    ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+    ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
+    ['Seller Type', item.sellerTier || 'Standard'],
+    ['Status', item.status || 'active'],
+  ];
+};
+
 export const DetailModal: React.FC<DetailModalProps> = ({
   t,
   lang,
   selectedItem,
   setSelectedItem
 }) => {
+  if (!selectedItem) return null;
+
+  const isMarketListing = selectedItem.type === 'market_listing';
+  const specs = isMarketListing ? renderMarketSpecs(selectedItem) : [];
+
   return (
     <AnimatePresence>
       {selectedItem && (
-        <motion.div 
+        <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
+          className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm"
           onClick={() => setSelectedItem(null)}
         >
-          <motion.div 
-            initial={{ scale: 0.9, y: 20 }}
+          <motion.div
+            initial={{ scale: 0.96, y: 16 }}
             animate={{ scale: 1, y: 0 }}
-            exit={{ scale: 0.9, y: 20 }}
-            className="bg-white dark:bg-gray-800 w-full max-w-2xl rounded-[32px] shadow-2xl overflow-hidden"
-            onClick={e => e.stopPropagation()}
+            exit={{ scale: 0.96, y: 16 }}
+            className="bg-white dark:bg-gray-800 w-full max-w-3xl rounded-[32px] shadow-2xl overflow-hidden max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <div className="h-64 relative">
-              <img 
-                src={selectedItem.image || selectedItem.icon} 
-                alt={selectedItem.title || selectedItem.name} 
+            <div className="relative h-72">
+              <img
+                src={
+                  selectedItem.image ||
+                  selectedItem.imageUrl ||
+                  selectedItem.icon ||
+                  'https://picsum.photos/seed/farm/1200/800'
+                }
+                alt={selectedItem.title || selectedItem.name}
                 className="w-full h-full object-cover"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex items-end p-8">
-                <div>
-                  <span className="px-3 py-1 bg-primary text-white text-[10px] font-bold rounded-full uppercase tracking-wider mb-3 inline-block">
-                    {selectedItem.category || selectedItem.type}
-                  </span>
-                  <h3 className="text-3xl font-bold text-white leading-tight">
-                    {lang === 'en' ? (selectedItem.title || selectedItem.name) : (selectedItem.titleNy || selectedItem.nameNy)}
-                  </h3>
-                </div>
-              </div>
-              <button 
-                onClick={() => setSelectedItem(null)}
-                className="absolute top-6 right-6 p-2 bg-black/20 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-all"
-              >
-                <X className="w-6 h-6" />
-              </button>
-            </div>
-            <div className="p-8">
-              <div className="flex flex-wrap gap-6 mb-8 text-sm text-gray-500 dark:text-gray-400 font-medium">
-                {selectedItem.location && (
-                  <div className="flex items-center gap-2">
-                    <MapPin className="w-4 h-4 text-primary" /> {selectedItem.location}
-                  </div>
-                )}
-                {selectedItem.time && (
-                  <div className="flex items-center gap-2">
-                    <Clock className="w-4 h-4 text-primary" /> {selectedItem.time}
-                  </div>
-                )}
-                {selectedItem.price && (
-                  <div className="text-primary font-bold text-lg">
-                    MK {selectedItem.price.toLocaleString()}
-                  </div>
-                )}
-              </div>
-              <div className="prose dark:prose-invert max-w-none">
-                <p className="text-gray-600 dark:text-gray-300 leading-relaxed text-lg mb-6">
-                  {lang === 'en' ? (selectedItem.description || selectedItem.content) : (selectedItem.descriptionNy || selectedItem.contentNy)}
-                </p>
 
-                {selectedItem.type === 'livestock' && (
-                  <div className="space-y-6">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.housing')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.housing}</p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.feeding')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.feeding}</p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.health')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.health}</p>
-                    </div>
-                  </div>
-                )}
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-                {selectedItem.type === 'crop' && (
-                  <div className="space-y-6">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.plantingDates')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.plantingDates}</p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.spacing')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.spacing}</p>
-                    </div>
-                    <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
-                      <h4 className="font-bold text-primary mb-2 flex items-center gap-2">
-                        <div className="w-2 h-2 bg-primary rounded-full" />
-                        {t('common.fertilizer')}
-                      </h4>
-                      <p className="text-sm text-gray-600 dark:text-gray-300">{selectedItem.fertilizer}</p>
-                    </div>
-                  </div>
-                )}
-              </div>
-              <div className="flex gap-4 mt-10">
-                <button className="flex-1 py-4 bg-primary text-white font-bold rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2">
-                  {selectedItem.price ? t('market.contactSeller') : t('common.learnMore')}
-                  <ArrowRight className="w-5 h-5" />
+              <div className="absolute top-6 right-6 flex gap-2">
+                <button
+                  className="p-3 bg-black/25 hover:bg-black/40 text-white rounded-full backdrop-blur-md transition-all"
+                  onClick={() => setSelectedItem(null)}
+                >
+                  <X className="w-5 h-5" />
                 </button>
-                <div className="flex gap-2">
-                  <button className="p-4 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-2xl hover:bg-gray-200 transition-all">
-                    <Share2 className="w-5 h-5" />
-                  </button>
-                  {selectedItem.price && (
-                    <button className="p-4 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-300 rounded-2xl hover:bg-gray-200 transition-all">
-                      <MessageCircle className="w-5 h-5" />
-                    </button>
+              </div>
+
+              <div className="absolute bottom-0 left-0 right-0 p-8">
+                <div className="flex flex-wrap gap-2 mb-3">
+                  <span className="px-3 py-1 bg-white/90 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+                    {isMarketListing
+                      ? formatCategoryLabel(selectedItem.category)
+                      : selectedItem.category || selectedItem.type}
+                  </span>
+
+                  {isMarketListing && selectedItem.verified && (
+                    <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
+                      <CheckCircle2 className="w-3 h-3" />
+                      Verified Seller
+                    </span>
                   )}
                 </div>
+
+                <h3 className="text-3xl font-bold text-white leading-tight">
+                  {selectedItem.title || selectedItem.name}
+                </h3>
+
+                {isMarketListing && (
+                  <p className="text-white/85 mt-2 text-lg font-semibold">
+                    MK {selectedItem.price?.toLocaleString()} / {selectedItem.unit}
+                  </p>
+                )}
               </div>
+            </div>
+
+            <div className="p-8">
+              {isMarketListing ? (
+                <>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                        <Building2 className="w-4 h-4" />
+                        Seller
+                      </div>
+                      <p className="font-bold">{selectedItem.businessName}</p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                        <MapPin className="w-4 h-4" />
+                        Location
+                      </div>
+                      <p className="font-bold">{selectedItem.location}</p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                        <Package className="w-4 h-4" />
+                        Quantity
+                      </div>
+                      <p className="font-bold">
+                        {selectedItem.quantity} {selectedItem.unit}
+                      </p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                      <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
+                        <Truck className="w-4 h-4" />
+                        Delivery
+                      </div>
+                      <p className="font-bold">
+                        {selectedItem.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-8">
+                    <h4 className="text-lg font-bold mb-3">Description</h4>
+                    <p className="text-gray-600 dark:text-gray-300 leading-relaxed">
+                      {selectedItem.description || 'No description provided.'}
+                    </p>
+                  </div>
+
+                  <div className="mb-8">
+                    <h4 className="text-lg font-bold mb-4">Specifications</h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {specs.map(([label, value]) => (
+                        <div
+                          key={label}
+                          className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-700"
+                        >
+                          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                            {label}
+                          </p>
+                          <p className="font-semibold text-gray-900 dark:text-white">
+                            {value}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm text-gray-500 border-t border-gray-100 dark:border-gray-700 pt-6 mb-6">
+                    <div className="flex items-center gap-2">
+                      <Eye className="w-4 h-4" />
+                      {selectedItem.viewsCount ?? 0} views
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Bookmark className="w-4 h-4" />
+                      {selectedItem.savesCount ?? 0} saves
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <CalendarDays className="w-4 h-4" />
+                      Listing active
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-[1fr_auto_auto] gap-3">
+                    <a
+                      href={`https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.sellerName}, I am interested in your ${selectedItem.title} on FarmKit.`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="py-4 bg-[#25D366] hover:bg-[#128C7E] text-white rounded-2xl font-bold transition-all flex items-center justify-center gap-2"
+                    >
+                      <MessageCircle className="w-5 h-5" />
+                      Contact Seller
+                    </a>
+
+                    <button className="px-5 py-4 bg-gray-100 dark:bg-gray-700 rounded-2xl text-gray-700 dark:text-gray-200">
+                      <Share2 className="w-5 h-5" />
+                    </button>
+
+                    <button className="px-5 py-4 bg-gray-100 dark:bg-gray-700 rounded-2xl text-gray-700 dark:text-gray-200">
+                      <Bookmark className="w-5 h-5" />
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-gray-600 dark:text-gray-300">
+                  <p>
+                    {lang === 'en'
+                      ? (selectedItem.description || selectedItem.content)
+                      : (selectedItem.descriptionNy || selectedItem.contentNy)}
+                  </p>
+                </div>
+              )}
             </div>
           </motion.div>
         </motion.div>
