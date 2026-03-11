@@ -5,6 +5,7 @@ import {
   signOut, 
   deleteUser,
   sendEmailVerification,
+  sendPasswordResetEmail,
   updateProfile,
   reauthenticateWithCredential,
   EmailAuthProvider
@@ -33,6 +34,7 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [reauthPassword, setReauthPassword] = useState('');
   const [showReauth, setShowReauth] = useState(false);
+  const [unverifiedUser, setUnverifiedUser] = useState<any>(null);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -54,9 +56,21 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
     }
 
     setLoading(true);
+    setUnverifiedUser(null);
+
     try {
       if (isLogin) {
-        await signInWithEmailAndPassword(auth, email, password);
+        const userCredential = await signInWithEmailAndPassword(auth, email, password);
+        const user = userCredential.user;
+
+        if (!user.emailVerified) {
+          setUnverifiedUser(user);
+          await signOut(auth);
+          toast.error(t('auth.emailNotVerified'));
+          setLoading(false);
+          return;
+        }
+
         toast.success(t('auth.welcomeBack') || 'Welcome back!');
         onClose();
       } else {
@@ -82,8 +96,39 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
         await sendEmailVerification(user);
         
         toast.success(t('auth.accountCreated') || 'Account created! Please verify your email.');
-        onClose();
+        setUnverifiedUser(user);
+        await signOut(auth);
+        setIsLogin(true);
       }
+    } catch (error: any) {
+      toast.error(getCleanErrorMessage(error.code, lang));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendVerification = async () => {
+    if (!unverifiedUser) return;
+    setLoading(true);
+    try {
+      await sendEmailVerification(unverifiedUser);
+      toast.success(t('auth.verificationSent'));
+    } catch (error: any) {
+      toast.error(getCleanErrorMessage(error.code, lang));
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error(getCleanErrorMessage('auth/invalid-email', lang));
+      return;
+    }
+    setLoading(true);
+    try {
+      await sendPasswordResetEmail(auth, email);
+      toast.success(t('auth.resetEmailSent'));
     } catch (error: any) {
       toast.error(getCleanErrorMessage(error.code, lang));
     } finally {
@@ -107,16 +152,22 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
 
     setLoading(true);
     try {
-      // If re-auth is needed, we'll try to re-auth first if showReauth is true
-      if (showReauth) {
+      // 1. Re-authenticate FIRST to ensure we have a fresh token
+      // This minimizes the risk of deleteUser failing after Firestore cleanup
+      if (showReauth || !reauthPassword) {
         const credential = EmailAuthProvider.credential(user.email!, reauthPassword);
         await reauthenticateWithCredential(user, credential);
       }
 
-      // 1. Delete Firestore document
-      await deleteDoc(doc(db, 'users', user.uid));
+      const uid = user.uid;
 
-      // 2. Delete Firebase Auth account
+      // 2. Delete Firestore document while still authenticated
+      // This is safer because we still have the token to pass security rules
+      await deleteDoc(doc(db, 'users', uid));
+
+      // 3. Delete Firebase Auth account LAST
+      // If this fails, we still have the user but their data is gone (privacy safe)
+      // But since we just re-authenticated, the chance of failure is extremely low.
       await deleteUser(user);
       
       toast.success(t('auth.accountDeleted') || 'Account deleted successfully.');
@@ -207,6 +258,17 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
                   placeholder="••••••••"
                 />
               </div>
+              {isLogin && (
+                <div className="mt-1 text-right">
+                  <button 
+                    type="button"
+                    onClick={handleForgotPassword}
+                    className="text-[10px] font-bold text-primary hover:underline"
+                  >
+                    {t('auth.forgotPassword')}
+                  </button>
+                </div>
+              )}
             </div>
 
             {!isLogin && (
@@ -234,9 +296,26 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
               {loading ? (
                 <div className="w-6 h-6 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               ) : (
-                isLogin ? t('common.login') : t('common.signUp')
+                isLogin ? t('auth.loginButton') : t('auth.signUpButton')
               )}
             </button>
+
+            {unverifiedUser && (
+              <motion.div 
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                className="pt-2"
+              >
+                <button 
+                  type="button"
+                  onClick={handleResendVerification}
+                  disabled={loading}
+                  className="w-full py-2 text-xs font-bold text-primary hover:underline flex items-center justify-center gap-2"
+                >
+                  <Mail className="w-4 h-4" /> {t('auth.resendVerification')}
+                </button>
+              </motion.div>
+            )}
           </form>
 
           <div className="mt-6 text-center">
