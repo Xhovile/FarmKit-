@@ -85,14 +85,12 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   useEffect(() => {
     const listingsQuery = query(
       collection(db, 'market_listings'),
-      where('status', '==', 'active'),
-      orderBy('createdAt', 'desc')
+      where('status', '==', 'active')
     );
 
     const requestsQuery = query(
       collection(db, 'buyer_requests'),
-      where('status', '==', 'active'),
-      orderBy('createdAt', 'desc')
+      where('status', '==', 'active')
     );
 
     const unsubscribeListings = onSnapshot(listingsQuery, (snapshot) => {
@@ -100,7 +98,18 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         id: doc.id,
         ...doc.data()
       })) as MarketListing[];
+      
+      // Client-side sort to avoid composite index requirement
+      newListings.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      
       setListings(newListings);
+      setLoading(false);
+    }, (error) => {
+      console.error("Listings snapshot error:", error);
       setLoading(false);
     });
 
@@ -109,7 +118,17 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         id: doc.id,
         ...doc.data()
       })) as BuyerRequest[];
+      
+      // Client-side sort
+      newRequests.sort((a, b) => {
+        const dateA = a.createdAt?.seconds || 0;
+        const dateB = b.createdAt?.seconds || 0;
+        return dateB - dateA;
+      });
+      
       setRequests(newRequests);
+    }, (error) => {
+      console.error("Requests snapshot error:", error);
     });
 
     return () => {
