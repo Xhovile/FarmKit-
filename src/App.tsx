@@ -7,7 +7,7 @@ import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
 import { Toaster } from 'react-hot-toast';
-import { doc, getDoc, setDoc, collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
 import { MarketListing, BuyerRequest } from './types';
 import toast from 'react-hot-toast';
 
@@ -31,6 +31,18 @@ const successStories: any[] = [];
 import { useTranslation } from './hooks/useTranslation';
 
 type Tab = 'info' | 'market' | 'experts' | 'account';
+type ListingFormData = {
+  title: string;
+  category: string;
+  price: string;
+  unit: string;
+  quantity: string;
+  location: string;
+  deliveryMethod: string;
+  description: string;
+  businessName: string;
+  phone: string;
+};
 
 export default function App() {
   const { t, lang, setLang } = useTranslation();
@@ -139,6 +151,52 @@ export default function App() {
   }, []);
 
   const t_old = (en: string, ny: string) => lang === 'en' ? en : ny;
+
+  const handleCreateListing = async (data: ListingFormData) => {
+    if (!user) {
+      throw new Error('You must be signed in to create a listing.');
+    }
+
+    const cleanedTitle = data.title.trim();
+    const cleanedCategory = data.category.trim();
+    const cleanedUnit = data.unit.trim();
+    const cleanedLocation = data.location.trim();
+    const cleanedDescription = data.description.trim();
+    const cleanedBusinessName = data.businessName.trim();
+    const cleanedPhone = data.phone.trim();
+
+    const price = Number(data.price);
+    const quantity = Number(data.quantity);
+
+    if (!cleanedTitle) throw new Error('Product name is required.');
+    if (!cleanedCategory) throw new Error('Category is required.');
+    if (!cleanedUnit) throw new Error('Unit is required.');
+    if (!cleanedLocation) throw new Error('Location is required.');
+    if (!cleanedPhone) throw new Error('Phone number is required.');
+    if (!Number.isFinite(price) || price <= 0) throw new Error('Price must be greater than 0.');
+    if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Quantity must be greater than 0.');
+
+    await addDoc(collection(db, 'market_listings'), {
+      title: cleanedTitle,
+      category: cleanedCategory,
+      price,
+      unit: cleanedUnit,
+      quantity,
+      location: cleanedLocation,
+      deliveryMethod: data.deliveryMethod,
+      description: cleanedDescription,
+      businessName: cleanedBusinessName || user.name || 'Seller',
+      phone: cleanedPhone,
+      sellerId: user.uid,
+      sellerName: user.name || 'Seller',
+      sellerTier: user.tier || 'Free',
+      verified: user.tier === 'Verified Seller',
+      imageUrl: null,
+      status: 'active',
+      createdAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    });
+  };
 
   return (
     <div className="bg-neutral-50 dark:bg-dark-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans">
@@ -279,60 +337,13 @@ export default function App() {
                   setStep={setFormStep} 
                   onClose={() => setIsAddProductModalOpen(false)} 
                   onSubmit={async (data) => {
-                    if (!user) {
-                      toast.error(t('account.signIn'));
-                      return;
-                    }
-                    
-                    setLoading(true);
                     try {
-                      let imageUrl = null;
-                      
-                      // Handle Image Upload
-                      if (data.imageFile) {
-                        const formData = new FormData();
-                        formData.append('file', data.imageFile);
-                        formData.append('upload_preset', import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET);
-                        
-                        const response = await fetch(
-                          `https://api.cloudinary.com/v1_1/${import.meta.env.VITE_CLOUDINARY_CLOUD_NAME}/image/upload`,
-                          { method: 'POST', body: formData }
-                        );
-                        
-                        if (response.ok) {
-                          const result = await response.json();
-                          imageUrl = result.secure_url;
-                        }
-                      }
-
-                      const listingData: Omit<MarketListing, 'id'> = {
-                        title: data.title,
-                        category: data.category,
-                        price: Number(data.price),
-                        unit: data.unit,
-                        quantity: Number(data.quantity),
-                        location: data.location,
-                        deliveryMethod: data.deliveryMethod,
-                        description: data.description,
-                        businessName: data.businessName || user.name,
-                        phone: data.phone || user.phone,
-                        sellerId: user.uid,
-                        sellerName: user.name,
-                        sellerTier: user.tier,
-                        verified: user.tier === 'Verified Seller',
-                        imageUrl: imageUrl,
-                        status: 'active',
-                        createdAt: serverTimestamp()
-                      };
-
-                      await addDoc(collection(db, 'market_listings'), listingData);
-                      toast.success(t('market.listingAdded') || 'Listing added successfully!');
+                      await handleCreateListing(data);
                       setIsAddProductModalOpen(false);
-                    } catch (error) {
-                      console.error('Error adding listing:', error);
-                      toast.error(t('common.error') || 'An error occurred');
-                    } finally {
-                      setLoading(false);
+                      setFormStep(1);
+                    } catch (error: any) {
+                      console.error('Error creating listing:', error);
+                      alert(error.message || 'Failed to create listing.');
                     }
                   }} 
                 />
