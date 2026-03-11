@@ -358,6 +358,7 @@ export default function App() {
               setIsAddProductModalOpen={setIsAddProductModalOpen} 
               setFormStep={setFormStep} 
               setActiveTab={setActiveTab}
+              setSelectedItem={setSelectedItem}
             />
           )}
 

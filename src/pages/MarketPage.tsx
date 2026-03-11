@@ -38,7 +38,7 @@ import {
   deliveryMethods
 } from '../data/constants';
 import { db } from '../lib/firebase';
-import { collection, query, where, onSnapshot } from 'firebase/firestore';
+import { collection, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
 import { MarketListing, BuyerRequest } from '../types';
 // Real data states (placeholders for now)
 const marketPricesData: any[] = [];
@@ -63,6 +63,7 @@ interface MarketPageProps {
   setIsAddProductModalOpen: (open: boolean) => void;
   setFormStep: (step: number) => void;
   setActiveTab: (tab: any) => void;
+  setSelectedItem: (item: any) => void;
 }
 
 export const MarketPage: React.FC<MarketPageProps> = ({ 
@@ -74,7 +75,8 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   marketListings,
   setIsAddProductModalOpen, 
   setFormStep,
-  setActiveTab
+  setActiveTab,
+  setSelectedItem
 }) => {
   const [marketTab, setMarketTab] = useState<'supply' | 'demand' | 'insights'>('supply');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -125,6 +127,52 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     toast.success(t('market.reportSuccess'));
     setReportingItem(null);
     setReportReason('');
+  };
+
+  const handleMarkSold = async (listing: MarketListing) => {
+    if (!listing.id) return;
+
+    if (user?.uid !== listing.sellerId) {
+      toast.error('Only the owner can mark this listing as sold.');
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'market_listings', listing.id), {
+        status: 'sold',
+      });
+      toast.success('Listing marked as sold.');
+    } catch (error) {
+      console.error('Error marking listing as sold:', error);
+      toast.error('Failed to update listing.');
+    }
+  };
+
+  const handleHideListing = async (listing: MarketListing) => {
+    if (!listing.id) return;
+
+    if (user?.uid !== listing.sellerId) {
+      toast.error('Only the owner can hide this listing.');
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'market_listings', listing.id), {
+        status: 'hidden',
+      });
+      toast.success('Listing hidden.');
+    } catch (error) {
+      console.error('Error hiding listing:', error);
+      toast.error('Failed to update listing.');
+    }
+  };
+
+  const handleOpenListingDetails = (listing: MarketListing) => {
+    setSelectedItem({
+      ...listing,
+      image: listing.imageUrl,
+      type: 'market_listing',
+    });
   };
 
   const verifiedSellers = Array.from(
@@ -362,7 +410,15 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                       item.status === 'active'
                     )
                     .map((item) => (
-                      <ListingCard key={item.id} listing={item} t={t} onReport={setReportingItem} />
+                      <ListingCard
+                        key={item.id}
+                        listing={item}
+                        t={t}
+                        onReport={setReportingItem}
+                        onMarkSold={handleMarkSold}
+                        onHide={handleHideListing}
+                        onOpenDetails={handleOpenListingDetails}
+                      />
                     ))
                   }
                   {marketListings.filter((item) =>
