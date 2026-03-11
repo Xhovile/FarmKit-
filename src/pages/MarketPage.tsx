@@ -38,7 +38,7 @@ import {
   deliveryMethods
 } from '../data/constants';
 import { db } from '../lib/firebase';
-import { collection, query, where, orderBy, onSnapshot } from 'firebase/firestore';
+import { collection, query, where, onSnapshot } from 'firebase/firestore';
 import { MarketListing, BuyerRequest } from '../types';
 // Real data states (placeholders for now)
 const marketPricesData: any[] = [];
@@ -81,7 +81,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [reportingItem, setReportingItem] = useState<any>(null);
   const [reportReason, setReportReason] = useState('');
   const [requests, setRequests] = useState<BuyerRequest[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [isRequestsLoading, setIsRequestsLoading] = useState(true);
 
   useEffect(() => {
     const requestsQuery = query(
@@ -103,10 +103,10 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       });
       
       setRequests(newRequests);
-      setLoading(false);
+      setIsRequestsLoading(false);
     }, (error) => {
       console.error("Requests snapshot error:", error);
-      setLoading(false);
+      setIsRequestsLoading(false);
     });
 
     return () => {
@@ -309,7 +309,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                     setIsAddProductModalOpen(true);
                     setFormStep(marketTab === 'supply' ? 1 : 10); // 10 is start of buyer request form
                   } else {
-                    alert(t('account.signIn'));
+                    toast.error(t('account.signIn'));
                   }
                 }}
                 className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 ${marketTab === 'supply' ? 'bg-primary text-white shadow-primary/10' : 'bg-indigo-600 text-white shadow-indigo-500/10'}`}

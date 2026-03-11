@@ -104,11 +104,25 @@ export const ListingCard: React.FC<{ listing: MarketListing; t: any; onReport?: 
         <h3 className="text-lg font-bold mb-2 group-hover:text-primary transition-colors">{listing.title}</h3>
         
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${listing.status === 'active' ? 'bg-emerald-50 text-emerald-600' : 'bg-amber-50 text-amber-600'}`}>
-            <Package className="w-3 h-3" /> {listing.status === 'active' ? t('common.inStock') || 'In Stock' : listing.status} ({listing.quantity})
+          <span
+            className={`px-2 py-1 rounded-lg text-[10px] font-bold uppercase tracking-wider flex items-center gap-1 ${
+              listing.status === 'active'
+                ? 'bg-emerald-50 text-emerald-600'
+                : 'bg-amber-50 text-amber-600'
+            }`}
+          >
+            <Package className="w-3 h-3" />
+            {listing.status === 'active' ? t('common.inStock') || 'In Stock' : listing.status} ({listing.quantity})
           </span>
+
+          <span className="px-2 py-1 bg-blue-50 dark:bg-blue-900/30 rounded-lg text-[10px] font-bold text-blue-600 dark:text-blue-300 uppercase tracking-wider flex items-center gap-1">
+            <Tag className="w-3 h-3" />
+            {listing.category.replace(/_/g, ' ')}
+          </span>
+
           <span className="px-2 py-1 bg-gray-50 dark:bg-gray-700 rounded-lg text-[10px] font-bold text-gray-500 uppercase tracking-wider flex items-center gap-1">
-            <Truck className="w-3 h-3" /> {listing.deliveryMethod.replace('_', ' ')}
+            <Truck className="w-3 h-3" />
+            {listing.deliveryMethod.replace(/_/g, ' ')}
           </span>
         </div>
 
