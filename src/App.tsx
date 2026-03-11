@@ -7,8 +7,18 @@ import { auth, db } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
 import { Toaster } from 'react-hot-toast';
-import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { BuyerRequest } from './types';
+import {
+  addDoc,
+  collection,
+  doc,
+  getDoc,
+  onSnapshot,
+  orderBy,
+  query,
+  serverTimestamp,
+  setDoc,
+} from 'firebase/firestore';
+import { BuyerRequest, MarketListing } from './types';
 import toast from 'react-hot-toast';
 
 // New Imports
@@ -55,6 +65,7 @@ export default function App() {
   const [formStep, setFormStep] = useState(1);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [loading, setLoading] = useState(false);
+  const [marketListings, setMarketListings] = useState<MarketListing[]>([]);
   const [user, setUser] = useState<{ 
     uid: string;
     email: string;
@@ -148,6 +159,34 @@ export default function App() {
       window.removeEventListener('offline', handleOffline);
       unsubscribe();
     };
+  }, []);
+
+  useEffect(() => {
+    const listingsQuery = query(
+      collection(db, 'market_listings'),
+      orderBy('createdAt', 'desc')
+    );
+
+    const unsubscribeListings = onSnapshot(
+      listingsQuery,
+      (snapshot) => {
+        const listings: MarketListing[] = snapshot.docs.map((docSnap) => {
+          const data = docSnap.data() as Omit<MarketListing, 'id'>;
+          return {
+            id: docSnap.id,
+            ...data,
+          };
+        });
+
+        setMarketListings(listings);
+      },
+      (error) => {
+        console.error('Error fetching market listings:', error);
+        toast.error('Failed to load market listings.');
+      }
+    );
+
+    return () => unsubscribeListings();
   }, []);
 
   const t_old = (en: string, ny: string) => lang === 'en' ? en : ny;
@@ -398,6 +437,7 @@ export default function App() {
                       await addDoc(collection(db, 'buyer_requests'), requestData);
                       toast.success(t('market.requestPosted') || 'Request posted successfully!');
                       setIsAddProductModalOpen(false);
+                      setFormStep(1);
                     } catch (error) {
                       console.error('Error adding request:', error);
                       toast.error(t('common.error') || 'An error occurred');
