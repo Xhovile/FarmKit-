@@ -8,7 +8,7 @@ import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
 import { Toaster } from 'react-hot-toast';
 import { addDoc, collection, doc, getDoc, serverTimestamp, setDoc } from 'firebase/firestore';
-import { MarketListing, BuyerRequest } from './types';
+import { BuyerRequest } from './types';
 import toast from 'react-hot-toast';
 
 // New Imports
@@ -176,26 +176,34 @@ export default function App() {
     if (!Number.isFinite(price) || price <= 0) throw new Error('Price must be greater than 0.');
     if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Quantity must be greater than 0.');
 
-    await addDoc(collection(db, 'market_listings'), {
-      title: cleanedTitle,
-      category: cleanedCategory,
-      price,
-      unit: cleanedUnit,
-      quantity,
-      location: cleanedLocation,
-      deliveryMethod: data.deliveryMethod,
-      description: cleanedDescription,
-      businessName: cleanedBusinessName || user.name || 'Seller',
-      phone: cleanedPhone,
-      sellerId: user.uid,
-      sellerName: user.name || 'Seller',
-      sellerTier: user.tier || 'Free',
-      verified: user.tier === 'Verified Seller',
-      imageUrl: null,
-      status: 'active',
-      createdAt: serverTimestamp(),
-      updatedAt: serverTimestamp(),
-    });
+    setLoading(true);
+
+    try {
+      await addDoc(collection(db, 'market_listings'), {
+        title: cleanedTitle,
+        category: cleanedCategory,
+        price,
+        unit: cleanedUnit,
+        quantity,
+        location: cleanedLocation,
+        deliveryMethod: data.deliveryMethod,
+        description: cleanedDescription,
+        businessName: cleanedBusinessName || user.name || 'Seller',
+        phone: cleanedPhone,
+        sellerId: user.uid,
+        sellerName: user.name || 'Seller',
+        sellerTier: user.tier || 'Free',
+        verified: user.tier === 'Verified Seller',
+        imageUrl: null,
+        status: 'active',
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Listing created successfully!');
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -320,7 +328,10 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            onClick={() => setIsAddProductModalOpen(false)}
+            onClick={() => {
+              setIsAddProductModalOpen(false);
+              setFormStep(1);
+            }}
             className="absolute inset-0 bg-black/60 backdrop-blur-sm"
           />
           <motion.div 
@@ -335,15 +346,19 @@ export default function App() {
                   user={user} 
                   step={formStep} 
                   setStep={setFormStep} 
-                  onClose={() => setIsAddProductModalOpen(false)} 
+                  onClose={() => {
+                    setIsAddProductModalOpen(false);
+                    setFormStep(1);
+                  }} 
                   onSubmit={async (data) => {
+                    if (loading) return;
                     try {
                       await handleCreateListing(data);
                       setIsAddProductModalOpen(false);
                       setFormStep(1);
                     } catch (error: any) {
                       console.error('Error creating listing:', error);
-                      alert(error.message || 'Failed to create listing.');
+                      toast.error(error.message || 'Failed to create listing.');
                     }
                   }} 
                 />
@@ -353,7 +368,10 @@ export default function App() {
                   user={user} 
                   step={formStep} 
                   setStep={setFormStep} 
-                  onClose={() => setIsAddProductModalOpen(false)} 
+                  onClose={() => {
+                    setIsAddProductModalOpen(false);
+                    setFormStep(1);
+                  }} 
                   onSubmit={async (data) => {
                     if (!user) {
                       toast.error(t('account.signIn'));
