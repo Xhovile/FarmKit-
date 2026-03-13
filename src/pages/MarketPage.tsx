@@ -153,11 +153,6 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const handleHideListing = async (listing: MarketListing) => {
     if (!listing.id) return;
 
-    if (user?.uid !== listing.sellerId) {
-      toast.error('Only the owner can hide this listing.');
-      return;
-    }
-
     try {
       await updateDoc(doc(db, 'market_listings', listing.id), {
         status: 'hidden',
