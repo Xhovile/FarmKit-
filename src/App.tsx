@@ -17,6 +17,7 @@ import {
   query,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from 'firebase/firestore';
 import { BuyerRequest, MarketListing } from './types';
 import toast from 'react-hot-toast';
@@ -86,6 +87,8 @@ export default function App() {
   const [searchQuery, setSearchQuery] = useState('');
   const [marketSearchQuery, setMarketSearchQuery] = useState('');
   const [isAddProductModalOpen, setIsAddProductModalOpen] = useState(false);
+  const [editingListing, setEditingListing] = useState<MarketListing | null>(null);
+  const [isSubmittingListing, setIsSubmittingListing] = useState(false);
   const [formStep, setFormStep] = useState(1);
   const [isOnline, setIsOnline] = useState(navigator.onLine);
   const [loading, setLoading] = useState(false);
@@ -248,6 +251,43 @@ export default function App() {
     return result.secure_url;
   };
 
+  const mapListingToFormData = (listing: MarketListing): ListingFormData => ({
+    title: listing.title || '',
+    category: listing.category || '',
+    price: String(listing.price ?? ''),
+    unit: listing.unit || '',
+    quantity: String(listing.quantity ?? ''),
+    location: listing.location || '',
+    deliveryMethod: listing.deliveryMethod || 'pickup',
+    description: listing.description || '',
+    businessName: listing.businessName || '',
+    phone: listing.phone || '',
+    imageFile: null,
+    imagePreview: listing.imageUrl || '',
+
+    condition: listing.condition || '',
+    brand: listing.brand || '',
+    model: listing.model || '',
+    capacity: listing.capacity || '',
+    fuelType: listing.fuelType || '',
+
+    seedType: listing.seedType || '',
+    variety: listing.variety || '',
+    packSize: listing.packSize || '',
+    season: listing.season || '',
+    germinationRate: listing.germinationRate || '',
+
+    breed: listing.breed || '',
+    age: listing.age || '',
+    sex: listing.sex || '',
+    healthStatus: listing.healthStatus || '',
+    vaccinationStatus: listing.vaccinationStatus || '',
+
+    inputType: listing.inputType || '',
+    usage: listing.usage || '',
+    expiryDate: listing.expiryDate || '',
+  });
+
   const handleCreateListing = async (data: ListingFormData) => {
     if (!user) {
       throw new Error('You must be signed in to create a listing.');
@@ -357,6 +397,107 @@ export default function App() {
     }
   };
 
+  const handleUpdateListing = async (listingId: string, data: ListingFormData) => {
+    if (!user) {
+      throw new Error('You must be signed in to edit a listing.');
+    }
+
+    const cleanedTitle = data.title.trim();
+    const cleanedCategory = data.category.trim();
+    const cleanedUnit = data.unit.trim();
+    const cleanedLocation = data.location.trim();
+    const cleanedDescription = data.description.trim();
+    const cleanedBusinessName = data.businessName.trim();
+    const cleanedPhone = data.phone.trim();
+
+    const cleanOptional = (value?: string) => value?.trim() || '';
+
+    const condition = cleanOptional(data.condition);
+    const brand = cleanOptional(data.brand);
+    const model = cleanOptional(data.model);
+    const capacity = cleanOptional(data.capacity);
+    const fuelType = cleanOptional(data.fuelType);
+
+    const seedType = cleanOptional(data.seedType);
+    const variety = cleanOptional(data.variety);
+    const packSize = cleanOptional(data.packSize);
+    const season = cleanOptional(data.season);
+    const germinationRate = cleanOptional(data.germinationRate);
+
+    const breed = cleanOptional(data.breed);
+    const age = cleanOptional(data.age);
+    const sex = cleanOptional(data.sex);
+    const healthStatus = cleanOptional(data.healthStatus);
+    const vaccinationStatus = cleanOptional(data.vaccinationStatus);
+
+    const inputType = cleanOptional(data.inputType);
+    const usage = cleanOptional(data.usage);
+    const expiryDate = cleanOptional(data.expiryDate);
+
+    const price = Number(data.price);
+    const quantity = Number(data.quantity);
+
+    if (!cleanedTitle) throw new Error('Product name is required.');
+    if (!cleanedCategory) throw new Error('Category is required.');
+    if (!cleanedUnit) throw new Error('Unit is required.');
+    if (!cleanedLocation) throw new Error('Location is required.');
+    if (!cleanedPhone) throw new Error('Phone number is required.');
+    if (!Number.isFinite(price) || price <= 0) throw new Error('Price must be greater than 0.');
+    if (!Number.isFinite(quantity) || quantity <= 0) throw new Error('Quantity must be greater than 0.');
+
+    setIsSubmittingListing(true);
+
+    try {
+      let imageUrl = editingListing?.imageUrl || null;
+
+      if (data.imageFile) {
+        imageUrl = await uploadImageToCloudinary(data.imageFile);
+      }
+
+      await updateDoc(doc(db, 'market_listings', listingId), {
+        title: cleanedTitle,
+        category: cleanedCategory,
+        price,
+        unit: cleanedUnit,
+        quantity,
+        location: cleanedLocation,
+        deliveryMethod: data.deliveryMethod,
+        description: cleanedDescription,
+        businessName: cleanedBusinessName || user.name || 'Seller',
+        phone: cleanedPhone,
+        imageUrl,
+
+        condition,
+        brand,
+        model,
+        capacity,
+        fuelType,
+
+        seedType,
+        variety,
+        packSize,
+        season,
+        germinationRate,
+
+        breed,
+        age,
+        sex,
+        healthStatus,
+        vaccinationStatus,
+
+        inputType,
+        usage,
+        expiryDate,
+
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Listing updated successfully!');
+    } finally {
+      setIsSubmittingListing(false);
+    }
+  };
+
   return (
     <div className="bg-neutral-50 dark:bg-dark-900 text-gray-900 dark:text-gray-100 min-h-screen font-sans">
       <Toaster position="top-center" />
@@ -430,6 +571,7 @@ export default function App() {
               setFormStep={setFormStep} 
               setActiveTab={setActiveTab}
               setSelectedItem={setSelectedItem}
+              setEditingListing={setEditingListing}
             />
           )}
 
@@ -490,28 +632,36 @@ export default function App() {
           <motion.div 
             initial={{ opacity: 0, scale: 0.9, y: 20 }}
             animate={{ opacity: 1, scale: 1, y: 0 }}
-            className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl overflow-visible"
+            className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl overflow-visible max-h-[90vh] flex flex-col"
           >
-            <div className="p-8 md:p-10">
+            <div className="p-8 md:p-10 overflow-y-auto max-h-[90vh]">
               {formStep < 10 ? (
                 <AddListingForm 
                   t={t} 
                   user={user} 
                   step={formStep} 
                   setStep={setFormStep} 
+                  initialData={editingListing ? mapListingToFormData(editingListing) : undefined}
+                  isEditMode={!!editingListing}
                   onClose={() => {
                     setIsAddProductModalOpen(false);
                     setFormStep(1);
+                    setEditingListing(null);
                   }} 
                   onSubmit={async (data) => {
-                    if (loading) return;
+                    if (loading || isSubmittingListing) return;
                     try {
-                      await handleCreateListing(data);
+                      if (editingListing?.id) {
+                        await handleUpdateListing(editingListing.id, data);
+                      } else {
+                        await handleCreateListing(data);
+                      }
                       setIsAddProductModalOpen(false);
                       setFormStep(1);
+                      setEditingListing(null);
                     } catch (error: any) {
-                      console.error('Error creating listing:', error);
-                      toast.error(error.message || 'Failed to create listing.');
+                      console.error('Error saving listing:', error);
+                      toast.error(error.message || 'Failed to save listing.');
                     }
                   }} 
                 />

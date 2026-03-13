@@ -88,48 +88,105 @@ const getSpecFieldsForCategory = (category: string): SpecField[] => {
   }
 };
 
-export const AddListingForm: React.FC<FormProps & { step: number; setStep: (s: number) => void }> = ({ t, onClose, onSubmit, user, step, setStep }) => {
+interface AddListingFormProps extends FormProps {
+  step: number;
+  setStep: (s: number) => void;
+  initialData?: any;
+  isEditMode?: boolean;
+}
+
+export const AddListingForm: React.FC<AddListingFormProps> = ({
+  t,
+  onClose,
+  onSubmit,
+  user,
+  step,
+  setStep,
+  initialData,
+  isEditMode
+}) => {
   const [formData, setFormData] = useState({
-    title: '',
-    category: '',
-    price: '',
-    unit: '',
-    quantity: '',
-    location: user?.location || '',
-    deliveryMethod: 'pickup',
-    description: '',
-    businessName: user?.businessName || user?.name || '',
-    phone: user?.phone || '',
+    title: initialData?.title || '',
+    category: initialData?.category || '',
+    price: initialData?.price || '',
+    unit: initialData?.unit || '',
+    quantity: initialData?.quantity || '',
+    location: initialData?.location || user?.location || '',
+    deliveryMethod: initialData?.deliveryMethod || 'pickup',
+    description: initialData?.description || '',
+    businessName: initialData?.businessName || user?.businessName || user?.name || '',
+    phone: initialData?.phone || user?.phone || '',
     imageFile: null as File | null,
-    imagePreview: '',
+    imagePreview: initialData?.imagePreview || '',
 
-    condition: '',
-    brand: '',
-    model: '',
-    capacity: '',
-    fuelType: '',
+    condition: initialData?.condition || '',
+    brand: initialData?.brand || '',
+    model: initialData?.model || '',
+    capacity: initialData?.capacity || '',
+    fuelType: initialData?.fuelType || '',
 
-    seedType: '',
-    variety: '',
-    packSize: '',
-    season: '',
-    germinationRate: '',
+    seedType: initialData?.seedType || '',
+    variety: initialData?.variety || '',
+    packSize: initialData?.packSize || '',
+    season: initialData?.season || '',
+    germinationRate: initialData?.germinationRate || '',
 
-    breed: '',
-    age: '',
-    sex: '',
-    healthStatus: '',
-    vaccinationStatus: '',
+    breed: initialData?.breed || '',
+    age: initialData?.age || '',
+    sex: initialData?.sex || '',
+    healthStatus: initialData?.healthStatus || '',
+    vaccinationStatus: initialData?.vaccinationStatus || '',
 
-    inputType: '',
-    usage: '',
-    expiryDate: '',
+    inputType: initialData?.inputType || '',
+    usage: initialData?.usage || '',
+    expiryDate: initialData?.expiryDate || '',
   });
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
 
   const specFields = getSpecFieldsForCategory(formData.category);
+
+  useEffect(() => {
+    if (!initialData) return;
+
+    setFormData({
+      title: initialData.title || '',
+      category: initialData.category || '',
+      price: initialData.price || '',
+      unit: initialData.unit || '',
+      quantity: initialData.quantity || '',
+      location: initialData.location || user?.location || '',
+      deliveryMethod: initialData.deliveryMethod || 'pickup',
+      description: initialData.description || '',
+      businessName: initialData.businessName || user?.businessName || user?.name || '',
+      phone: initialData.phone || user?.phone || '',
+      imageFile: null,
+      imagePreview: initialData.imagePreview || '',
+
+      condition: initialData.condition || '',
+      brand: initialData.brand || '',
+      model: initialData.model || '',
+      capacity: initialData.capacity || '',
+      fuelType: initialData.fuelType || '',
+
+      seedType: initialData.seedType || '',
+      variety: initialData.variety || '',
+      packSize: initialData.packSize || '',
+      season: initialData.season || '',
+      germinationRate: initialData.germinationRate || '',
+
+      breed: initialData.breed || '',
+      age: initialData.age || '',
+      sex: initialData.sex || '',
+      healthStatus: initialData.healthStatus || '',
+      vaccinationStatus: initialData.vaccinationStatus || '',
+
+      inputType: initialData.inputType || '',
+      usage: initialData.usage || '',
+      expiryDate: initialData.expiryDate || '',
+    });
+  }, [initialData, user]);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -169,7 +226,9 @@ export const AddListingForm: React.FC<FormProps & { step: number; setStep: (s: n
     <div className="space-y-6">
       <div className="flex justify-between items-center mb-8">
         <div>
-          <h2 className="text-2xl font-black text-gray-900 dark:text-white">{t('forms.addListing')}</h2>
+          <h2 className="text-2xl font-black text-gray-900 dark:text-white">
+            {isEditMode ? 'Edit Listing' : t('forms.addListing')}
+          </h2>
           <p className="text-sm text-gray-500">{t('common.step')} {step} {t('common.of')} 3</p>
         </div>
         <button onClick={onClose} className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all">
@@ -405,7 +464,7 @@ export const AddListingForm: React.FC<FormProps & { step: number; setStep: (s: n
               className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2"
             >
               <CheckCircle2 className="w-5 h-5" />
-              {t('forms.publishListing')}
+              {isEditMode ? 'Save Changes' : t('forms.publishListing')}
             </button>
           </div>
         </div>

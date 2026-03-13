@@ -64,6 +64,7 @@ interface MarketPageProps {
   setFormStep: (step: number) => void;
   setActiveTab: (tab: any) => void;
   setSelectedItem: (item: any) => void;
+  setEditingListing: (listing: MarketListing | null) => void;
 }
 
 export const MarketPage: React.FC<MarketPageProps> = ({ 
@@ -76,7 +77,8 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   setIsAddProductModalOpen, 
   setFormStep,
   setActiveTab,
-  setSelectedItem
+  setSelectedItem,
+  setEditingListing
 }) => {
   const [marketTab, setMarketTab] = useState<'supply' | 'demand' | 'insights'>('supply');
   const [activeCategory, setActiveCategory] = useState('all');
@@ -354,6 +356,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
               <button 
                 onClick={() => {
                   if (user) {
+                    setEditingListing(null);
                     setIsAddProductModalOpen(true);
                     setFormStep(marketTab === 'supply' ? 1 : 10); // 10 is start of buyer request form
                   } else {
@@ -385,6 +388,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                   <button 
                     onClick={() => {
                       if (user) {
+                        setEditingListing(null);
                         setIsAddProductModalOpen(true);
                         setFormStep(1);
                       } else {
@@ -419,8 +423,9 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         onMarkSold={handleMarkSold}
                         onHide={handleHideListing}
                         onEdit={(listing) => {
-                          console.log('Edit listing:', listing);
-                          toast('Edit listing flow coming next.');
+                          setEditingListing(listing);
+                          setFormStep(1);
+                          setIsAddProductModalOpen(true);
                         }}
                         onDelete={(listing) => {
                           console.log('Delete listing:', listing);
