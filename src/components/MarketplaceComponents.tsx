@@ -166,7 +166,14 @@ export const ListingCard: React.FC<{
 
   return (
     <div className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-visible shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_24px_70px_rgba(0,0,0,0.10)] transition-all duration-300 relative ring-1 ring-black/[0.02] dark:ring-white/[0.03]">
-      <div className="relative h-64 overflow-hidden rounded-t-[30px] bg-gray-100 dark:bg-gray-800">
+      <button
+        type="button"
+        onClick={() => {
+          setMenuOpen(false);
+          onOpenDetails?.(listing);
+        }}
+        className="relative h-64 w-full overflow-hidden rounded-t-[30px] bg-gray-100 dark:bg-gray-800 text-left block cursor-pointer"
+      >
         <img
           src={listing.imageUrl || defaultImage}
           alt={listing.title}
@@ -180,7 +187,10 @@ export const ListingCard: React.FC<{
           <div className="relative">
             <button
               type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((prev) => !prev);
+              }}
               className="h-10 w-10 rounded-full bg-white/90 dark:bg-black/60 backdrop-blur-md border border-white/40 dark:border-white/10 flex items-center justify-center text-gray-700 dark:text-white shadow-lg"
             >
               <MoreVertical className="w-4 h-4" />
@@ -190,7 +200,10 @@ export const ListingCard: React.FC<{
               <div className="absolute right-0 mt-2 w-48 min-w-[192px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-30">
                 <button
                   type="button"
-                  onClick={handleShare}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleShare();
+                  }}
                   className="w-full px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"
                 >
                   Share
@@ -198,7 +211,8 @@ export const ListingCard: React.FC<{
 
                 <button
                   type="button"
-                  onClick={() => {
+                  onClick={(e) => {
+                    e.stopPropagation();
                     setMenuOpen(false);
                     onOpenDetails?.(listing);
                   }}
@@ -211,7 +225,8 @@ export const ListingCard: React.FC<{
                   <>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onEdit?.(listing);
                         setMenuOpen(false);
                       }}
@@ -227,7 +242,8 @@ export const ListingCard: React.FC<{
 
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onMarkSold?.(listing);
                         setMenuOpen(false);
                       }}
@@ -243,7 +259,8 @@ export const ListingCard: React.FC<{
 
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onDelete?.(listing);
                         setMenuOpen(false);
                       }}
@@ -261,7 +278,8 @@ export const ListingCard: React.FC<{
                   <>
                     <button
                       type="button"
-                      onClick={() => {
+                      onClick={(e) => {
+                        e.stopPropagation();
                         onHide?.(listing);
                         setMenuOpen(false);
                       }}
@@ -278,7 +296,8 @@ export const ListingCard: React.FC<{
                     {onReport && (
                       <button
                         type="button"
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           onReport(listing);
                           setMenuOpen(false);
                         }}
@@ -309,7 +328,7 @@ export const ListingCard: React.FC<{
             {statusLabel}
           </div>
         </div>
-      </div>
+      </button>
 
       <div className="p-6 sm:p-7 bg-white dark:bg-gray-900 rounded-b-[32px]">
         <div className="flex items-start justify-between gap-3 mb-3">
