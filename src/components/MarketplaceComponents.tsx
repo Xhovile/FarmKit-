@@ -165,7 +165,7 @@ export const ListingCard: React.FC<{
   };
 
   return (
-    <div className="group bg-white dark:bg-gray-900 rounded-[30px] border border-gray-200/80 dark:border-gray-800 overflow-visible hover:shadow-[0_20px_60px_rgba(0,0,0,0.08)] transition-all duration-300 relative">
+    <div className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-visible shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_24px_70px_rgba(0,0,0,0.10)] transition-all duration-300 relative ring-1 ring-black/[0.02] dark:ring-white/[0.03]">
       <div className="relative h-64 overflow-hidden rounded-t-[30px] bg-gray-100 dark:bg-gray-800">
         <img
           src={listing.imageUrl || defaultImage}
@@ -311,15 +311,15 @@ export const ListingCard: React.FC<{
         </div>
       </div>
 
-      <div className="p-6">
+      <div className="p-6 sm:p-7 bg-white dark:bg-gray-900 rounded-b-[32px]">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <h3 className="text-[1.05rem] font-bold text-gray-950 dark:text-white leading-snug line-clamp-1">
+            <h3 className="text-[1.06rem] sm:text-[1.08rem] font-semibold text-black dark:text-white leading-snug line-clamp-1">
               {listing.title}
             </h3>
 
             <div className="mt-1 flex items-center gap-2 flex-wrap">
-              <p className="text-sm text-gray-600 dark:text-gray-300 font-medium line-clamp-1">
+              <p className="text-sm text-gray-500 dark:text-gray-400 font-medium line-clamp-1">
                 {listing.businessName}
               </p>
               {listing.verified && (
@@ -344,19 +344,19 @@ export const ListingCard: React.FC<{
           </button>
         </div>
 
-        <div className="flex items-center gap-2 text-sm text-gray-500 dark:text-gray-400 mb-4">
+        <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 mb-4">
           <MapPin className="w-4 h-4" />
           <span className="line-clamp-1">{listing.location}</span>
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 px-3 py-1 text-[11px] font-medium text-gray-700 dark:text-gray-200">
+          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1 text-[11px] font-medium text-gray-700 dark:text-gray-200">
             <Tag className="w-3 h-3" />
             {getCategoryLabel(listing.category, t)}
           </span>
         </div>
 
-        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-1 min-h-[20px] mb-5">
+        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 min-h-[42px] mb-6">
           {listing.description}
         </p>
 
@@ -367,7 +367,7 @@ export const ListingCard: React.FC<{
               setMenuOpen(false);
               onOpenDetails?.(listing);
             }}
-            className="h-12 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-900 dark:text-white text-sm font-semibold hover:bg-gray-50 dark:hover:bg-gray-800 transition-all"
+            className="h-12 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
           >
             View details
           </button>
@@ -376,7 +376,7 @@ export const ListingCard: React.FC<{
             href={`https://wa.me/${listing.phone}?text=Hello ${listing.sellerName}, I am interested in your ${listing.title} on FarmKit.`}
             target="_blank"
             rel="noopener noreferrer"
-            className="h-12 rounded-2xl bg-black text-white dark:bg-white dark:text-black text-sm font-semibold flex items-center justify-center gap-2 hover:opacity-90 transition-all"
+            className="h-12 rounded-2xl bg-black text-white dark:bg-white dark:text-black text-sm font-medium flex items-center justify-center gap-2 hover:opacity-90 transition-all shadow-sm"
           >
             <MessageCircle className="w-4 h-4" />
             Contact

@@ -38,7 +38,7 @@ import {
   deliveryMethods
 } from '../data/constants';
 import { db } from '../lib/firebase';
-import { collection, deleteDoc, doc, onSnapshot, query, updateDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, onSnapshot, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { MarketListing, BuyerRequest } from '../types';
 // Real data states (placeholders for now)
 const marketPricesData: any[] = [];
@@ -86,6 +86,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [reportReason, setReportReason] = useState('');
   const [requests, setRequests] = useState<BuyerRequest[]>([]);
   const [isRequestsLoading, setIsRequestsLoading] = useState(true);
+  const [hiddenListingIds, setHiddenListingIds] = useState<string[]>([]);
 
   useEffect(() => {
     const requestsQuery = query(
@@ -117,6 +118,24 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       unsubscribeRequests();
     };
   }, []);
+
+  useEffect(() => {
+    if (!user?.uid) {
+      setHiddenListingIds([]);
+      return;
+    }
+
+    const hiddenListingsRef = collection(db, 'users', user.uid, 'hidden_listings');
+
+    const unsubscribeHidden = onSnapshot(hiddenListingsRef, (snapshot) => {
+      const ids = snapshot.docs.map((docSnap) => docSnap.id);
+      setHiddenListingIds(ids);
+    }, (error) => {
+      console.error('Hidden listings snapshot error:', error);
+    });
+
+    return () => unsubscribeHidden();
+  }, [user?.uid]);
 
   const isPremium = user?.tier === 'Premium' || user?.tier === 'Verified Seller';
   const onUpgrade = () => setActiveTab('account');
@@ -153,14 +172,22 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const handleHideListing = async (listing: MarketListing) => {
     if (!listing.id) return;
 
+    if (!user?.uid) {
+      toast.error('Please sign in first.');
+      return;
+    }
+
     try {
-      await updateDoc(doc(db, 'market_listings', listing.id), {
-        status: 'hidden',
+      await setDoc(doc(db, 'users', user.uid, 'hidden_listings', listing.id), {
+        listingId: listing.id,
+        sellerId: listing.sellerId,
+        hiddenAt: serverTimestamp(),
       });
-      toast.success('Listing hidden.');
+
+      toast.success('Listing hidden from your feed.');
     } catch (error) {
       console.error('Error hiding listing:', error);
-      toast.error('Failed to update listing.');
+      toast.error('Failed to hide listing.');
     }
   };
 
@@ -434,7 +461,8 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                         item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
                       ) &&
-                      item.status !== 'hidden'
+                      item.status !== 'sold' &&
+                      !hiddenListingIds.includes(item.id || '')
                     )
                     .map((item) => (
                       <ListingCard
@@ -463,7 +491,8 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                       item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                       item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
                     ) &&
-                    item.status !== 'hidden'
+                    item.status !== 'sold' &&
+                    !hiddenListingIds.includes(item.id || '')
                   ).length === 0 && (
                     <div className="col-span-full bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">
                       <h3 className="text-lg font-bold mb-2">{t('market.noListings') || 'No listings yet'}</h3>
