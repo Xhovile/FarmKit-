@@ -127,34 +127,20 @@ export const ListingCard: React.FC<{
           </span>
           <SellerBadge verified={listing.verified} t={t} />
         </div>
-
-        <div className="absolute bottom-4 left-4">
-          <span
-            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-              listing.status === 'active'
-                ? 'bg-emerald-50 text-emerald-600'
-                : listing.status === 'sold'
-                ? 'bg-amber-50 text-amber-600'
-                : 'bg-gray-100 text-gray-500'
-            }`}
-          >
-            {statusLabel}
-          </span>
-        </div>
       </div>
 
-      <div className="absolute top-4 right-4">
-          <div className="relative">
-            <button
-              type="button"
-              onClick={() => setMenuOpen((prev) => !prev)}
-              className="p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-full text-gray-500 hover:text-gray-900 dark:hover:text-white shadow-lg"
-            >
-              <MoreVertical className="w-4 h-4" />
-            </button>
+      <div className="absolute top-4 right-4 z-30">
+        <div className="relative">
+          <button
+            type="button"
+            onClick={() => setMenuOpen((prev) => !prev)}
+            className="p-2 bg-white/95 dark:bg-gray-900/95 backdrop-blur-sm rounded-full text-gray-500 hover:text-gray-900 dark:hover:text-white shadow-lg"
+          >
+            <MoreVertical className="w-4 h-4" />
+          </button>
 
-            {menuOpen && (
-              <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-[100] min-w-[176px]">
+          {menuOpen && (
+            <div className="absolute right-0 mt-2 w-44 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl overflow-hidden z-[100] min-w-[176px]">
                 <button
                   type="button"
                   onClick={handleShare}
@@ -206,6 +192,20 @@ export const ListingCard: React.FC<{
               </div>
             )}
           </div>
+        </div>
+
+        <div className="absolute bottom-4 left-4">
+          <span
+            className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+              listing.status === 'active'
+                ? 'bg-emerald-50 text-emerald-600'
+                : listing.status === 'sold'
+                ? 'bg-amber-50 text-amber-600'
+                : 'bg-gray-100 text-gray-500'
+            }`}
+          >
+            {statusLabel}
+          </span>
         </div>
 
       <div className="p-5">
