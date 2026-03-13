@@ -225,20 +225,6 @@ export const ListingCard: React.FC<{
                   <button
                     type="button"
                     onClick={() => {
-                      onHide?.(listing);
-                      setMenuOpen(false);
-                    }}
-                    disabled={!onHide}
-                    className={`w-full px-4 py-3 text-left text-sm ${
-                      onHide ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : 'opacity-50 cursor-not-allowed'
-                    }`}
-                  >
-                    Hide listing
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => {
                       onDelete?.(listing);
                       setMenuOpen(false);
                     }}
@@ -251,18 +237,34 @@ export const ListingCard: React.FC<{
                   </button>
                 </>
               ) : (
-                onReport && (
+                <>
                   <button
                     type="button"
                     onClick={() => {
-                      onReport(listing);
+                      onHide?.(listing);
                       setMenuOpen(false);
                     }}
-                    className="w-full px-4 py-3 text-left text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    disabled={!onHide}
+                    className={`w-full px-4 py-3 text-left text-sm ${
+                      onHide ? 'hover:bg-gray-50 dark:hover:bg-gray-700' : 'opacity-50 cursor-not-allowed'
+                    }`}
                   >
-                    Report listing
+                    Hide listing
                   </button>
-                )
+
+                  {onReport && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onReport(listing);
+                        setMenuOpen(false);
+                      }}
+                      className="w-full px-4 py-3 text-left text-sm text-rose-600 hover:bg-rose-50 dark:hover:bg-rose-900/20"
+                    >
+                      Report listing
+                    </button>
+                  )}
+                </>
               )}
             </div>
           )}
