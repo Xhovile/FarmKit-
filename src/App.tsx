@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { 
   Wifi
 } from 'lucide-react';
@@ -303,6 +303,10 @@ export default function App() {
     usage: listing.usage || '',
     expiryDate: listing.expiryDate || '',
   });
+
+  const editingFormData = useMemo(() => {
+    return editingListing ? mapListingToFormData(editingListing) : undefined;
+  }, [editingListing]);
 
   const handleCreateListing = async (data: ListingFormData) => {
     if (!user) {
@@ -658,7 +662,7 @@ export default function App() {
                   user={user} 
                   step={formStep} 
                   setStep={setFormStep} 
-                  initialData={editingListing ? mapListingToFormData(editingListing) : undefined}
+                  initialData={editingFormData}
                   isEditMode={!!editingListing}
                   onClose={() => {
                     setIsAddProductModalOpen(false);

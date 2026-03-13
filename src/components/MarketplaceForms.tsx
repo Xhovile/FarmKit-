@@ -147,8 +147,45 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
 
   const specFields = getSpecFieldsForCategory(formData.category);
 
+  const lastLoadedRef = useRef<string | null>(null);
+
   useEffect(() => {
     if (!initialData) return;
+
+    const currentKey = JSON.stringify({
+      title: initialData.title,
+      category: initialData.category,
+      price: initialData.price,
+      unit: initialData.unit,
+      quantity: initialData.quantity,
+      location: initialData.location,
+      deliveryMethod: initialData.deliveryMethod,
+      description: initialData.description,
+      businessName: initialData.businessName,
+      phone: initialData.phone,
+      imagePreview: initialData.imagePreview,
+      condition: initialData.condition,
+      brand: initialData.brand,
+      model: initialData.model,
+      capacity: initialData.capacity,
+      fuelType: initialData.fuelType,
+      seedType: initialData.seedType,
+      variety: initialData.variety,
+      packSize: initialData.packSize,
+      season: initialData.season,
+      germinationRate: initialData.germinationRate,
+      breed: initialData.breed,
+      age: initialData.age,
+      sex: initialData.sex,
+      healthStatus: initialData.healthStatus,
+      vaccinationStatus: initialData.vaccinationStatus,
+      inputType: initialData.inputType,
+      usage: initialData.usage,
+      expiryDate: initialData.expiryDate,
+    });
+
+    if (lastLoadedRef.current === currentKey) return;
+    lastLoadedRef.current = currentKey;
 
     setFormData({
       title: initialData.title || '',

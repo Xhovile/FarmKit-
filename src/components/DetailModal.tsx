@@ -147,8 +147,15 @@ export const DetailModal: React.FC<DetailModalProps> = ({
       } else {
         await navigator.clipboard.writeText(shareText);
       }
-    } catch (error) {
-      console.error('Share failed:', error);
+    } catch (error: any) {
+      const isCancel = 
+        error?.name === 'AbortError' || 
+        error?.message?.toLowerCase().includes('cancel') ||
+        error?.message?.toLowerCase().includes('abort');
+        
+      if (!isCancel) {
+        console.error('Share failed:', error);
+      }
     }
   };
 
@@ -223,8 +230,8 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             <div className="p-8">
               {isMarketListing ? (
                 <>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                         <Building2 className="w-4 h-4" />
                         Seller
@@ -232,7 +239,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       <p className="font-bold">{selectedItem.businessName}</p>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                         <MapPin className="w-4 h-4" />
                         Location
@@ -240,7 +247,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       <p className="font-bold">{selectedItem.location}</p>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                         <Package className="w-4 h-4" />
                         Quantity
@@ -250,7 +257,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       </p>
                     </div>
 
-                    <div className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4">
+                    <div className="rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4">
                       <div className="flex items-center gap-2 text-xs text-gray-500 mb-1">
                         <Truck className="w-4 h-4" />
                         Delivery
@@ -262,15 +269,15 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   </div>
 
                   <div className="flex flex-wrap gap-3 mb-8">
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    <span className="px-3 py-1 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200">
                       Status: {formatStatusLabel(selectedItem.status)}
                     </span>
 
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    <span className="px-3 py-1 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200">
                       Added: {createdDateLabel}
                     </span>
 
-                    <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-xs font-semibold text-gray-600 dark:text-gray-300">
+                    <span className="px-3 py-1 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200">
                       Seller tier: {selectedItem.sellerTier || 'Standard'}
                     </span>
                   </div>
@@ -288,7 +295,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       {specs.map(([label, value]) => (
                         <div
                           key={label}
-                          className="bg-gray-50 dark:bg-gray-700/40 rounded-2xl p-4 border border-gray-100 dark:border-gray-700"
+                          className="rounded-2xl p-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900"
                         >
                           <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
                             {label}

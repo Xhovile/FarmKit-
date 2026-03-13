@@ -125,7 +125,12 @@ export const ListingCard: React.FC<{
         toast.success('Copied to clipboard');
       }
     } catch (error: any) {
-      if (error?.name !== 'AbortError') {
+      const isCancel = 
+        error?.name === 'AbortError' || 
+        error?.message?.toLowerCase().includes('cancel') ||
+        error?.message?.toLowerCase().includes('abort');
+        
+      if (!isCancel) {
         console.error('Share failed:', error);
       }
     } finally {
@@ -328,23 +333,6 @@ export const ListingCard: React.FC<{
         <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed line-clamp-1 min-h-[20px] mb-5">
           {listing.description}
         </p>
-
-        <div className="flex items-center justify-between border-t border-b border-gray-100 dark:border-gray-800 py-3 mb-5 text-xs text-gray-500 dark:text-gray-400">
-          <div className="flex items-center gap-1.5">
-            <Eye className="w-4 h-4" />
-            <span>{viewsCount}</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Share2 className="w-4 h-4" />
-            <span>{sharesCount}</span>
-          </div>
-
-          <div className="flex items-center gap-1.5">
-            <Bookmark className="w-4 h-4" />
-            <span>{savesCount + (saved ? 1 : 0)}</span>
-          </div>
-        </div>
 
         <div className="grid grid-cols-2 gap-3">
           <button
