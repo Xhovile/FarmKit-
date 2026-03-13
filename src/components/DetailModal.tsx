@@ -173,6 +173,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             initial={{ scale: 0.96, y: 16 }}
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.96, y: 16 }}
+            data-farmkit-detail-modal="true"
             className="bg-white dark:bg-gray-800 w-full max-w-5xl rounded-[32px] shadow-2xl overflow-hidden max-h-[92vh] flex flex-col"
             onClick={(e) => e.stopPropagation()}
           >
@@ -217,49 +218,48 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               </div>
             </div>
 
-            <div className="relative h-64 sm:h-72 shrink-0">
-              <img
-                src={
-                  selectedItem.image ||
-                  selectedItem.imageUrl ||
-                  selectedItem.icon ||
-                  'https://picsum.photos/seed/farm/1200/800'
-                }
-                alt={selectedItem.title || selectedItem.name}
-                className="w-full h-full object-cover"
-              />
+            <div className="p-6 sm:p-8 overflow-y-auto">
+              <div className="relative h-64 sm:h-72 rounded-[28px] overflow-hidden mb-8">
+                <img
+                  src={
+                    selectedItem.image ||
+                    selectedItem.imageUrl ||
+                    selectedItem.icon ||
+                    'https://picsum.photos/seed/farm/1200/800'
+                  }
+                  alt={selectedItem.title || selectedItem.name}
+                  className="w-full h-full object-cover"
+                />
 
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent" />
 
-              <div className="absolute bottom-0 left-0 right-0 p-8">
-                <div className="flex flex-wrap gap-2 mb-3">
-                  <span className="px-3 py-1 bg-white/90 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
-                    {isMarketListing
-                      ? formatCategoryLabel(selectedItem.category)
-                      : selectedItem.category || selectedItem.type || 'Detail'}
-                  </span>
-
-                  {isMarketListing && selectedItem.verified && (
-                    <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
-                      <CheckCircle2 className="w-3 h-3" />
-                      Verified Seller
+                <div className="absolute bottom-0 left-0 right-0 p-6 sm:p-8">
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    <span className="px-3 py-1 bg-white/90 text-primary text-[10px] font-bold rounded-full uppercase tracking-wider">
+                      {isMarketListing
+                        ? formatCategoryLabel(selectedItem.category)
+                        : selectedItem.category || selectedItem.type || 'Detail'}
                     </span>
+
+                    {isMarketListing && selectedItem.verified && (
+                      <span className="px-3 py-1 bg-emerald-100 text-emerald-700 text-[10px] font-bold rounded-full uppercase tracking-wider flex items-center gap-1">
+                        <CheckCircle2 className="w-3 h-3" />
+                        Verified Seller
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-2xl sm:text-3xl font-bold text-white leading-tight">
+                    {selectedItem.title || selectedItem.name}
+                  </h3>
+
+                  {isMarketListing && (
+                    <p className="text-white/85 mt-2 text-base sm:text-lg font-semibold">
+                      MK {selectedItem.price?.toLocaleString()} / {selectedItem.unit}
+                    </p>
                   )}
                 </div>
-
-                <h3 className="text-3xl font-bold text-white leading-tight">
-                  {selectedItem.title || selectedItem.name}
-                </h3>
-
-                {isMarketListing && (
-                  <p className="text-white/85 mt-2 text-lg font-semibold">
-                    MK {selectedItem.price?.toLocaleString()} / {selectedItem.unit}
-                  </p>
-                )}
               </div>
-            </div>
-
-            <div className="p-6 sm:p-8 overflow-y-auto">
               {isMarketListing ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">

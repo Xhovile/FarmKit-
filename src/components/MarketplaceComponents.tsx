@@ -123,6 +123,22 @@ export const ListingCard: React.FC<{
     };
   }, [menuOpen]);
 
+  useEffect(() => {
+    if (!menuOpen) return;
+
+    const handleEscapeLikeClose = () => {
+      const modalOpen = document.querySelector('[data-farmkit-detail-modal="true"]');
+      if (modalOpen) {
+        setMenuOpen(false);
+      }
+    };
+
+    const observer = new MutationObserver(handleEscapeLikeClose);
+    observer.observe(document.body, { childList: true, subtree: true });
+
+    return () => observer.disconnect();
+  }, [menuOpen]);
+
   const handleShare = async () => {
     try {
       if (navigator.share) {
@@ -160,7 +176,7 @@ export const ListingCard: React.FC<{
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
 
-        <div className="absolute top-4 right-4 z-[120]" ref={menuRef}>
+        <div className="absolute top-4 right-4 z-20" ref={menuRef}>
           <div className="relative">
             <button
               type="button"
@@ -171,7 +187,7 @@ export const ListingCard: React.FC<{
             </button>
 
             {menuOpen && (
-              <div className="absolute right-0 mt-2 w-48 min-w-[192px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-[130]">
+              <div className="absolute right-0 mt-2 w-48 min-w-[192px] bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-2xl overflow-hidden z-30">
                 <button
                   type="button"
                   onClick={handleShare}
