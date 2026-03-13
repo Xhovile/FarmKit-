@@ -33,65 +33,59 @@ type SpecField = {
 };
 
 const getSpecFieldsForCategory = (category: string): SpecField[] => {
-  const value = category.toLowerCase();
+  switch (category) {
+    case 'tools':
+    case 'irrigation':
+      return [
+        { key: 'condition', label: 'Condition', placeholder: 'New / Used / Refurbished' },
+        { key: 'brand', label: 'Brand', placeholder: 'e.g. John Deere / Honda' },
+        { key: 'model', label: 'Model', placeholder: 'e.g. WB-90 / 5050D' },
+        { key: 'capacity', label: 'Power / Capacity', placeholder: 'e.g. 50HP / 120L / 80kg' },
+        { key: 'fuelType', label: 'Fuel Type', placeholder: 'Diesel / Petrol / Electric / Manual' },
+      ];
 
-  if (
-    value.includes('tractor') ||
-    value.includes('equipment') ||
-    value.includes('tools') ||
-    value.includes('machinery')
-  ) {
-    return [
-      { key: 'condition', label: 'Condition', placeholder: 'New / Used / Refurbished' },
-      { key: 'brand', label: 'Brand', placeholder: 'e.g. John Deere' },
-      { key: 'model', label: 'Model', placeholder: 'e.g. 5050D' },
-      { key: 'capacity', label: 'Power / Capacity', placeholder: 'e.g. 50HP / 120L' },
-      { key: 'fuelType', label: 'Fuel Type', placeholder: 'Diesel / Petrol / Manual' },
-    ];
+    case 'seeds':
+      return [
+        { key: 'seedType', label: 'Seed Type', placeholder: 'Hybrid / OPV / Local' },
+        { key: 'variety', label: 'Variety', placeholder: 'e.g. SC 403' },
+        { key: 'packSize', label: 'Pack Size', placeholder: 'e.g. 2kg bag' },
+        { key: 'season', label: 'Season', placeholder: 'Rainy / Winter / Summer' },
+        { key: 'germinationRate', label: 'Germination Rate', placeholder: 'e.g. 95%' },
+      ];
+
+    case 'livestock':
+    case 'fish':
+      return [
+        { key: 'breed', label: 'Breed / Type', placeholder: 'e.g. Boer / Broiler / Tilapia' },
+        { key: 'age', label: 'Age', placeholder: 'e.g. 8 months / 6 weeks' },
+        { key: 'sex', label: 'Sex', placeholder: 'Male / Female / Mixed' },
+        { key: 'healthStatus', label: 'Health Status', placeholder: 'Healthy / Under treatment' },
+        { key: 'vaccinationStatus', label: 'Vaccination', placeholder: 'Vaccinated / Not vaccinated' },
+      ];
+
+    case 'fertilizers':
+    case 'pesticides':
+    case 'vet_products':
+    case 'feed':
+      return [
+        { key: 'brand', label: 'Brand', placeholder: 'e.g. Yara / Dudu / Farm Feeds' },
+        { key: 'inputType', label: 'Input Type', placeholder: 'Fertilizer / Herbicide / Vet Product / Feed' },
+        { key: 'packSize', label: 'Pack Size', placeholder: 'e.g. 50kg / 1L / 25kg' },
+        { key: 'usage', label: 'Usage', placeholder: 'What is it used for?' },
+        { key: 'expiryDate', label: 'Expiry Date', placeholder: 'e.g. 2027-08-31' },
+      ];
+
+    case 'crops':
+    case 'animal_products':
+      return [
+        { key: 'variety', label: 'Variety / Grade', placeholder: 'e.g. Grade A / Fresh / Dry' },
+        { key: 'packSize', label: 'Packaging', placeholder: 'e.g. 50kg bags / trays / crates' },
+        { key: 'season', label: 'Harvest / Production Season', placeholder: 'e.g. 2026 main season' },
+      ];
+
+    default:
+      return [];
   }
-
-  if (value.includes('seed')) {
-    return [
-      { key: 'seedType', label: 'Seed Type', placeholder: 'Hybrid / OPV / Local' },
-      { key: 'variety', label: 'Variety', placeholder: 'e.g. SC 403' },
-      { key: 'packSize', label: 'Pack Size', placeholder: 'e.g. 2kg bag' },
-      { key: 'season', label: 'Season', placeholder: 'Rainy / Winter / Summer' },
-      { key: 'germinationRate', label: 'Germination Rate', placeholder: 'e.g. 95%' },
-    ];
-  }
-
-  if (
-    value.includes('livestock') ||
-    value.includes('animal') ||
-    value.includes('goat') ||
-    value.includes('cattle') ||
-    value.includes('chicken')
-  ) {
-    return [
-      { key: 'breed', label: 'Breed', placeholder: 'e.g. Boer / Broiler' },
-      { key: 'age', label: 'Age', placeholder: 'e.g. 8 months / 6 weeks' },
-      { key: 'sex', label: 'Sex', placeholder: 'Male / Female / Mixed' },
-      { key: 'healthStatus', label: 'Health Status', placeholder: 'Healthy / Under treatment' },
-      { key: 'vaccinationStatus', label: 'Vaccination', placeholder: 'Vaccinated / Not vaccinated' },
-    ];
-  }
-
-  if (
-    value.includes('fertilizer') ||
-    value.includes('pesticide') ||
-    value.includes('chemical') ||
-    value.includes('input')
-  ) {
-    return [
-      { key: 'brand', label: 'Brand', placeholder: 'e.g. Yara / Dudu' },
-      { key: 'inputType', label: 'Input Type', placeholder: 'Fertilizer / Herbicide / Insecticide' },
-      { key: 'packSize', label: 'Pack Size', placeholder: 'e.g. 50kg / 1L' },
-      { key: 'usage', label: 'Usage', placeholder: 'What is it used for?' },
-      { key: 'expiryDate', label: 'Expiry Date', placeholder: 'e.g. 2027-08-31' },
-    ];
-  }
-
-  return [];
 };
 
 export const AddListingForm: React.FC<FormProps & { step: number; setStep: (s: number) => void }> = ({ t, onClose, onSubmit, user, step, setStep }) => {

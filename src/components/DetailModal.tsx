@@ -43,72 +43,67 @@ const formatStatusLabel = (value?: string) => {
 const renderMarketSpecs = (item: any) => {
   const category = item.category || '';
 
-  if (
-    category.includes('tractor') ||
-    category.includes('equipment') ||
-    category.includes('tools') ||
-    category.includes('machinery')
-  ) {
-    return [
-      ['Condition', item.condition || 'Not specified'],
-      ['Brand', item.brand || 'Not specified'],
-      ['Model', item.model || 'Not specified'],
-      ['Power / Capacity', item.capacity || 'Not specified'],
-      ['Fuel Type', item.fuelType || 'Not specified'],
-    ];
-  }
+  switch (category) {
+    case 'tools':
+    case 'irrigation':
+      return [
+        ['Condition', item.condition || 'Not specified'],
+        ['Brand', item.brand || 'Not specified'],
+        ['Model', item.model || 'Not specified'],
+        ['Power / Capacity', item.capacity || 'Not specified'],
+        ['Fuel Type', item.fuelType || 'Not specified'],
+      ];
 
-  if (
-    category.includes('seed') ||
-    category.includes('seeds')
-  ) {
-    return [
-      ['Seed Type', item.seedType || 'Not specified'],
-      ['Variety', item.variety || 'Not specified'],
-      ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
-      ['Season', item.season || 'Not specified'],
-      ['Germination Rate', item.germinationRate || 'Not specified'],
-    ];
-  }
+    case 'seeds':
+      return [
+        ['Seed Type', item.seedType || 'Not specified'],
+        ['Variety', item.variety || 'Not specified'],
+        ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Season', item.season || 'Not specified'],
+        ['Germination Rate', item.germinationRate || 'Not specified'],
+      ];
 
-  if (
-    category.includes('livestock') ||
-    category.includes('animal') ||
-    category.includes('goat') ||
-    category.includes('cattle') ||
-    category.includes('chicken')
-  ) {
-    return [
-      ['Breed', item.breed || 'Not specified'],
-      ['Age', item.age || 'Not specified'],
-      ['Sex', item.sex || 'Not specified'],
-      ['Health Status', item.healthStatus || 'Not specified'],
-      ['Vaccination', item.vaccinationStatus || 'Not specified'],
-    ];
-  }
+    case 'livestock':
+    case 'fish':
+      return [
+        ['Breed / Type', item.breed || 'Not specified'],
+        ['Age', item.age || 'Not specified'],
+        ['Sex', item.sex || 'Not specified'],
+        ['Health Status', item.healthStatus || 'Not specified'],
+        ['Vaccination', item.vaccinationStatus || 'Not specified'],
+      ];
 
-  if (
-    category.includes('fertilizer') ||
-    category.includes('pesticide') ||
-    category.includes('chemical') ||
-    category.includes('input')
-  ) {
-    return [
-      ['Brand', item.brand || 'Not specified'],
-      ['Input Type', item.inputType || 'Not specified'],
-      ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
-      ['Usage', item.usage || 'Not specified'],
-      ['Expiry', item.expiryDate || 'Not specified'],
-    ];
-  }
+    case 'fertilizers':
+    case 'pesticides':
+    case 'vet_products':
+    case 'feed':
+      return [
+        ['Brand', item.brand || 'Not specified'],
+        ['Input Type', item.inputType || 'Not specified'],
+        ['Pack Size', item.packSize || `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Usage', item.usage || 'Not specified'],
+        ['Expiry', item.expiryDate || 'Not specified'],
+      ];
 
-  return [
-    ['Category', formatCategoryLabel(item.category)],
-    ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
-    ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
-    ['Seller Type', item.sellerTier || 'Standard'],
-    ['Status', item.status || 'active'],
-  ];
+    case 'crops':
+    case 'animal_products':
+      return [
+        ['Variety / Grade', item.variety || 'Not specified'],
+        ['Packaging', item.packSize || 'Not specified'],
+        ['Season', item.season || 'Not specified'],
+        ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
+      ];
+
+    default:
+      return [
+        ['Category', formatCategoryLabel(item.category)],
+        ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
+        ['Seller Type', item.sellerTier || 'Standard'],
+        ['Status', item.status || 'active'],
+      ];
+  }
 };
 
 export const DetailModal: React.FC<DetailModalProps> = ({
