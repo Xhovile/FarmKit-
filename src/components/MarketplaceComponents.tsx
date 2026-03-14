@@ -8,7 +8,6 @@ import {
   Truck, 
   User, 
   Building2, 
-  Tag, 
   ArrowRight,
   TrendingUp,
   Flag,
@@ -329,21 +328,10 @@ export const ListingCard: React.FC<{
           </div>
         </div>
 
-        <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 mb-4">
+        <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400 mb-6">
           <MapPin className="w-4 h-4" />
           <span className="line-clamp-1">{listing.location}</span>
         </div>
-
-        <div className="flex flex-wrap gap-2 mb-4">
-          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-[11px] font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-            <Tag className="w-3 h-3" />
-            {getCategoryLabel(listing.category, t)}
-          </span>
-        </div>
-
-        <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-2 min-h-[42px] mb-6">
-          {listing.description}
-        </p>
 
         <div className="grid grid-cols-2 gap-3">
           <button
@@ -623,10 +611,6 @@ export const SellerCard: React.FC<{ seller: Seller; t: any; onReport?: (seller: 
         <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
           <MapPin className="w-4 h-4 text-primary" />
           {seller.location}
-        </div>
-        <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
-          <Tag className="w-4 h-4 text-primary" />
-          {seller.type}
         </div>
       </div>
 
