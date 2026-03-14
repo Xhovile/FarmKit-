@@ -87,6 +87,11 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [requests, setRequests] = useState<BuyerRequest[]>([]);
   const [isRequestsLoading, setIsRequestsLoading] = useState(true);
   const [hiddenListingIds, setHiddenListingIds] = useState<string[]>([]);
+  const [saleListing, setSaleListing] = useState<MarketListing | null>(null);
+  const [restockListing, setRestockListing] = useState<MarketListing | null>(null);
+  const [saleAmount, setSaleAmount] = useState('');
+  const [restockAmount, setRestockAmount] = useState('');
+  const [isStockActionLoading, setIsStockActionLoading] = useState(false);
 
   useEffect(() => {
     const requestsQuery = query(
@@ -176,6 +181,87 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     } catch (error) {
       console.error('Error updating listing status:', error);
       toast.error('Failed to update listing.');
+    }
+  };
+
+  const handleRecordSale = async () => {
+    if (!saleListing?.id) return;
+
+    const amount = Number(saleAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Enter a valid sold amount.');
+      return;
+    }
+
+    const currentAvailable = saleListing.availableQuantity ?? saleListing.quantity ?? 0;
+    const currentSold = saleListing.soldQuantity ?? 0;
+
+    if (amount > currentAvailable) {
+      toast.error('Sold amount cannot be greater than available stock.');
+      return;
+    }
+
+    setIsStockActionLoading(true);
+
+    try {
+      const nextAvailableQuantity = currentAvailable - amount;
+      const nextSoldQuantity = currentSold + amount;
+
+      await updateDoc(doc(db, 'market_listings', saleListing.id), {
+        availableQuantity: nextAvailableQuantity,
+        soldQuantity: nextSoldQuantity,
+        status: nextAvailableQuantity <= 0 ? 'sold' : 'active',
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Sale recorded successfully.');
+      setSaleListing(null);
+      setSaleAmount('');
+    } catch (error) {
+      console.error('Error recording sale:', error);
+      toast.error('Failed to record sale.');
+    } finally {
+      setIsStockActionLoading(false);
+    }
+  };
+
+  const handleRestock = async () => {
+    if (!restockListing?.id) return;
+
+    const amount = Number(restockAmount);
+
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Enter a valid restock amount.');
+      return;
+    }
+
+    const currentAvailable = restockListing.availableQuantity ?? restockListing.quantity ?? 0;
+    const currentSold = restockListing.soldQuantity ?? 0;
+    const currentQuantity = restockListing.quantity ?? 0;
+
+    setIsStockActionLoading(true);
+
+    try {
+      const nextAvailableQuantity = currentAvailable + amount;
+      const nextQuantity = currentQuantity + amount;
+
+      await updateDoc(doc(db, 'market_listings', restockListing.id), {
+        quantity: nextQuantity,
+        availableQuantity: nextAvailableQuantity,
+        soldQuantity: currentSold,
+        status: 'active',
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Stock added successfully.');
+      setRestockListing(null);
+      setRestockAmount('');
+    } catch (error) {
+      console.error('Error restocking listing:', error);
+      toast.error('Failed to restock listing.');
+    } finally {
+      setIsStockActionLoading(false);
     }
   };
 
@@ -490,6 +576,14 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         }}
                         onDelete={handleDeleteListing}
                         onOpenDetails={handleOpenListingDetails}
+                        onRecordSale={(listing) => {
+                          setSaleListing(listing);
+                          setSaleAmount('');
+                        }}
+                        onRestock={(listing) => {
+                          setRestockListing(listing);
+                          setRestockAmount('');
+                        }}
                       />
                     ))
                   }
@@ -606,6 +700,148 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                   className="flex-1 py-3 bg-rose-600 text-white font-bold rounded-xl shadow-lg shadow-rose-500/20 hover:bg-rose-700 transition-all"
                 >
                   {t('market.submitReport')}
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {saleListing && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+          >
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">Record sale</h3>
+                <p className="text-sm text-gray-500 mt-1">{saleListing.title}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setSaleListing(null);
+                  setSaleAmount('');
+                }}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-2xl bg-gray-50 dark:bg-gray-700/40 p-4 border border-gray-100 dark:border-gray-700">
+                <p className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Current stock</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Available: <span className="font-bold">{saleListing.availableQuantity ?? saleListing.quantity ?? 0}</span>
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Sold: <span className="font-bold">{saleListing.soldQuantity ?? 0}</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Units sold
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={saleAmount}
+                  onChange={(e) => setSaleAmount(e.target.value)}
+                  placeholder="e.g. 20"
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setSaleListing(null);
+                    setSaleAmount('');
+                  }}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleRecordSale}
+                  disabled={isStockActionLoading}
+                  className="flex-1 py-3 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  Confirm sale
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {restockListing && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+          >
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">Restock listing</h3>
+                <p className="text-sm text-gray-500 mt-1">{restockListing.title}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setRestockListing(null);
+                  setRestockAmount('');
+                }}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-2xl bg-gray-50 dark:bg-gray-700/40 p-4 border border-gray-100 dark:border-gray-700">
+                <p className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Current stock</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Available: <span className="font-bold">{restockListing.availableQuantity ?? restockListing.quantity ?? 0}</span>
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Sold: <span className="font-bold">{restockListing.soldQuantity ?? 0}</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Units added
+                </label>
+                <input
+                  type="number"
+                  min="1"
+                  value={restockAmount}
+                  onChange={(e) => setRestockAmount(e.target.value)}
+                  placeholder="e.g. 50"
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setRestockListing(null);
+                    setRestockAmount('');
+                  }}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleRestock}
+                  disabled={isStockActionLoading}
+                  className="flex-1 py-3 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50"
+                >
+                  Add stock
                 </button>
               </div>
             </div>

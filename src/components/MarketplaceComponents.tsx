@@ -68,6 +68,8 @@ export const ListingCard: React.FC<{
   onEdit?: (listing: MarketListing) => void;
   onDelete?: (listing: MarketListing) => void;
   onOpenDetails?: (listing: MarketListing) => void;
+  onRecordSale?: (listing: MarketListing) => void;
+  onRestock?: (listing: MarketListing) => void;
 }> = ({
   listing,
   t,
@@ -77,7 +79,9 @@ export const ListingCard: React.FC<{
   onHide,
   onEdit,
   onDelete,
-  onOpenDetails
+  onOpenDetails,
+  onRecordSale,
+  onRestock
 }) => {
   const defaultImage = "https://picsum.photos/seed/farm/800/600";
   const [menuOpen, setMenuOpen] = useState(false);
@@ -231,6 +235,40 @@ export const ListingCard: React.FC<{
 
                 {isOwner ? (
                   <>
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRecordSale?.(listing);
+                        setMenuOpen(false);
+                      }}
+                      disabled={!onRecordSale}
+                      className={`w-full px-4 py-3 text-left text-sm ${
+                        onRecordSale
+                          ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      Record sale
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onRestock?.(listing);
+                        setMenuOpen(false);
+                      }}
+                      disabled={!onRestock}
+                      className={`w-full px-4 py-3 text-left text-sm ${
+                        onRestock
+                          ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
+                          : 'opacity-50 cursor-not-allowed'
+                      }`}
+                    >
+                      Restock
+                    </button>
+
                     <button
                       type="button"
                       onClick={(e) => {
