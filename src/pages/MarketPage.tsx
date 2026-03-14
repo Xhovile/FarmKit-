@@ -150,21 +150,28 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     setReportReason('');
   };
 
-  const handleMarkSold = async (listing: MarketListing) => {
+  const handleToggleListingAvailability = async (listing: MarketListing) => {
     if (!listing.id) return;
 
     if (user?.uid !== listing.sellerId) {
-      toast.error('Only the owner can mark this listing as sold.');
+      toast.error('Only the owner can change this listing status.');
       return;
     }
 
+    const nextStatus = listing.status === 'sold' ? 'active' : 'sold';
+
     try {
       await updateDoc(doc(db, 'market_listings', listing.id), {
-        status: 'sold',
+        status: nextStatus,
       });
-      toast.success('Listing marked as sold.');
+
+      toast.success(
+        nextStatus === 'sold'
+          ? 'Listing marked as sold.'
+          : 'Listing marked as available.'
+      );
     } catch (error) {
-      console.error('Error marking listing as sold:', error);
+      console.error('Error updating listing status:', error);
       toast.error('Failed to update listing.');
     }
   };
@@ -461,7 +468,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                         item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
                       ) &&
-                      item.status !== 'sold' &&
+                      (item.status !== 'sold' || item.sellerId === user?.uid) &&
                       !hiddenListingIds.includes(item.id || '')
                     )
                     .map((item) => (
@@ -471,7 +478,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         t={t}
                         currentUserId={user?.uid}
                         onReport={setReportingItem}
-                        onMarkSold={handleMarkSold}
+                        onMarkSold={handleToggleListingAvailability}
                         onHide={handleHideListing}
                         onEdit={(listing) => {
                           setEditingListing(listing);
@@ -491,7 +498,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                       item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                       item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
                     ) &&
-                    item.status !== 'sold' &&
+                    (item.status !== 'sold' || item.sellerId === user?.uid) &&
                     !hiddenListingIds.includes(item.id || '')
                   ).length === 0 && (
                     <div className="col-span-full bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">

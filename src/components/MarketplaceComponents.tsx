@@ -262,7 +262,7 @@ export const ListingCard: React.FC<{
                           : 'opacity-50 cursor-not-allowed'
                       }`}
                     >
-                      Mark as sold
+                      {listing.status === 'sold' ? 'Mark as available' : 'Mark as sold'}
                     </button>
 
                     <button

@@ -91,14 +91,14 @@ const renderMarketSpecs = (item: any) => {
         ['Variety / Grade', item.variety || 'Not specified'],
         ['Packaging', item.packSize || 'Not specified'],
         ['Season', item.season || 'Not specified'],
-        ['Available Amount', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Available Amount', `${item.quantity || '-'}`],
         ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
       ];
 
     default:
       return [
         ['Category', formatCategoryLabel(item.category)],
-        ['Available Amount', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Available Amount', `${item.quantity || '-'}`],
         ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
         ['Seller Type', item.sellerTier || 'Standard'],
         ['Status', item.status || 'active'],
@@ -285,7 +285,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                         Available amount
                       </div>
                       <p className="font-bold">
-                        {selectedItem.quantity} {selectedItem.unit}
+                        {selectedItem.quantity}
                       </p>
                     </div>
 
