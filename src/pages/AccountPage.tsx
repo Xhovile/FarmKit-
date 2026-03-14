@@ -20,7 +20,8 @@ import {
   ClipboardList,
   TrendingUp,
   Building2,
-  CheckCircle2
+  CheckCircle2,
+  Languages
 } from 'lucide-react';
 import { auth, db } from '../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
@@ -31,6 +32,8 @@ const buyerRequests: any[] = [];
 
 interface AccountPageProps {
   t: (key: string) => string;
+  lang: 'en' | 'ny';
+  setLang: (lang: 'en' | 'ny') => void;
   user: any;
   setUser: (user: any) => void;
   isEditingProfile: boolean;
@@ -43,6 +46,8 @@ interface AccountPageProps {
 
 export const AccountPage: React.FC<AccountPageProps> = ({
   t,
+  lang,
+  setLang,
   user,
   setUser,
   isEditingProfile,
@@ -245,7 +250,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-4">
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-5 gap-4">
                 <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
                   <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
                     <Settings className="w-6 h-6" />
@@ -266,6 +271,17 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     <Share2 className="w-6 h-6" />
                   </div>
                   <span className="text-xs font-bold text-gray-500">{t('account.shareProfile')}</span>
+                </button>
+                <button
+                  onClick={() => setLang(lang === 'en' ? 'ny' : 'en')}
+                  className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
+                >
+                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+                    <Languages className="w-6 h-6" />
+                  </div>
+                  <span className="text-xs font-bold text-gray-500">
+                    Language ({lang.toUpperCase()})
+                  </span>
                 </button>
                 <button 
                   onClick={() => {

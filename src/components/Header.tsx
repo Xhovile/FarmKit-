@@ -1,15 +1,13 @@
 import React, { useEffect, useState } from 'react';
-import { Sprout, Languages, UserCircle, ThumbsUp } from 'lucide-react';
+import { Sprout, UserCircle } from 'lucide-react';
 
 interface HeaderProps {
-  lang: 'en' | 'ny';
-  switchLanguage: (lang: 'en' | 'ny') => void;
   t: (key: string) => string;
   user: any;
   setIsAuthModalOpen: (open: boolean) => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ lang, switchLanguage, t, user, setIsAuthModalOpen }) => {
+export const Header: React.FC<HeaderProps> = ({ t, user, setIsAuthModalOpen }) => {
   const [isCompact, setIsCompact] = useState(false);
 
   useEffect(() => {
@@ -67,19 +65,6 @@ export const Header: React.FC<HeaderProps> = ({ lang, switchLanguage, t, user, s
             </div>
           </div>
           <div className="flex items-center gap-2 shrink-0">
-            <button
-              onClick={() => switchLanguage(lang === 'en' ? 'ny' : 'en')}
-              className={`bg-white/10 backdrop-blur-md text-white border border-white/20 flex items-center shadow-sm hover:bg-white/20 transition-all group ${
-                isCompact
-                  ? 'h-9 w-9 rounded-full justify-center'
-                  : 'px-4 py-1.5 rounded-full text-sm font-bold'
-              }`}
-              aria-label="Switch language"
-            >
-              <Languages className={`opacity-70 group-hover:rotate-12 transition-transform ${isCompact ? 'w-4 h-4' : 'w-4 h-4 mr-2'}`} />
-              {!isCompact && <span className="uppercase">{lang}</span>}
-            </button>
-
             {user ? (
               <button
                 type="button"

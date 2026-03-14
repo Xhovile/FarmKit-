@@ -649,8 +649,6 @@ export default function App() {
       )}
 
       <Header 
-        lang={lang} 
-        switchLanguage={setLang} 
         t={t} 
         user={user} 
         setIsAuthModalOpen={setIsAuthModalOpen} 
@@ -730,6 +728,8 @@ export default function App() {
           {activeTab === 'account' && (
             <AccountPage 
               t={t} 
+              lang={lang}
+              setLang={setLang}
               user={user} 
               setUser={setUser} 
               isEditingProfile={isEditingProfile} 
