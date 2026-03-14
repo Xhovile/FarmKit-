@@ -368,24 +368,24 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               />
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{t('common.unit')}</label>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Unit of measure</label>
               <input 
                 type="text" 
                 value={formData.unit}
                 onChange={e => setFormData({...formData, unit: e.target.value})}
-                placeholder={t('forms.unitPlaceholder')}
+                placeholder="e.g. kg, bag, litre, tray, bunch"
                 className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
               />
             </div>
           </div>
 
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{t('common.quantity')}</label>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Amount available</label>
             <input 
               type="number" 
               value={formData.quantity}
               onChange={e => setFormData({...formData, quantity: e.target.value})}
-              placeholder={t('forms.quantityPlaceholder')}
+              placeholder="e.g. 50"
               className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
             />
           </div>

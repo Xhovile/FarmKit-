@@ -91,14 +91,14 @@ const renderMarketSpecs = (item: any) => {
         ['Variety / Grade', item.variety || 'Not specified'],
         ['Packaging', item.packSize || 'Not specified'],
         ['Season', item.season || 'Not specified'],
-        ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Available Amount', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
         ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
       ];
 
     default:
       return [
         ['Category', formatCategoryLabel(item.category)],
-        ['Quantity', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
+        ['Available Amount', `${item.quantity || '-'} ${item.unit || ''}`.trim()],
         ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
         ['Seller Type', item.sellerTier || 'Standard'],
         ['Status', item.status || 'active'],
@@ -174,7 +174,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             animate={{ scale: 1, y: 0 }}
             exit={{ scale: 0.96, y: 16 }}
             data-farmkit-detail-modal="true"
-            className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[36px] shadow-[0_30px_100px_rgba(0,0,0,0.18)] overflow-hidden max-h-[92vh] flex flex-col border border-gray-200 dark:border-gray-800 ring-1 ring-black/[0.03] dark:ring-white/[0.04]"
+            className="bg-white dark:bg-gray-900 w-full max-w-5xl rounded-[36px] shadow-[0_36px_120px_rgba(0,0,0,0.24)] overflow-hidden max-h-[92vh] flex flex-col border border-gray-200 dark:border-gray-800 ring-1 ring-black/[0.04] dark:ring-white/[0.05]"
             onClick={(e) => e.stopPropagation()}
           >
             <div className="sticky top-0 z-30 flex items-center justify-between gap-4 px-5 sm:px-6 py-4 bg-white/92 dark:bg-gray-900/92 backdrop-blur-xl border-b border-gray-200 dark:border-gray-800">
@@ -219,7 +219,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
             </div>
 
             <div className="p-6 sm:p-8 overflow-y-auto bg-neutral-50/70 dark:bg-gray-950/40">
-              <div className="relative h-72 sm:h-80 rounded-[30px] overflow-hidden mb-8 border border-gray-200 dark:border-gray-800 shadow-[0_10px_30px_rgba(0,0,0,0.08)]">
+              <div className="relative h-72 sm:h-80 rounded-[30px] overflow-hidden mb-8 border border-gray-200 dark:border-gray-800 shadow-[0_18px_45px_rgba(0,0,0,0.16)]">
                 <img
                   src={
                     selectedItem.image ||
@@ -263,7 +263,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
               {isMarketListing ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-4 mb-8">
-                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
+                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500 mb-2 font-semibold">
                         <Building2 className="w-4 h-4" />
                         Seller
@@ -271,7 +271,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       <p className="font-bold">{selectedItem.businessName}</p>
                     </div>
 
-                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
+                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500 mb-2 font-semibold">
                         <MapPin className="w-4 h-4" />
                         Location
@@ -279,17 +279,17 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       <p className="font-bold">{selectedItem.location}</p>
                     </div>
 
-                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
+                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500 mb-2 font-semibold">
                         <Package className="w-4 h-4" />
-                        Quantity
+                        Available amount
                       </div>
                       <p className="font-bold">
                         {selectedItem.quantity} {selectedItem.unit}
                       </p>
                     </div>
 
-                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-sm">
+                    <div className="rounded-[24px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 p-4 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                       <div className="flex items-center gap-2 text-[11px] uppercase tracking-[0.16em] text-gray-400 dark:text-gray-500 mb-2 font-semibold">
                         <Truck className="w-4 h-4" />
                         Delivery
@@ -327,7 +327,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       {specs.map(([label, value]) => (
                         <div
                           key={label}
-                          className="rounded-[24px] p-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-sm"
+                          className="rounded-[24px] p-4 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 shadow-[0_8px_24px_rgba(0,0,0,0.08)]"
                         >
                           <p className="text-[11px] font-semibold text-gray-400 dark:text-gray-500 uppercase tracking-[0.16em] mb-2">
                             {label}

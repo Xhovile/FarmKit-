@@ -165,14 +165,22 @@ export const ListingCard: React.FC<{
   };
 
   return (
-    <div className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-visible shadow-[0_8px_30px_rgba(0,0,0,0.06)] hover:shadow-[0_24px_70px_rgba(0,0,0,0.10)] transition-all duration-300 relative ring-1 ring-black/[0.02] dark:ring-white/[0.03]">
-      <button
-        type="button"
+    <div className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-visible shadow-[0_12px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_28px_80px_rgba(0,0,0,0.16)] transition-all duration-300 relative ring-1 ring-black/[0.03] dark:ring-white/[0.04]">
+      <div
+        role="button"
+        tabIndex={0}
         onClick={() => {
           setMenuOpen(false);
           onOpenDetails?.(listing);
         }}
-        className="relative h-64 w-full overflow-hidden rounded-t-[30px] bg-gray-100 dark:bg-gray-800 text-left block cursor-pointer"
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setMenuOpen(false);
+            onOpenDetails?.(listing);
+          }
+        }}
+        className="relative h-64 w-full overflow-hidden rounded-t-[32px] bg-gray-100 dark:bg-gray-800 text-left block cursor-pointer"
       >
         <img
           src={listing.imageUrl || defaultImage}
@@ -328,9 +336,9 @@ export const ListingCard: React.FC<{
             {statusLabel}
           </div>
         </div>
-      </button>
+      </div>
 
-      <div className="p-6 sm:p-7 bg-white dark:bg-gray-900 rounded-b-[32px]">
+      <div className="p-6 sm:p-7 bg-white dark:bg-gray-900 rounded-b-[32px] border-t border-gray-100 dark:border-gray-800">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
             <h3 className="text-[1.06rem] sm:text-[1.08rem] font-semibold text-black dark:text-white leading-snug line-clamp-1">
@@ -353,7 +361,7 @@ export const ListingCard: React.FC<{
           <button
             type="button"
             onClick={() => setSaved((prev) => !prev)}
-            className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all ${
+            className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all shadow-sm ${
               saved
                 ? 'border-gray-900 bg-gray-900 text-white dark:border-white dark:bg-white dark:text-black'
                 : 'border-gray-200 bg-white text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-900 dark:text-gray-200 dark:hover:bg-gray-800'
@@ -369,7 +377,7 @@ export const ListingCard: React.FC<{
         </div>
 
         <div className="flex flex-wrap gap-2 mb-4">
-          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1 text-[11px] font-medium text-gray-700 dark:text-gray-200">
+          <span className="inline-flex items-center gap-1 rounded-full border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800 px-3 py-1.5 text-[11px] font-medium text-gray-700 dark:text-gray-200 shadow-sm">
             <Tag className="w-3 h-3" />
             {getCategoryLabel(listing.category, t)}
           </span>
