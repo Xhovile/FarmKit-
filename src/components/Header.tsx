@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Sprout, Languages, UserCircle, ThumbsUp } from 'lucide-react';
 
 interface HeaderProps {
@@ -10,40 +10,99 @@ interface HeaderProps {
 }
 
 export const Header: React.FC<HeaderProps> = ({ lang, switchLanguage, t, user, setIsAuthModalOpen }) => {
+  const [isCompact, setIsCompact] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsCompact(window.scrollY > 36);
+    };
+
+    handleScroll();
+    window.addEventListener('scroll', handleScroll, { passive: true });
+
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
   return (
-    <header className="bg-primary text-white sticky top-0 z-30 shadow-md border-b border-white/10">
-      <div className="max-w-7xl mx-auto px-4 py-4">
-        <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-          <div className="flex items-center gap-3">
-            <div className="bg-white/10 backdrop-blur-md rounded-xl p-2.5 border border-white/20 shrink-0">
-              <Sprout className="w-8 h-8 text-white" />
+    <header
+      className={`sticky top-0 z-30 text-white border-b border-white/10 transition-all duration-300 ${
+        isCompact
+          ? 'bg-primary/95 backdrop-blur-xl shadow-lg'
+          : 'bg-primary shadow-md'
+      }`}
+    >
+      <div
+        className={`max-w-7xl mx-auto px-4 transition-all duration-300 ${
+          isCompact ? 'py-2.5' : 'py-4'
+        }`}
+      >
+        <div
+          className={`flex justify-between items-center transition-all duration-300 ${
+            isCompact ? 'gap-3' : 'gap-4'
+          }`}
+        >
+          <div className="flex items-center gap-3 min-w-0">
+            <div
+              className={`bg-white/10 backdrop-blur-md border border-white/20 shrink-0 transition-all duration-300 ${
+                isCompact ? 'rounded-lg p-2' : 'rounded-xl p-2.5'
+              }`}
+            >
+              <Sprout className={`text-white transition-all duration-300 ${isCompact ? 'w-6 h-6' : 'w-8 h-8'}`} />
             </div>
-            <div className="min-w-[140px]">
-              <h1 className="text-2xl font-bold tracking-tight font-serif">
+
+            <div className="min-w-0">
+              <h1
+                className={`font-bold tracking-tight font-serif leading-none transition-all duration-300 ${
+                  isCompact ? 'text-xl' : 'text-2xl'
+                }`}
+              >
                 <span className="text-green-400">Farm</span><span className="text-amber-300">Kit</span>
               </h1>
+
+              {!isCompact && (
+                <p className="text-[11px] text-white/75 mt-1 font-medium">
+                  Smart agriculture, market access, and practical tools
+                </p>
+              )}
             </div>
           </div>
-          <div className="flex flex-wrap gap-2 items-center justify-center">
-            {/* Language Toggle */}
-            <button 
+          <div className="flex items-center gap-2 shrink-0">
+            <button
               onClick={() => switchLanguage(lang === 'en' ? 'ny' : 'en')}
-              className="px-4 py-1.5 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-bold border border-white/20 flex items-center shadow-sm hover:bg-white/20 transition-all group"
+              className={`bg-white/10 backdrop-blur-md text-white border border-white/20 flex items-center shadow-sm hover:bg-white/20 transition-all group ${
+                isCompact
+                  ? 'h-9 w-9 rounded-full justify-center'
+                  : 'px-4 py-1.5 rounded-full text-sm font-bold'
+              }`}
+              aria-label="Switch language"
             >
-              <Languages className="w-4 h-4 mr-2 opacity-70 group-hover:rotate-12 transition-transform" />
-              <span className="uppercase">{lang}</span>
+              <Languages className={`opacity-70 group-hover:rotate-12 transition-transform ${isCompact ? 'w-4 h-4' : 'w-4 h-4 mr-2'}`} />
+              {!isCompact && <span className="uppercase">{lang}</span>}
             </button>
- 
+
             {user ? (
-              <span className="px-4 py-1.5 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-semibold border border-white/20 flex items-center shadow-sm">
-                <UserCircle className="w-4 h-4 mr-2 opacity-70" /> {user.name}
-              </span>
-            ) : (
-              <button 
-                onClick={() => setIsAuthModalOpen(true)}
-                className="px-6 py-1.5 bg-amber-400 text-primary rounded-full text-sm font-bold shadow-md hover:bg-amber-300 transition-all flex items-center gap-2"
+              <button
+                type="button"
+                className={`bg-white/10 backdrop-blur-md text-white border border-white/20 flex items-center shadow-sm transition-all ${
+                  isCompact
+                    ? 'h-9 w-9 rounded-full justify-center'
+                    : 'px-4 py-1.5 rounded-full text-sm font-semibold'
+                }`}
+                aria-label={user.name}
               >
-                {t('account.signIn')}
+                <UserCircle className={`opacity-80 ${isCompact ? 'w-5 h-5' : 'w-4 h-4 mr-2'}`} />
+                {!isCompact && <span className="max-w-[120px] truncate">{user.name}</span>}
+              </button>
+            ) : (
+              <button
+                onClick={() => setIsAuthModalOpen(true)}
+                className={`bg-amber-400 text-primary shadow-md hover:bg-amber-300 transition-all font-bold ${
+                  isCompact
+                    ? 'h-9 px-3 rounded-full text-xs'
+                    : 'px-6 py-1.5 rounded-full text-sm'
+                }`}
+              >
+                {isCompact ? 'Sign in' : t('account.signIn')}
               </button>
             )}
           </div>
