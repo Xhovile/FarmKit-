@@ -209,6 +209,15 @@ export const ListingCard: React.FC<{
     }
   };
 
+  const menuItemClass =
+    'w-full px-4 py-3 rounded-xl text-left text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all';
+
+  const menuDangerClass =
+    'w-full px-4 py-3 rounded-xl text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20 transition-all';
+
+  const menuDisabledClass =
+    'w-full px-4 py-3 rounded-xl text-left text-sm opacity-50 cursor-not-allowed';
+
   return (
     <div className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-visible shadow-[0_12px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_28px_80px_rgba(0,0,0,0.16)] transition-all duration-300 relative ring-1 ring-black/[0.03] dark:ring-white/[0.04]">
       <div
@@ -349,7 +358,7 @@ export const ListingCard: React.FC<{
         >
           <div
             ref={menuRef}
-            className="absolute bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-2xl shadow-[0_24px_70px_rgba(0,0,0,0.18)] overflow-y-auto max-h-[320px]"
+            className="absolute bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[24px] shadow-[0_28px_90px_rgba(0,0,0,0.22)] overflow-y-auto max-h-[360px] p-2 ring-1 ring-black/[0.04] dark:ring-white/[0.05]"
             style={{
               top: menuPosition.top,
               left: menuPosition.left,
@@ -357,147 +366,140 @@ export const ListingCard: React.FC<{
             }}
             onClick={(e) => e.stopPropagation()}
           >
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                handleShare();
-              }}
-              className="w-full px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              Share
-            </button>
+            <div className="space-y-1">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleShare();
+                }}
+                className={menuItemClass}
+              >
+                Share
+              </button>
 
-            <button
-              type="button"
-              onClick={(e) => {
-                e.stopPropagation();
-                setMenuOpen(false);
-                onOpenDetails?.(listing);
-              }}
-              className="w-full px-4 py-3 text-left text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800"
-            >
-              View details
-            </button>
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpen(false);
+                  onOpenDetails?.(listing);
+                }}
+                className={menuItemClass}
+              >
+                View details
+              </button>
+            </div>
+
+            <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
 
             {isOwner ? (
               <>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRecordSale?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onRecordSale}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onRecordSale
-                      ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  Record sale
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onRestock?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onRestock}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onRestock
-                      ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  Restock
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onEdit?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onEdit}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onEdit
-                      ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  Edit listing
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onMarkSold?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onMarkSold}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onMarkSold
-                      ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  {listing.status === 'sold' ? 'Mark as available' : 'Mark as sold'}
-                </button>
-
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onDelete?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onDelete}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onDelete
-                      ? 'text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  Delete listing
-                </button>
-              </>
-            ) : (
-              <>
-                <button
-                  type="button"
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    onHide?.(listing);
-                    setMenuOpen(false);
-                  }}
-                  disabled={!onHide}
-                  className={`w-full px-4 py-3 text-left text-sm ${
-                    onHide
-                      ? 'text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800'
-                      : 'opacity-50 cursor-not-allowed'
-                  }`}
-                >
-                  Hide listing
-                </button>
-
-                {onReport && (
+                <div className="space-y-1">
                   <button
                     type="button"
                     onClick={(e) => {
                       e.stopPropagation();
-                      onReport(listing);
+                      onRecordSale?.(listing);
                       setMenuOpen(false);
                     }}
-                    className="w-full px-4 py-3 text-left text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-950/20"
+                    disabled={!onRecordSale}
+                    className={onRecordSale ? menuItemClass : menuDisabledClass}
                   >
-                    Report listing
+                    Record sale
                   </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onRestock?.(listing);
+                      setMenuOpen(false);
+                    }}
+                    disabled={!onRestock}
+                    className={onRestock ? menuItemClass : menuDisabledClass}
+                  >
+                    Restock
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onEdit?.(listing);
+                      setMenuOpen(false);
+                    }}
+                    disabled={!onEdit}
+                    className={onEdit ? menuItemClass : menuDisabledClass}
+                  >
+                    Edit listing
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onMarkSold?.(listing);
+                      setMenuOpen(false);
+                    }}
+                    disabled={!onMarkSold}
+                    className={onMarkSold ? menuItemClass : menuDisabledClass}
+                  >
+                    {listing.status === 'sold' ? 'Mark as available' : 'Mark as sold'}
+                  </button>
+                </div>
+
+                <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onDelete?.(listing);
+                      setMenuOpen(false);
+                    }}
+                    disabled={!onDelete}
+                    className={onDelete ? menuDangerClass : menuDisabledClass}
+                  >
+                    Delete listing
+                  </button>
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onHide?.(listing);
+                      setMenuOpen(false);
+                    }}
+                    disabled={!onHide}
+                    className={onHide ? menuItemClass : menuDisabledClass}
+                  >
+                    Hide listing
+                  </button>
+                </div>
+
+                {onReport && (
+                  <>
+                    <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+                    <div className="space-y-1">
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onReport(listing);
+                          setMenuOpen(false);
+                        }}
+                        className={menuDangerClass}
+                      >
+                        Report listing
+                      </button>
+                    </div>
+                  </>
                 )}
               </>
             )}
