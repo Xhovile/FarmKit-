@@ -358,14 +358,17 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
         <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">{t('common.price')}</label>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Price per unit (MWK)</label>
               <input 
                 type="number" 
                 value={formData.price}
                 onChange={e => setFormData({...formData, price: e.target.value})}
-                placeholder={t('forms.pricePlaceholder')}
+                placeholder="e.g. 5000"
                 className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
               />
+              <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+                This is the price for one unit, such as 1 kg, 1 goat, 1 bottle, 1 truck, or 1 bag.
+              </p>
             </div>
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Unit of measure</label>
