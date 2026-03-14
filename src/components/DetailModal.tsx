@@ -359,6 +359,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     </div>
 
                     <div className="flex items-center gap-2">
+                      <Share2 className="w-4 h-4" />
+                      {selectedItem.sharesCount ?? 0} shares
+                    </div>
+
+                    <div className="flex items-center gap-2">
                       <Bookmark className="w-4 h-4" />
                       {selectedItem.savesCount ?? 0} saves
                     </div>
