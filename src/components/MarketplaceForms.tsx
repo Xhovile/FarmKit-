@@ -371,7 +371,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               </p>
             </div>
             <div>
-              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Unit of measure</label>
+              <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Selling unit</label>
               <input 
                 type="text" 
                 value={formData.unit}
@@ -383,7 +383,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
           </div>
 
           <div>
-            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Amount available</label>
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Available amount (number of units)</label>
             <input 
               type="number" 
               value={formData.quantity}
@@ -391,6 +391,9 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               placeholder="e.g. 50"
               className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
             />
+            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
+              Enter only the number. Put the selling basis in “Selling unit”, such as kg, 1 goat, 1 bottle, or 1 truck.
+            </p>
           </div>
 
           <div>
