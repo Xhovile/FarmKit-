@@ -268,7 +268,7 @@ export const ListingCard: React.FC<{
         </div>
 
         <div className="absolute left-5 bottom-5 flex items-end gap-3">
-          <div className="px-4 py-2.5 rounded-2xl bg-white/92 dark:bg-black/70 backdrop-blur-md shadow-xl border border-white/40 dark:border-white/10">
+          <div className="px-4 py-2.5 rounded-2xl bg-white/78 dark:bg-black/55 backdrop-blur-md shadow-xl border border-white/30 dark:border-white/10">
             <p className="text-[10px] uppercase tracking-[0.18em] text-gray-500 dark:text-gray-300 font-semibold">
               Price
             </p>
