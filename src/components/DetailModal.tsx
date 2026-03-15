@@ -120,26 +120,31 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   incrementListingShares,
   savedListingIds = []
 }) => {
-  if (!selectedItem) return null;
-
-  const isMarketListing = selectedItem.type === 'market_listing';
-  const specs = isMarketListing ? renderMarketSpecs(selectedItem) : [];
-
-  const saved = savedListingIds.includes(selectedItem.id);
-
   const [activeImage, setActiveImage] = useState(0);
 
+  const isMarketListing = selectedItem?.type === 'market_listing';
+  const specs = isMarketListing && selectedItem ? renderMarketSpecs(selectedItem) : [];
+
+  const saved = selectedItem?.id ? savedListingIds.includes(selectedItem.id) : false;
+
   const galleryImages = useMemo(() => {
+    if (!selectedItem) {
+      return ['https://picsum.photos/seed/farm/1200/800'];
+    }
+
     if (selectedItem.imageUrls && selectedItem.imageUrls.length > 0) {
       return selectedItem.imageUrls;
     }
+
     const single = selectedItem.image || selectedItem.imageUrl || selectedItem.icon;
     return single ? [single] : ['https://picsum.photos/seed/farm/1200/800'];
   }, [selectedItem]);
 
   useEffect(() => {
     setActiveImage(0);
-  }, [selectedItem]);
+  }, [selectedItem?.id]);
+
+  if (!selectedItem) return null;
 
   const shareText = isMarketListing
     ? `Check out this listing on FarmKit: ${selectedItem.title} - MK ${selectedItem.price?.toLocaleString()} / ${selectedItem.unit}`
