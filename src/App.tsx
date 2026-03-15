@@ -409,9 +409,26 @@ export default function App() {
       let imageUrls: string[] = [];
 
       if (data.imageFiles?.length) {
-        imageUrls = await Promise.all(
+        const uploadResults = await Promise.allSettled(
           data.imageFiles.slice(0, 4).map((file: File) => uploadImageToCloudinary(file))
         );
+
+        const successfulUploads = uploadResults
+          .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+          .map((result) => result.value);
+
+        const failedUploads = uploadResults.filter((result) => result.status === 'rejected');
+
+        imageUrls = successfulUploads;
+
+        if (failedUploads.length > 0) {
+          console.error('Some image uploads failed:', failedUploads);
+          toast.error(`${failedUploads.length} image upload(s) failed. The rest were uploaded.`);
+        }
+      }
+
+      if (data.imageFiles?.length && imageUrls.length === 0) {
+        throw new Error('All image uploads failed. Listing was not published.');
       }
 
       await addDoc(collection(db, 'market_listings'), {
@@ -532,9 +549,24 @@ export default function App() {
         : (editingListing?.imageUrl ? [editingListing.imageUrl] : []);
 
       if (data.imageFiles?.length) {
-        imageUrls = await Promise.all(
+        const uploadResults = await Promise.allSettled(
           data.imageFiles.slice(0, 4).map((file: File) => uploadImageToCloudinary(file))
         );
+
+        const successfulUploads = uploadResults
+          .filter((result): result is PromiseFulfilledResult<string> => result.status === 'fulfilled')
+          .map((result) => result.value);
+
+        const failedUploads = uploadResults.filter((result) => result.status === 'rejected');
+
+        if (successfulUploads.length > 0) {
+          imageUrls = successfulUploads;
+        }
+
+        if (failedUploads.length > 0) {
+          console.error('Some image uploads failed during update:', failedUploads);
+          toast.error(`${failedUploads.length} image upload(s) failed. The rest were uploaded.`);
+        }
       }
 
       await updateDoc(doc(db, 'market_listings', listingId), {

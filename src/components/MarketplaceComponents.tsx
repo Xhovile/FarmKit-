@@ -89,7 +89,7 @@ export const ListingCard: React.FC<{
   onShareListing,
   isSaved
 }) => {
-  const defaultImage = "https://picsum.photos/seed/farm/800/600";
+  const defaultImage = "";
   const [menuOpen, setMenuOpen] = useState(false);
   const saved = !!isSaved;
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -242,12 +242,18 @@ export const ListingCard: React.FC<{
         }}
         className="relative h-64 w-full overflow-hidden rounded-t-[32px] bg-gray-100 dark:bg-gray-800 text-left block cursor-pointer"
       >
-        <img
-          src={listing.imageUrl || defaultImage}
-          alt={listing.title}
-          className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
-          referrerPolicy="no-referrer"
-        />
+        {listing.imageUrl ? (
+          <img
+            src={listing.imageUrl}
+            alt={listing.title}
+            className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+            referrerPolicy="no-referrer"
+          />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400">
+            <Package className="w-10 h-10" />
+          </div>
+        )}
 
         <div className="absolute inset-0 bg-gradient-to-t from-black/45 via-black/10 to-transparent" />
 

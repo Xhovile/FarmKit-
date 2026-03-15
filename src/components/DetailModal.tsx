@@ -129,7 +129,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
   const galleryImages = useMemo(() => {
     if (!selectedItem) {
-      return ['https://picsum.photos/seed/farm/1200/800'];
+      return [];
     }
 
     if (selectedItem.imageUrls && selectedItem.imageUrls.length > 0) {
@@ -137,7 +137,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     }
 
     const single = selectedItem.image || selectedItem.imageUrl || selectedItem.icon;
-    return single ? [single] : ['https://picsum.photos/seed/farm/1200/800'];
+    return single ? [single] : [];
   }, [selectedItem]);
 
   useEffect(() => {
@@ -255,11 +255,17 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
             <div className="p-6 sm:p-8 overflow-y-auto bg-neutral-50/70 dark:bg-gray-950/40">
               <div className="relative h-72 sm:h-80 rounded-[30px] overflow-hidden mb-4 border border-gray-200 dark:border-gray-800 shadow-[0_18px_45px_rgba(0,0,0,0.16)]">
-                <img
-                  src={galleryImages[activeImage] || galleryImages[0]}
-                  alt={selectedItem.title || selectedItem.name}
-                  className="w-full h-full object-cover"
-                />
+                {galleryImages.length > 0 ? (
+                  <img
+                    src={galleryImages[activeImage] || galleryImages[0]}
+                    alt={selectedItem.title || selectedItem.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <div className="w-full h-full flex items-center justify-center bg-gray-100 dark:bg-gray-800 text-gray-400">
+                    <Package className="w-12 h-12" />
+                  </div>
+                )}
 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent" />
               </div>

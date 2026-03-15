@@ -282,6 +282,11 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
 
   const handleSubmitListing = async () => {
     if (isSubmitting) return;
+
+    if (formData.imagePreviews.length === 0) {
+      return;
+    }
+
     await onSubmit(formData);
   };
 
@@ -555,6 +560,12 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
             </div>
           </div>
 
+          {formData.imagePreviews.length === 0 && (
+            <p className="text-xs text-rose-500 font-medium">
+              Please upload at least one image before publishing.
+            </p>
+          )}
+
           <div className="flex gap-3 pt-4">
             <button onClick={prevStep} className="flex-1 py-4 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-2xl hover:bg-gray-200 transition-all">
               {t('common.back')}
@@ -562,7 +573,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
             <button 
               type="button"
               onClick={handleSubmitListing}
-              disabled={isSubmitting}
+              disabled={isSubmitting || formData.imagePreviews.length === 0}
               className="flex-[2] py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-lg shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center justify-center gap-2 disabled:opacity-60 disabled:cursor-not-allowed"
             >
               <CheckCircle2 className="w-5 h-5" />
