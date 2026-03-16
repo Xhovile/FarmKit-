@@ -170,6 +170,20 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     }
   }, [selectedItem]);
 
+  const updatedDateLabel = useMemo(() => {
+    if (!selectedItem?.updatedAt) return 'Not updated yet';
+
+    try {
+      if (selectedItem.updatedAt?.seconds) {
+        return new Date(selectedItem.updatedAt.seconds * 1000).toLocaleDateString();
+      }
+
+      return 'Not updated yet';
+    } catch {
+      return 'Not updated yet';
+    }
+  }, [selectedItem]);
+
   if (!selectedItem) return null;
 
   const handleShare = async () => {
@@ -423,6 +437,10 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     </span>
 
                     <span className="px-3 py-1.5 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200 shadow-sm">
+                      Last updated: {updatedDateLabel}
+                    </span>
+
+                    <span className="px-3 py-1.5 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200 shadow-sm">
                       Seller tier: {selectedItem.sellerTier || 'Standard'}
                     </span>
                   </div>
@@ -464,7 +482,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
                     <div className="flex items-center gap-2">
                       <CalendarDays className="w-4 h-4" />
-                      {createdDateLabel}
+                      Updated: {updatedDateLabel}
                     </div>
                   </div>
 
