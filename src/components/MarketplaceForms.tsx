@@ -27,9 +27,12 @@ import {
 } from '../data/constants';
 import { StockStatus } from '../types';
 
-const computeStockStatus = (quantity: number): StockStatus => {
-  if (quantity <= 0) return 'out_of_stock';
-  if (quantity <= 10) return 'low_stock';
+const computeStockStatus = (
+  availableQuantity: number,
+  totalQuantity: number
+): StockStatus => {
+  if (availableQuantity <= 0) return 'out_of_stock';
+  if (totalQuantity > 0 && availableQuantity <= totalQuantity * 0.2) return 'low_stock';
   return 'in_stock';
 };
 
@@ -342,7 +345,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       quantity: qty,
       availableQuantity: qty,
       soldQuantity: 0,
-      stockStatus: computeStockStatus(qty),
+      stockStatus: computeStockStatus(qty, qty),
       location: resolvedLocation,
       locationData: {
         region: formData.region,

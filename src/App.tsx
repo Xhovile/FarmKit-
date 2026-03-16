@@ -24,9 +24,12 @@ import {
 import { BuyerRequest, MarketListing, StockStatus } from './types';
 import toast from 'react-hot-toast';
 
-const computeStockStatus = (quantity: number): StockStatus => {
-  if (quantity <= 0) return 'out_of_stock';
-  if (quantity <= 10) return 'low_stock';
+const computeStockStatus = (
+  availableQuantity: number,
+  totalQuantity: number
+): StockStatus => {
+  if (availableQuantity <= 0) return 'out_of_stock';
+  if (totalQuantity > 0 && availableQuantity <= totalQuantity * 0.2) return 'low_stock';
   return 'in_stock';
 };
 
@@ -495,7 +498,10 @@ export default function App() {
         verified: user.tier === 'Verified Seller',
         imageUrl: imageUrls[0] || null,
         imageUrls,
-        stockStatus: data.stockStatus || computeStockStatus(quantity),
+        stockStatus: data.stockStatus || computeStockStatus(
+          data.availableQuantity ?? quantity,
+          quantity
+        ),
         condition,
         brand,
         model,
@@ -624,7 +630,7 @@ export default function App() {
         quantity,
         availableQuantity: nextAvailableQuantity,
         soldQuantity: previousSoldQuantity,
-        stockStatus: computeStockStatus(nextAvailableQuantity),
+        stockStatus: computeStockStatus(nextAvailableQuantity, quantity),
         location: cleanedLocation,
         locationData: data.locationData,
         deliveryMethod: data.deliveryMethod,

@@ -41,9 +41,12 @@ import { db } from '../lib/firebase';
 import { collection, deleteDoc, doc, onSnapshot, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import { MarketListing, BuyerRequest, StockStatus } from '../types';
 
-const computeStockStatus = (quantity: number): StockStatus => {
-  if (quantity <= 0) return 'out_of_stock';
-  if (quantity <= 10) return 'low_stock';
+const computeStockStatus = (
+  availableQuantity: number,
+  totalQuantity: number
+): StockStatus => {
+  if (availableQuantity <= 0) return 'out_of_stock';
+  if (totalQuantity > 0 && availableQuantity <= totalQuantity * 0.2) return 'low_stock';
   return 'in_stock';
 };
 // Real data states (placeholders for now)
@@ -200,10 +203,15 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     const totalQuantity = listing.quantity || 0;
 
     try {
+      const nextAvailableQuantity = nextStatus === 'sold' ? 0 : totalQuantity;
+      const nextSoldQuantity = nextStatus === 'sold' ? totalQuantity : 0;
+
       await updateDoc(doc(db, 'market_listings', listing.id), {
         status: nextStatus,
-        availableQuantity: nextStatus === 'sold' ? 0 : totalQuantity,
-        soldQuantity: nextStatus === 'sold' ? totalQuantity : 0,
+        availableQuantity: nextAvailableQuantity,
+        soldQuantity: nextSoldQuantity,
+        stockStatus: computeStockStatus(nextAvailableQuantity, totalQuantity),
+        updatedAt: serverTimestamp(),
       });
 
       toast.success(
@@ -245,7 +253,10 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         availableQuantity: nextAvailableQuantity,
         soldQuantity: nextSoldQuantity,
         status: nextAvailableQuantity <= 0 ? 'sold' : 'active',
-        stockStatus: computeStockStatus(nextAvailableQuantity),
+        stockStatus: computeStockStatus(
+          nextAvailableQuantity,
+          saleListing.quantity ?? 0
+        ),
         updatedAt: serverTimestamp(),
       });
 
@@ -285,7 +296,10 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         availableQuantity: nextAvailableQuantity,
         soldQuantity: currentSold,
         status: 'active',
-        stockStatus: computeStockStatus(nextAvailableQuantity),
+        stockStatus: computeStockStatus(
+          nextAvailableQuantity,
+          nextQuantity
+        ),
         updatedAt: serverTimestamp(),
       });
 
