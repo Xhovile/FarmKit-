@@ -99,3 +99,38 @@ export const authenticityGuidance = {
     "Mankhwala ogulitsidwa m'mabotolo omwe alibe zizindikiro kapena ogwiritsidwa ntchito kale."
   ]
 };
+
+export const sellerTypes = [
+  { id: 'farmer', name: 'Farmer', nameNy: 'Mlimi' },
+  { id: 'agro_dealer', name: 'Agro-dealer', nameNy: 'Wogulitsa Zolowetsa Ulimi' },
+  { id: 'cooperative', name: 'Cooperative', nameNy: 'Mgwirizano wa Alimi' },
+  { id: 'company', name: 'Company', nameNy: 'Kampani' },
+];
+
+export const standardUnits = [
+  { id: 'kg', label: 'kg' },
+  { id: 'g', label: 'g' },
+  { id: 'tonne', label: 'tonne' },
+  { id: 'bag_50kg', label: '50kg bag' },
+  { id: 'bag_25kg', label: '25kg bag' },
+  { id: 'litre', label: 'litre' },
+  { id: 'ml', label: 'ml' },
+  { id: 'tray', label: 'tray' },
+  { id: 'dozen', label: 'dozen' },
+  { id: 'bundle', label: 'bundle' },
+  { id: 'bale', label: 'bale' },
+  { id: 'piece', label: 'piece' },
+  { id: 'animal', label: 'animal' },
+  { id: 'bird', label: 'bird' },
+  { id: 'fish', label: 'fish' },
+  { id: 'seedling', label: 'seedling' },
+  { id: 'custom', label: 'Custom' },
+];
+
+export const malawiRegions = ['Northern', 'Central', 'Southern'];
+
+export const malawiDistrictsByRegion: Record<string, string[]> = {
+  Northern: ['Mzuzu', 'Karonga', 'Rumphi', 'Mzimba', 'Nkhata Bay', 'Likoma', 'Chitipa'],
+  Central: ['Lilongwe', 'Kasungu', 'Mchinji', 'Dowa', 'Ntchisi', 'Nkhotakota', 'Salima', 'Dedza', 'Ntcheu'],
+  Southern: ['Blantyre', 'Zomba', 'Mangochi', 'Machinga', 'Balaka', 'Mulanje', 'Phalombe', 'Thyolo', 'Chiradzulu', 'Nsanje', 'Chikwawa', 'Neno', 'Mwanza'],
+};

@@ -108,8 +108,8 @@ const renderMarketSpecs = (item: any) => {
         ['Available Amount', `${item.availableQuantity ?? item.quantity ?? '-'}`],
         ['Sold', `${item.soldQuantity ?? 0}`],
         ['Delivery', item.deliveryMethod?.replace(/_/g, ' ') || 'Not specified'],
-        ['Seller Type', item.sellerTier || 'Standard'],
-        ['Status', item.status || 'active'],
+        ['Seller Type', item.sellerType?.replace(/_/g, ' ') || item.sellerTier || 'Standard'],
+        ['Stock Status', item.stockStatus?.replace(/_/g, ' ') || 'Active'],
       ];
   }
 };
@@ -366,6 +366,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                         Seller
                       </div>
                       <p className="font-semibold leading-snug">{selectedItem.businessName}</p>
+                      {selectedItem.sellerType && (
+                        <p className="text-[10px] text-gray-400 uppercase font-bold mt-1">
+                          {selectedItem.sellerType.replace('_', ' ')}
+                        </p>
+                      )}
                     </div>
 
                     <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -373,7 +378,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                         <MapPin className="w-4 h-4" />
                         Location
                       </div>
-                      <p className="font-semibold leading-snug">{selectedItem.location}</p>
+                      <p className="font-semibold leading-snug">
+                        {selectedItem.locationData?.label || selectedItem.location}
+                      </p>
+                      {selectedItem.locationData && (
+                        <p className="text-[10px] text-gray-400 uppercase font-bold mt-1">
+                          {selectedItem.locationData.region} • {selectedItem.locationData.district}
+                        </p>
+                      )}
                     </div>
 
                     <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
@@ -398,8 +410,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   </div>
 
                   <div className="flex flex-wrap gap-3 mb-7">
-                    <span className="px-3 py-1.5 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-                      Status: {formatStatusLabel(selectedItem.status)}
+                    <span className={`px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-full text-xs font-black uppercase tracking-widest shadow-sm ${
+                      selectedItem.stockStatus === 'out_of_stock' ? 'bg-rose-500 text-white border-rose-600' :
+                      selectedItem.stockStatus === 'low_stock' ? 'bg-amber-500 text-white border-amber-600' :
+                      'bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200'
+                    }`}>
+                      {selectedItem.stockStatus?.replace(/_/g, ' ') || 'Active'}
                     </span>
 
                     <span className="px-3 py-1.5 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200 shadow-sm">

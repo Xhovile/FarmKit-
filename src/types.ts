@@ -1,24 +1,44 @@
+export type SellerType = 'farmer' | 'agro_dealer' | 'cooperative' | 'company';
+export type StockStatus = 'in_stock' | 'low_stock' | 'out_of_stock' | 'seasonal';
+
+export interface StructuredLocation {
+  region: string;
+  district: string;
+  area: string;
+  label: string;
+}
+
 export interface MarketListing {
   id?: string;
   title: string;
   category: string;
   price: number;
+
   unit: string;
   quantity: number;
   availableQuantity?: number;
   soldQuantity?: number;
+
   location: string;
+  locationData?: StructuredLocation;
+
   deliveryMethod: string;
   description: string;
   businessName: string;
   phone: string;
+
   sellerId: string;
   sellerName: string;
   sellerTier: string;
+  sellerType?: SellerType;
+
   verified: boolean;
   imageUrl: string | null;
   imageUrls?: string[];
+
   status: 'active' | 'sold' | 'hidden';
+  stockStatus?: StockStatus;
+
   createdAt: any;
   updatedAt?: any;
 
@@ -26,28 +46,24 @@ export interface MarketListing {
   sharesCount?: number;
   savesCount?: number;
 
-  // Machinery / tools
   condition?: string;
   brand?: string;
   model?: string;
   capacity?: string;
   fuelType?: string;
 
-  // Seeds
   seedType?: string;
   variety?: string;
   packSize?: string;
   season?: string;
   germinationRate?: string;
 
-  // Livestock
   breed?: string;
   age?: string;
   sex?: string;
   healthStatus?: string;
   vaccinationStatus?: string;
 
-  // Agro-inputs
   inputType?: string;
   usage?: string;
   expiryDate?: string;

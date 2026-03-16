@@ -21,8 +21,14 @@ import {
   setDoc,
   updateDoc,
 } from 'firebase/firestore';
-import { BuyerRequest, MarketListing } from './types';
+import { BuyerRequest, MarketListing, StockStatus } from './types';
 import toast from 'react-hot-toast';
+
+const computeStockStatus = (quantity: number): StockStatus => {
+  if (quantity <= 0) return 'out_of_stock';
+  if (quantity <= 10) return 'low_stock';
+  return 'in_stock';
+};
 
 // New Imports
 import { Header } from './components/Header';
@@ -50,11 +56,16 @@ type ListingFormData = {
   price: string;
   unit: string;
   quantity: string;
+  availableQuantity?: number;
+  soldQuantity?: number;
   location: string;
+  locationData?: any;
   deliveryMethod: string;
   description: string;
   businessName: string;
   phone: string;
+  sellerType?: string;
+  stockStatus?: StockStatus;
   imageFiles?: File[];
   imagePreviews?: string[];
 
@@ -438,9 +449,10 @@ export default function App() {
         price,
         unit: cleanedUnit,
         quantity,
-        availableQuantity: quantity,
-        soldQuantity: 0,
+        availableQuantity: data.availableQuantity ?? quantity,
+        soldQuantity: data.soldQuantity ?? 0,
         location: cleanedLocation,
+        locationData: data.locationData,
         deliveryMethod: data.deliveryMethod,
         description: cleanedDescription,
         businessName: cleanedBusinessName || user.name || 'Seller',
@@ -448,9 +460,11 @@ export default function App() {
         sellerId: user.uid,
         sellerName: user.name || 'Seller',
         sellerTier: user.tier || 'Free',
+        sellerType: data.sellerType || 'farmer',
         verified: user.tier === 'Verified Seller',
         imageUrl: imageUrls[0] || null,
         imageUrls,
+        stockStatus: data.stockStatus || computeStockStatus(quantity),
         condition,
         brand,
         model,
@@ -579,11 +593,14 @@ export default function App() {
         quantity,
         availableQuantity: nextAvailableQuantity,
         soldQuantity: previousSoldQuantity,
+        stockStatus: computeStockStatus(nextAvailableQuantity),
         location: cleanedLocation,
+        locationData: data.locationData,
         deliveryMethod: data.deliveryMethod,
         description: cleanedDescription,
         businessName: cleanedBusinessName || user.name || 'Seller',
         phone: cleanedPhone,
+        sellerType: data.sellerType || 'farmer',
         imageUrl: imageUrls[0] || null,
         imageUrls,
 

@@ -39,7 +39,13 @@ import {
 } from '../data/constants';
 import { db } from '../lib/firebase';
 import { collection, deleteDoc, doc, onSnapshot, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
-import { MarketListing, BuyerRequest } from '../types';
+import { MarketListing, BuyerRequest, StockStatus } from '../types';
+
+const computeStockStatus = (quantity: number): StockStatus => {
+  if (quantity <= 0) return 'out_of_stock';
+  if (quantity <= 10) return 'low_stock';
+  return 'in_stock';
+};
 // Real data states (placeholders for now)
 const marketPricesData: any[] = [];
 const priceTrendData: any[] = [];
@@ -100,6 +106,11 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [saleAmount, setSaleAmount] = useState('');
   const [restockAmount, setRestockAmount] = useState('');
   const [isStockActionLoading, setIsStockActionLoading] = useState(false);
+
+  // New Filters
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
+  const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState('all');
+  const [selectedRegion, setSelectedRegion] = useState('all');
 
   useEffect(() => {
     const requestsQuery = query(
@@ -220,6 +231,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         availableQuantity: nextAvailableQuantity,
         soldQuantity: nextSoldQuantity,
         status: nextAvailableQuantity <= 0 ? 'sold' : 'active',
+        stockStatus: computeStockStatus(nextAvailableQuantity),
         updatedAt: serverTimestamp(),
       });
 
@@ -259,6 +271,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
         availableQuantity: nextAvailableQuantity,
         soldQuantity: currentSold,
         status: 'active',
+        stockStatus: computeStockStatus(nextAvailableQuantity),
         updatedAt: serverTimestamp(),
       });
 
@@ -533,6 +546,12 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 categories={marketCategories} 
                 activeCategory={activeCategory} 
                 setActiveCategory={setActiveCategory} 
+                verifiedOnly={verifiedOnly}
+                setVerifiedOnly={setVerifiedOnly}
+                selectedDeliveryMethod={selectedDeliveryMethod}
+                setSelectedDeliveryMethod={setSelectedDeliveryMethod}
+                selectedRegion={selectedRegion}
+                setSelectedRegion={setSelectedRegion}
                 t={t} 
               />
               
@@ -559,17 +578,21 @@ export const MarketPage: React.FC<MarketPageProps> = ({
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {marketListings
-                    .filter((item) =>
-                      (activeCategory === 'all' || item.category === activeCategory) &&
-                      (
+                    .filter((item) => {
+                      const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+                      const matchesSearch = 
                         item.title.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                         item.description.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                         item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
-                        item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
-                      ) &&
-                      ((item.availableQuantity ?? item.quantity ?? 0) > 0 || item.sellerId === user?.uid) &&
-                      !hiddenListingIds.includes(item.id || '')
-                    )
+                        item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase());
+                      const matchesVerified = !verifiedOnly || item.verified;
+                      const matchesDelivery = selectedDeliveryMethod === 'all' || item.deliveryMethod === selectedDeliveryMethod;
+                      const matchesRegion = selectedRegion === 'all' || item.locationData?.region === selectedRegion;
+                      const isVisible = ((item.availableQuantity ?? item.quantity ?? 0) > 0 || item.sellerId === user?.uid) &&
+                                       !hiddenListingIds.includes(item.id || '');
+                      
+                      return matchesCategory && matchesSearch && matchesVerified && matchesDelivery && matchesRegion && isVisible;
+                    })
                     .map((item) => (
                       <ListingCard
                         key={item.id}
@@ -600,17 +623,21 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                       />
                     ))
                   }
-                  {marketListings.filter((item) =>
-                    (activeCategory === 'all' || item.category === activeCategory) &&
-                    (
+                  {marketListings.filter((item) => {
+                    const matchesCategory = activeCategory === 'all' || item.category === activeCategory;
+                    const matchesSearch = 
                       item.title.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                       item.description.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
                       item.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
-                      item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase())
-                    ) &&
-                    ((item.availableQuantity ?? item.quantity ?? 0) > 0 || item.sellerId === user?.uid) &&
-                    !hiddenListingIds.includes(item.id || '')
-                  ).length === 0 && (
+                      item.businessName.toLowerCase().includes(marketSearchQuery.toLowerCase());
+                    const matchesVerified = !verifiedOnly || item.verified;
+                    const matchesDelivery = selectedDeliveryMethod === 'all' || item.deliveryMethod === selectedDeliveryMethod;
+                    const matchesRegion = selectedRegion === 'all' || item.locationData?.region === selectedRegion;
+                    const isVisible = ((item.availableQuantity ?? item.quantity ?? 0) > 0 || item.sellerId === user?.uid) &&
+                                     !hiddenListingIds.includes(item.id || '');
+                    
+                    return matchesCategory && matchesSearch && matchesVerified && matchesDelivery && matchesRegion && isVisible;
+                  }).length === 0 && (
                     <div className="col-span-full bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">
                       <h3 className="text-lg font-bold mb-2">{t('market.noListings') || 'No listings yet'}</h3>
                       <p className="text-sm text-gray-500">

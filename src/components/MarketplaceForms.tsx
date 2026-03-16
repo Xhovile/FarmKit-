@@ -17,7 +17,26 @@ import {
   Check,
   ChevronsUpDown
 } from 'lucide-react';
-import { marketCategories, deliveryMethods } from '../data/constants';
+import { 
+  marketCategories, 
+  deliveryMethods, 
+  sellerTypes, 
+  standardUnits, 
+  malawiRegions, 
+  malawiDistrictsByRegion 
+} from '../data/constants';
+import { StockStatus } from '../types';
+
+const computeStockStatus = (quantity: number): StockStatus => {
+  if (quantity <= 0) return 'out_of_stock';
+  if (quantity <= 10) return 'low_stock';
+  return 'in_stock';
+};
+
+const buildLocationLabel = (area: string, district: string, region: string) => {
+  const parts = [area, district, region].filter(Boolean);
+  return parts.join(', ');
+};
 
 interface FormProps {
   t: any;
@@ -113,11 +132,18 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
     price: initialData?.price || '',
     unit: initialData?.unit || '',
     quantity: initialData?.quantity || '',
+    
+    region: initialData?.locationData?.region || '',
+    district: initialData?.locationData?.district || '',
+    area: initialData?.locationData?.area || '',
     location: initialData?.location || user?.location || '',
+    
     deliveryMethod: initialData?.deliveryMethod || 'pickup',
     description: initialData?.description || '',
     businessName: initialData?.businessName || user?.businessName || user?.name || '',
     phone: initialData?.phone || user?.phone || '',
+    sellerType: initialData?.sellerType || 'farmer',
+    
     imageFiles: [] as File[],
     imagePreviews: initialData?.imagePreviews || (initialData?.imagePreview ? [initialData.imagePreview] : []),
 
@@ -162,10 +188,12 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       unit: initialData.unit,
       quantity: initialData.quantity,
       location: initialData.location,
+      locationData: initialData.locationData,
       deliveryMethod: initialData.deliveryMethod,
       description: initialData.description,
       businessName: initialData.businessName,
       phone: initialData.phone,
+      sellerType: initialData.sellerType,
       imagePreview: initialData.imagePreview,
       condition: initialData.condition,
       brand: initialData.brand,
@@ -196,11 +224,18 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       price: initialData.price || '',
       unit: initialData.unit || '',
       quantity: initialData.quantity || '',
+      
+      region: initialData.locationData?.region || '',
+      district: initialData.locationData?.district || '',
+      area: initialData.locationData?.area || '',
       location: initialData.location || user?.location || '',
+      
       deliveryMethod: initialData.deliveryMethod || 'pickup',
       description: initialData.description || '',
       businessName: initialData.businessName || user?.businessName || user?.name || '',
       phone: initialData.phone || user?.phone || '',
+      sellerType: initialData.sellerType || 'farmer',
+      
       imageFiles: [],
       imagePreviews: initialData.imagePreviews || (initialData.imagePreview ? [initialData.imagePreview] : []),
 
@@ -287,7 +322,23 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       return;
     }
 
-    await onSubmit(formData);
+    const qty = Number(formData.quantity);
+    const normalizedData = {
+      ...formData,
+      quantity: qty,
+      availableQuantity: qty,
+      soldQuantity: 0,
+      stockStatus: computeStockStatus(qty),
+      location: buildLocationLabel(formData.area, formData.district, formData.region),
+      locationData: {
+        region: formData.region,
+        district: formData.district,
+        area: formData.area,
+        label: buildLocationLabel(formData.area, formData.district, formData.region)
+      }
+    };
+
+    await onSubmit(normalizedData);
   };
 
   return (
@@ -386,7 +437,27 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       )}
 
       {step === 2 && (
-        <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
+        <div className="space-y-6 animate-in fade-in slide-in-from-right-4">
+          <div className="space-y-4">
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">Seller Type</label>
+            <div className="grid grid-cols-2 gap-2">
+              {sellerTypes.map(type => (
+                <button
+                  key={type.id}
+                  type="button"
+                  onClick={() => setFormData({...formData, sellerType: type.id as any})}
+                  className={`px-4 py-3 rounded-xl border-2 text-sm font-bold transition-all ${
+                    formData.sellerType === type.id 
+                      ? 'border-primary bg-primary/5 text-primary' 
+                      : 'border-gray-100 dark:border-gray-700 text-gray-500'
+                  }`}
+                >
+                  {t(type.name, type.nameNy)}
+                </button>
+              ))}
+            </div>
+          </div>
+
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Price per unit (MWK)</label>
@@ -397,19 +468,19 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
                 placeholder="e.g. 5000"
                 className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
               />
-              <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-                This is the price for one unit, such as 1 kg, 1 goat, 1 bottle, 1 truck, or 1 bag.
-              </p>
             </div>
             <div>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">Selling unit</label>
-              <input 
-                type="text" 
+              <select
                 value={formData.unit}
                 onChange={e => setFormData({...formData, unit: e.target.value})}
-                placeholder="e.g. kg, bag, litre, tray, bunch"
-                className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
-              />
+                className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none appearance-none font-medium"
+              >
+                <option value="">Select unit</option>
+                {standardUnits.map(u => (
+                  <option key={u.id} value={u.id}>{u.label}</option>
+                ))}
+              </select>
             </div>
           </div>
 
@@ -422,9 +493,38 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               placeholder="e.g. 50"
               className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
             />
-            <p className="mt-2 text-[11px] text-gray-500 dark:text-gray-400 leading-relaxed">
-              Enter only the number. Put the selling basis in “Selling unit”, such as kg, 1 goat, 1 bottle, or 1 truck.
-            </p>
+          </div>
+
+          <div className="space-y-4 p-5 bg-gray-50 dark:bg-gray-800/50 rounded-[24px] border border-gray-100 dark:border-gray-700">
+            <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">Location Details</label>
+            <div className="grid grid-cols-2 gap-3">
+              <select
+                value={formData.region}
+                onChange={e => setFormData({...formData, region: e.target.value, district: ''})}
+                className="px-4 py-3 bg-white dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium"
+              >
+                <option value="">Region</option>
+                {malawiRegions.map(r => <option key={r} value={r}>{r}</option>)}
+              </select>
+              <select
+                value={formData.district}
+                onChange={e => setFormData({...formData, district: e.target.value})}
+                disabled={!formData.region}
+                className="px-4 py-3 bg-white dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium disabled:opacity-50"
+              >
+                <option value="">District</option>
+                {formData.region && malawiDistrictsByRegion[formData.region].map(d => (
+                  <option key={d} value={d}>{d}</option>
+                ))}
+              </select>
+            </div>
+            <input 
+              type="text"
+              value={formData.area}
+              onChange={e => setFormData({...formData, area: e.target.value})}
+              placeholder="Area / Village / Trading Center"
+              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium"
+            />
           </div>
 
           <div>
@@ -433,6 +533,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               {deliveryMethods.map(method => (
                 <button 
                   key={method.id}
+                  type="button"
                   onClick={() => setFormData({...formData, deliveryMethod: method.id})}
                   className={`flex items-center gap-3 p-4 rounded-2xl border-2 transition-all ${formData.deliveryMethod === method.id ? 'border-primary bg-primary/5 text-primary' : 'border-gray-100 dark:border-gray-700 text-gray-500'}`}
                 >
@@ -449,7 +550,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
             </button>
             <button 
               onClick={nextStep}
-              disabled={!formData.price || !formData.quantity}
+              disabled={!formData.price || !formData.quantity || !formData.region || !formData.district}
               className="flex-[2] py-4 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {t('common.next')} <ChevronRight className="w-5 h-5" />

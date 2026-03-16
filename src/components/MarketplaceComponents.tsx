@@ -15,11 +15,13 @@ import {
   Eye,
   Bookmark,
   MoreVertical,
-  Share2
+  Share2,
+  ShieldCheck,
+  Filter
 } from 'lucide-react';
 import { motion } from 'motion/react';
 import { MarketListing, BuyerRequest } from '../types';
-import { marketCategories } from '../data/constants';
+import { marketCategories, malawiRegions } from '../data/constants';
 import toast from 'react-hot-toast';
 
 export interface Seller {
@@ -105,8 +107,20 @@ export const ListingCard: React.FC<{
 
   const statusLabel = useMemo(() => {
     if (listing.status === 'sold') return 'Sold';
+    if (listing.stockStatus === 'out_of_stock') return 'Out of Stock';
+    if (listing.stockStatus === 'low_stock') return 'Low Stock';
+    if (listing.stockStatus === 'seasonal') return 'Seasonal';
     return '';
-  }, [listing.status]);
+  }, [listing.status, listing.stockStatus]);
+
+  const stockStatusColor = useMemo(() => {
+    switch (listing.stockStatus) {
+      case 'out_of_stock': return 'bg-rose-500 text-white';
+      case 'low_stock': return 'bg-amber-500 text-white';
+      case 'seasonal': return 'bg-blue-500 text-white';
+      default: return 'bg-black/55 text-white';
+    }
+  }, [listing.stockStatus]);
 
   const updateMenuPosition = () => {
     if (!menuButtonRef.current) return;
@@ -285,7 +299,7 @@ export const ListingCard: React.FC<{
           </div>
 
           {statusLabel ? (
-            <div className="px-3 py-1.5 rounded-full bg-black/55 text-white text-[11px] font-semibold backdrop-blur-sm">
+            <div className={`px-3 py-1.5 rounded-full text-[11px] font-semibold backdrop-blur-sm ${stockStatusColor}`}>
               {statusLabel}
             </div>
           ) : null}
@@ -303,6 +317,11 @@ export const ListingCard: React.FC<{
               <p className="text-sm text-gray-500 dark:text-gray-400 font-medium line-clamp-1">
                 {listing.businessName}
               </p>
+              {listing.sellerType && (
+                <span className="text-[10px] px-1.5 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-500 rounded-md uppercase font-bold tracking-tighter">
+                  {listing.sellerType.replace('_', ' ')}
+                </span>
+              )}
               {listing.verified && (
                 <div className="inline-flex items-center gap-1 rounded-full border border-emerald-200 bg-emerald-50 px-2 py-0.5 text-[10px] font-semibold text-emerald-700 dark:border-emerald-900 dark:bg-emerald-950/30 dark:text-emerald-300">
                   <CheckCircle2 className="w-3 h-3" />
@@ -645,26 +664,107 @@ export const MarketplaceFilters: React.FC<{
   categories: any[]; 
   activeCategory: string; 
   setActiveCategory: (id: string) => void;
+  verifiedOnly: boolean;
+  setVerifiedOnly: (val: boolean) => void;
+  selectedDeliveryMethod: string;
+  setSelectedDeliveryMethod: (val: string) => void;
+  selectedRegion: string;
+  setSelectedRegion: (val: string) => void;
   t: any;
-}> = ({ categories, activeCategory, setActiveCategory, t }) => (
-  <div className="flex gap-2 overflow-x-auto pb-4 no-scrollbar">
-    <button 
-      onClick={() => setActiveCategory('all')}
-      className={`px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
-    >
-      {t('common.allProducts')}
-    </button>
-    {categories.map(cat => (
-      <button 
-        key={cat.id}
-        onClick={() => setActiveCategory(cat.id)}
-        className={`px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${activeCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
-      >
-        {t(cat.name, cat.nameNy)}
-      </button>
-    ))}
-  </div>
-);
+}> = ({ 
+  categories, 
+  activeCategory, 
+  setActiveCategory, 
+  verifiedOnly,
+  setVerifiedOnly,
+  selectedDeliveryMethod,
+  setSelectedDeliveryMethod,
+  selectedRegion,
+  setSelectedRegion,
+  t 
+}) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  return (
+    <div className="space-y-4 mb-8">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1">
+          <button 
+            onClick={() => setActiveCategory('all')}
+            className={`px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${activeCategory === 'all' ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
+          >
+            {t('common.allProducts')}
+          </button>
+          {categories.map(cat => (
+            <button 
+              key={cat.id}
+              onClick={() => setActiveCategory(cat.id)}
+              className={`px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${activeCategory === cat.id ? 'bg-primary text-white shadow-lg shadow-primary/30' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'}`}
+            >
+              {t(cat.name, cat.nameNy)}
+            </button>
+          ))}
+        </div>
+        
+        <button 
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-all border ${showAdvanced ? 'bg-black text-white border-black dark:bg-white dark:text-black dark:border-white' : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700'}`}
+        >
+          <Filter className="w-5 h-5" />
+        </button>
+      </div>
+
+      {showAdvanced && (
+        <motion.div 
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          className="bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-3 gap-6"
+        >
+          <div>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Region</label>
+            <select 
+              value={selectedRegion}
+              onChange={(e) => setSelectedRegion(e.target.value)}
+              className="w-full bg-white dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none"
+            >
+              <option value="all">All Regions</option>
+              {malawiRegions.map(region => (
+                <option key={region} value={region}>{region}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Delivery</label>
+            <select 
+              value={selectedDeliveryMethod}
+              onChange={(e) => setSelectedDeliveryMethod(e.target.value)}
+              className="w-full bg-white dark:bg-gray-800 border-none rounded-xl px-4 py-2.5 text-sm focus:ring-2 focus:ring-primary outline-none"
+            >
+              <option value="all">Any Method</option>
+              <option value="pickup">Pickup Only</option>
+              <option value="delivery">Delivery Available</option>
+              <option value="both">Both</option>
+            </select>
+          </div>
+
+          <div className="flex items-center justify-between md:justify-start md:gap-4">
+            <div>
+              <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">Verified Sellers</label>
+              <button 
+                onClick={() => setVerifiedOnly(!verifiedOnly)}
+                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-sm font-bold transition-all ${verifiedOnly ? 'bg-emerald-500 text-white' : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700'}`}
+              >
+                <ShieldCheck className="w-4 h-4" />
+                {verifiedOnly ? 'Verified Only' : 'Show All'}
+              </button>
+            </div>
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+};
 
 export const SellerOnboardingCTA: React.FC<{ t: any; onUpgrade: () => void }> = ({ t, onUpgrade }) => (
   <div className="bg-gradient-to-br from-primary to-emerald-600 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden group">
