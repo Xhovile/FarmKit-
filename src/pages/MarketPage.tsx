@@ -47,8 +47,22 @@ const computeStockStatus = (quantity: number): StockStatus => {
   return 'in_stock';
 };
 // Real data states (placeholders for now)
-const marketPricesData: any[] = [];
-const priceTrendData: any[] = [];
+const marketPricesData = [
+  { commodity: 'Maize', limbe: 850, lilongwe: 780, mzuzu: 720, unit: 'kg' },
+  { commodity: 'Soya Beans', limbe: 1200, lilongwe: 1150, mzuzu: 1100, unit: 'kg' },
+  { commodity: 'Groundnuts', limbe: 1500, lilongwe: 1450, mzuzu: 1400, unit: 'kg' },
+  { commodity: 'Rice (Kilombero)', limbe: 2200, lilongwe: 2100, mzuzu: 2000, unit: 'kg' },
+  { commodity: 'Common Beans', limbe: 1800, lilongwe: 1750, mzuzu: 1700, unit: 'kg' },
+];
+
+const priceTrendData = [
+  { month: 'Oct', maize: 650, beans: 1400, rice: 1800 },
+  { month: 'Nov', maize: 720, beans: 1550, rice: 1950 },
+  { month: 'Dec', maize: 800, beans: 1700, rice: 2100 },
+  { month: 'Jan', maize: 950, beans: 1900, rice: 2300 },
+  { month: 'Feb', maize: 1100, beans: 2100, rice: 2500 },
+  { month: 'Mar', maize: 850, beans: 1800, rice: 2200 },
+];
 import { 
   ListingCard, 
   BuyerRequestCard, 
