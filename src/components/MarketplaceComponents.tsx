@@ -546,8 +546,13 @@ export const ListingCard: React.FC<{
 export const BuyerRequestCard: React.FC<{
   request: BuyerRequest;
   t: any;
+  currentUserId?: string;
   onOpenDetails?: (request: BuyerRequest) => void;
-}> = ({ request, t, onOpenDetails }) => {
+  onUpdateStatus?: (
+    request: BuyerRequest,
+    nextStatus: 'open' | 'matched' | 'closed'
+  ) => void;
+}> = ({ request, t, currentUserId, onOpenDetails, onUpdateStatus }) => {
   const urgencyLabel =
     request.urgency === 'urgent' ? 'Urgent' : 'Open request';
 
@@ -558,6 +563,8 @@ export const BuyerRequestCard: React.FC<{
     request.buyerType
       ? request.buyerType.charAt(0).toUpperCase() + request.buyerType.slice(1)
       : 'Buyer';
+
+  const isOwner = currentUserId === request.buyerId;
 
   return (
     <motion.div
@@ -575,11 +582,13 @@ export const BuyerRequestCard: React.FC<{
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
           <div className="absolute top-4 right-4">
-            <span className={`px-3 py-1.5 rounded-full text-[11px] font-semibold ${
-              request.urgency === 'urgent'
-                ? 'bg-rose-500 text-white'
-                : 'bg-black/55 text-white'
-            }`}>
+            <span
+              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold ${
+                request.urgency === 'urgent'
+                  ? 'bg-rose-500 text-white'
+                  : 'bg-black/55 text-white'
+              }`}
+            >
               {urgencyLabel}
             </span>
           </div>
@@ -616,13 +625,15 @@ export const BuyerRequestCard: React.FC<{
                 {buyerTypeLabel}
               </span>
 
-              <span className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
-                request.status === 'open'
-                  ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300'
-                  : request.status === 'matched'
-                  ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-300'
-                  : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
-              }`}>
+              <span
+                className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
+                  request.status === 'open'
+                    ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300'
+                    : request.status === 'matched'
+                    ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-300'
+                    : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
+                }`}
+              >
                 {request.status}
               </span>
             </div>
@@ -680,7 +691,7 @@ export const BuyerRequestCard: React.FC<{
           </p>
         )}
 
-        <div className="grid grid-cols-2 gap-2.5">
+        <div className="grid grid-cols-2 gap-2.5 mb-3">
           <button
             type="button"
             onClick={(e) => {
@@ -703,6 +714,61 @@ export const BuyerRequestCard: React.FC<{
             Fulfill
           </a>
         </div>
+
+        {isOwner && onUpdateStatus && (
+          <div
+            className="grid grid-cols-2 gap-2"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {request.status === 'open' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus(request, 'matched')}
+                  className="h-10 rounded-2xl bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-900 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-all"
+                >
+                  Mark matched
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus(request, 'closed')}
+                  className="h-10 rounded-2xl bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                >
+                  Close
+                </button>
+              </>
+            )}
+
+            {request.status === 'matched' && (
+              <>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus(request, 'open')}
+                  className="h-10 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-all"
+                >
+                  Reopen
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onUpdateStatus(request, 'closed')}
+                  className="h-10 rounded-2xl bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
+                >
+                  Close
+                </button>
+              </>
+            )}
+
+            {request.status === 'closed' && (
+              <button
+                type="button"
+                onClick={() => onUpdateStatus(request, 'open')}
+                className="col-span-2 h-10 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-all"
+              >
+                Reopen request
+              </button>
+            )}
+          </div>
+        )}
       </div>
     </motion.div>
   );
