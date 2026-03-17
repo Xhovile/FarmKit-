@@ -81,6 +81,7 @@ export interface BuyerRequest {
 
   quantity: number;
   unit: string;
+  quantityFound?: number;
 
   priceRange: string;
 

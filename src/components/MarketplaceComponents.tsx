@@ -552,19 +552,93 @@ export const BuyerRequestCard: React.FC<{
     request: BuyerRequest,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => void;
-}> = ({ request, t, currentUserId, onOpenDetails, onUpdateStatus }) => {
-  const urgencyLabel =
-    request.urgency === 'urgent' ? 'Urgent' : 'Open request';
-
-  const deliveryLabel =
-    request.deliveryPreference?.replace(/_/g, ' ') || 'Not specified';
-
-  const buyerTypeLabel =
-    request.buyerType
-      ? request.buyerType.charAt(0).toUpperCase() + request.buyerType.slice(1)
-      : 'Buyer';
+  onUpdateFoundQuantity?: (request: BuyerRequest) => void;
+  onEditRequest?: (request: BuyerRequest) => void;
+}> = ({
+  request,
+  t,
+  currentUserId,
+  onOpenDetails,
+  onUpdateStatus,
+  onUpdateFoundQuantity,
+  onEditRequest,
+}) => {
+  const [menuOpen, setMenuOpen] = useState(false);
+  const menuRef = useRef<HTMLDivElement | null>(null);
+  const menuButtonRef = useRef<HTMLButtonElement | null>(null);
+  const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, width: 224 });
 
   const isOwner = currentUserId === request.buyerId;
+
+  const urgencyLabel = request.urgency === 'urgent' ? 'Urgent' : 'Open request';
+  const deliveryLabel = request.deliveryPreference?.replace(/_/g, ' ') || 'Not specified';
+  const buyerTypeLabel = request.buyerType
+    ? request.buyerType.charAt(0).toUpperCase() + request.buyerType.slice(1)
+    : 'Buyer';
+
+  const found = request.quantityFound ?? 0;
+  const remaining = Math.max((request.quantity ?? 0) - found, 0);
+
+  const updateMenuPosition = () => {
+    if (!menuButtonRef.current) return;
+
+    const rect = menuButtonRef.current.getBoundingClientRect();
+    const menuWidth = 224;
+    const gap = 10;
+
+    let left = rect.right - menuWidth;
+    const top = rect.bottom + gap;
+
+    if (left < 12) left = 12;
+    if (left + menuWidth > window.innerWidth - 12) {
+      left = window.innerWidth - menuWidth - 12;
+    }
+
+    setMenuPosition({ top, left, width: menuWidth });
+  };
+
+  useLayoutEffect(() => {
+    if (!menuOpen) return;
+
+    updateMenuPosition();
+
+    const handleReposition = () => updateMenuPosition();
+
+    window.addEventListener('resize', handleReposition);
+    window.addEventListener('scroll', handleReposition, true);
+
+    return () => {
+      window.removeEventListener('resize', handleReposition);
+      window.removeEventListener('scroll', handleReposition, true);
+    };
+  }, [menuOpen]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+
+    const handleScrollOrResize = () => setMenuOpen(false);
+
+    if (menuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+      window.addEventListener('scroll', handleScrollOrResize, true);
+      window.addEventListener('resize', handleScrollOrResize);
+      window.addEventListener('touchmove', handleScrollOrResize, { passive: true });
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('scroll', handleScrollOrResize, true);
+      window.removeEventListener('resize', handleScrollOrResize);
+      window.removeEventListener('touchmove', handleScrollOrResize);
+    };
+  }, [menuOpen]);
+
+  const menuItemClass =
+    'w-full px-4 py-3 rounded-xl text-left text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-50 dark:hover:bg-gray-800 transition-all';
 
   return (
     <motion.div
@@ -573,7 +647,7 @@ export const BuyerRequestCard: React.FC<{
       className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_24px_70px_rgba(0,0,0,0.16)] transition-all duration-300 cursor-pointer ring-1 ring-black/[0.03] dark:ring-white/[0.04]"
     >
       {request.referenceImageUrl ? (
-        <div className="relative h-52 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
+        <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
             src={request.referenceImageUrl}
             alt={request.commodity}
@@ -581,24 +655,13 @@ export const BuyerRequestCard: React.FC<{
             referrerPolicy="no-referrer"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/40 via-black/5 to-transparent" />
-          <div className="absolute top-4 right-4">
-            <span
-              className={`px-3 py-1.5 rounded-full text-[11px] font-semibold ${
-                request.urgency === 'urgent'
-                  ? 'bg-rose-500 text-white'
-                  : 'bg-black/55 text-white'
-              }`}
-            >
-              {urgencyLabel}
-            </span>
-          </div>
         </div>
       ) : (
-        <div className="relative h-28 w-full bg-indigo-50 dark:bg-indigo-950/30 border-b border-gray-100 dark:border-gray-800">
+        <div className="relative h-24 w-full bg-indigo-50 dark:bg-indigo-950/30 border-b border-gray-100 dark:border-gray-800">
           <div className="absolute inset-0 flex items-center justify-between px-5">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center text-indigo-600">
-                <Package className="w-6 h-6" />
+              <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/40 rounded-2xl flex items-center justify-center text-indigo-600">
+                <Package className="w-5 h-5" />
               </div>
               <div>
                 <p className="text-[10px] uppercase tracking-[0.18em] text-gray-400 font-semibold">
@@ -616,7 +679,7 @@ export const BuyerRequestCard: React.FC<{
       <div className="p-5 sm:p-6">
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
-            <h3 className="text-[1.08rem] font-semibold text-black dark:text-white leading-snug line-clamp-2">
+            <h3 className="text-[1.04rem] font-semibold text-black dark:text-white leading-snug line-clamp-2">
               {request.commodity}
             </h3>
 
@@ -636,14 +699,28 @@ export const BuyerRequestCard: React.FC<{
               >
                 {request.status}
               </span>
+
+              {request.urgency === 'urgent' && (
+                <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider bg-rose-500 text-white">
+                  Urgent
+                </span>
+              )}
             </div>
           </div>
 
-          {request.urgency === 'urgent' && !request.referenceImageUrl && (
-            <span className="px-3 py-1.5 rounded-full text-[11px] font-semibold bg-rose-500 text-white shrink-0">
-              Urgent
-            </span>
-          )}
+          <div className="relative" ref={menuRef}>
+            <button
+              ref={menuButtonRef}
+              type="button"
+              onClick={(e) => {
+                e.stopPropagation();
+                setMenuOpen((prev) => !prev);
+              }}
+              className="h-10 w-10 rounded-full border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
+            >
+              <MoreVertical className="w-4 h-4" />
+            </button>
+          </div>
         </div>
 
         <div className="grid grid-cols-2 gap-3 mb-4">
@@ -666,32 +743,23 @@ export const BuyerRequestCard: React.FC<{
           </div>
         </div>
 
-        <div className="space-y-2.5 mb-5">
+        <div className="space-y-2.5 mb-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">
             <MapPin className="w-4 h-4" />
             <span className="line-clamp-1">{request.location}</span>
           </div>
 
-          <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">
-            <Truck className="w-4 h-4" />
-            <span className="capitalize">{deliveryLabel}</span>
-          </div>
-
-          {request.neededBy && (
+          {found > 0 && (
             <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">
               <CheckCircle2 className="w-4 h-4" />
-              <span>Needed by: {request.neededBy}</span>
+              <span>
+                Found: {found}/{request.quantity} • Remaining: {remaining}
+              </span>
             </div>
           )}
         </div>
 
-        {request.description && (
-          <p className="text-sm text-gray-500 dark:text-gray-400 line-clamp-2 mb-5">
-            {request.description}
-          </p>
-        )}
-
-        <div className="grid grid-cols-2 gap-2.5 mb-3">
+        <div className="grid grid-cols-2 gap-2.5">
           <button
             type="button"
             onClick={(e) => {
@@ -714,62 +782,134 @@ export const BuyerRequestCard: React.FC<{
             Fulfill
           </a>
         </div>
+      </div>
 
-        {isOwner && onUpdateStatus && (
+      {menuOpen && createPortal(
+        <div
+          className="fixed inset-0 z-[140]"
+          onClick={() => setMenuOpen(false)}
+        >
           <div
-            className="grid grid-cols-2 gap-2"
+            ref={menuRef}
+            className="absolute bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 rounded-[24px] shadow-[0_28px_90px_rgba(0,0,0,0.22)] overflow-y-auto max-h-[360px] p-2 ring-1 ring-black/[0.04] dark:ring-white/[0.05]"
+            style={{
+              top: menuPosition.top,
+              left: menuPosition.left,
+              width: menuPosition.width,
+            }}
             onClick={(e) => e.stopPropagation()}
           >
-            {request.status === 'open' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onUpdateStatus(request, 'matched')}
-                  className="h-10 rounded-2xl bg-amber-50 text-amber-700 dark:bg-amber-950/30 dark:text-amber-300 text-xs font-bold border border-amber-200 dark:border-amber-900 hover:bg-amber-100 dark:hover:bg-amber-950/50 transition-all"
-                >
-                  Mark matched
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onUpdateStatus(request, 'closed')}
-                  className="h-10 rounded-2xl bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-                >
-                  Close
-                </button>
-              </>
-            )}
-
-            {request.status === 'matched' && (
-              <>
-                <button
-                  type="button"
-                  onClick={() => onUpdateStatus(request, 'open')}
-                  className="h-10 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-all"
-                >
-                  Reopen
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onUpdateStatus(request, 'closed')}
-                  className="h-10 rounded-2xl bg-gray-100 text-gray-700 dark:bg-gray-800 dark:text-gray-300 text-xs font-bold border border-gray-200 dark:border-gray-700 hover:bg-gray-200 dark:hover:bg-gray-700 transition-all"
-                >
-                  Close
-                </button>
-              </>
-            )}
-
-            {request.status === 'closed' && (
+            <div className="space-y-1">
               <button
                 type="button"
-                onClick={() => onUpdateStatus(request, 'open')}
-                className="col-span-2 h-10 rounded-2xl bg-emerald-50 text-emerald-700 dark:bg-emerald-950/30 dark:text-emerald-300 text-xs font-bold border border-emerald-200 dark:border-emerald-900 hover:bg-emerald-100 dark:hover:bg-emerald-950/50 transition-all"
+                onClick={() => {
+                  onOpenDetails?.(request);
+                  setMenuOpen(false);
+                }}
+                className={menuItemClass}
               >
-                Reopen request
+                View details
               </button>
+            </div>
+
+            {isOwner && (
+              <>
+                <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+
+                <div className="space-y-1">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onEditRequest?.(request);
+                      setMenuOpen(false);
+                    }}
+                    className={menuItemClass}
+                  >
+                    Edit request
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onUpdateFoundQuantity?.(request);
+                      setMenuOpen(false);
+                    }}
+                    className={menuItemClass}
+                  >
+                    Update found quantity
+                  </button>
+
+                  {request.status === 'open' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateStatus?.(request, 'matched');
+                          setMenuOpen(false);
+                        }}
+                        className={menuItemClass}
+                      >
+                        Mark as matched
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateStatus?.(request, 'closed');
+                          setMenuOpen(false);
+                        }}
+                        className={menuItemClass}
+                      >
+                        Close request
+                      </button>
+                    </>
+                  )}
+
+                  {request.status === 'matched' && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateStatus?.(request, 'open');
+                          setMenuOpen(false);
+                        }}
+                        className={menuItemClass}
+                      >
+                        Reopen request
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => {
+                          onUpdateStatus?.(request, 'closed');
+                          setMenuOpen(false);
+                        }}
+                        className={menuItemClass}
+                      >
+                        Close request
+                      </button>
+                    </>
+                  )}
+
+                  {request.status === 'closed' && (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        onUpdateStatus?.(request, 'open');
+                        setMenuOpen(false);
+                      }}
+                      className={menuItemClass}
+                    >
+                      Reopen request
+                    </button>
+                  )}
+                </div>
+              </>
             )}
           </div>
-        )}
-      </div>
+        </div>,
+        document.body
+      )}
     </motion.div>
   );
 };

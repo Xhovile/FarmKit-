@@ -137,6 +137,9 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [demandBuyerType, setDemandBuyerType] = useState('all');
   const [demandStatus, setDemandStatus] = useState('open');
 
+  const [foundQtyRequest, setFoundQtyRequest] = useState<BuyerRequest | null>(null);
+  const [foundQtyValue, setFoundQtyValue] = useState('');
+
   useEffect(() => {
     const requestsQuery = query(
       collection(db, 'buyer_requests')
@@ -359,6 +362,51 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     } catch (error) {
       console.error('Error updating request status:', error);
       toast.error('Failed to update request status.');
+    }
+  };
+
+  const handleOpenEditRequest = (request: BuyerRequest) => {
+    setSelectedItem(null);
+    setEditingListing(null);
+    setIsAddProductModalOpen(true);
+    setFormStep(10);
+  };
+
+  const handleUpdateFoundQuantity = async () => {
+    if (!foundQtyRequest?.id) return;
+
+    const amount = Number(foundQtyValue);
+
+    if (!Number.isFinite(amount) || amount < 0) {
+      toast.error('Enter a valid found quantity.');
+      return;
+    }
+
+    if (amount > (foundQtyRequest.quantity ?? 0)) {
+      toast.error('Found quantity cannot be greater than requested quantity.');
+      return;
+    }
+
+    try {
+      const nextStatus =
+        amount >= (foundQtyRequest.quantity ?? 0)
+          ? 'matched'
+          : foundQtyRequest.status === 'closed'
+          ? 'closed'
+          : 'open';
+
+      await updateDoc(doc(db, 'buyer_requests', foundQtyRequest.id), {
+        quantityFound: amount,
+        status: nextStatus,
+        updatedAt: serverTimestamp(),
+      });
+
+      toast.success('Found quantity updated successfully.');
+      setFoundQtyRequest(null);
+      setFoundQtyValue('');
+    } catch (error) {
+      console.error('Error updating found quantity:', error);
+      toast.error('Failed to update found quantity.');
     }
   };
 
@@ -834,6 +882,11 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         currentUserId={user?.uid}
                         onOpenDetails={handleOpenRequestDetails}
                         onUpdateStatus={handleUpdateRequestStatus}
+                        onUpdateFoundQuantity={(request) => {
+                          setFoundQtyRequest(request);
+                          setFoundQtyValue(String(request.quantityFound ?? 0));
+                        }}
+                        onEditRequest={handleOpenEditRequest}
                       />
                     ))}
 
@@ -1072,6 +1125,77 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                   className="flex-1 py-3 bg-black text-white dark:bg-white dark:text-black font-bold rounded-xl shadow-lg hover:opacity-90 transition-all disabled:opacity-50"
                 >
                   Add stock
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        </div>
+      )}
+
+      {/* Found Quantity Modal */}
+      {foundQtyRequest && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.96 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="bg-white dark:bg-gray-800 rounded-3xl w-full max-w-md overflow-hidden shadow-2xl"
+          >
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+              <div>
+                <h3 className="text-xl font-black text-gray-900 dark:text-white">Update found quantity</h3>
+                <p className="text-sm text-gray-500 mt-1">{foundQtyRequest.commodity}</p>
+              </div>
+              <button
+                onClick={() => {
+                  setFoundQtyRequest(null);
+                  setFoundQtyValue('');
+                }}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-all"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div className="rounded-2xl bg-gray-50 dark:bg-gray-700/40 p-4 border border-gray-100 dark:border-gray-700">
+                <p className="text-xs uppercase tracking-widest text-gray-400 font-bold mb-2">Request progress</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Requested: <span className="font-bold">{foundQtyRequest.quantity} {foundQtyRequest.unit}</span>
+                </p>
+                <p className="text-sm text-gray-700 dark:text-gray-200">
+                  Found so far: <span className="font-bold">{foundQtyRequest.quantityFound ?? 0}</span>
+                </p>
+              </div>
+
+              <div>
+                <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
+                  Found quantity
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  value={foundQtyValue}
+                  onChange={(e) => setFoundQtyValue(e.target.value)}
+                  placeholder="e.g. 4"
+                  className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none"
+                />
+              </div>
+
+              <div className="flex gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setFoundQtyRequest(null);
+                    setFoundQtyValue('');
+                  }}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                >
+                  {t('common.cancel')}
+                </button>
+                <button
+                  onClick={handleUpdateFoundQuantity}
+                  className="flex-1 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all"
+                >
+                  Save
                 </button>
               </div>
             </div>

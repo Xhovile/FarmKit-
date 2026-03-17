@@ -977,6 +977,7 @@ export default function App() {
 
                         quantity: Number(data.quantity),
                         unit: data.unit,
+                        quantityFound: 0,
 
                         priceRange: data.priceRange,
 
@@ -993,7 +994,7 @@ export default function App() {
 
                         description: data.description || '',
 
-                        referenceImageUrl: referenceImageUrl,
+                        referenceImageUrl: null,
 
                         buyerId: user.uid,
                         buyerName: user.name,
