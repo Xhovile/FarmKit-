@@ -190,6 +190,25 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     return () => unsubscribeHidden();
   }, [user?.uid]);
 
+  useEffect(() => {
+    setSelectedItem((current: any) => {
+      if (!current || current.type !== 'buyer_request' || !current.id) {
+        return current;
+      }
+
+      const updatedRequest = requests.find((req) => req.id === current.id);
+
+      if (!updatedRequest) {
+        return current;
+      }
+
+      return {
+        ...updatedRequest,
+        type: 'buyer_request',
+      };
+    });
+  }, [requests, setSelectedItem]);
+
   const isPremium = user?.tier === 'Premium' || user?.tier === 'Verified Seller';
   const onUpgrade = () => setActiveTab('account');
 
@@ -674,8 +693,9 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 onClick={() => {
                   if (user) {
                     setEditingListing(null);
+                    setEditingRequest(null);
                     setIsAddProductModalOpen(true);
-                    setFormStep(marketTab === 'supply' ? 1 : 10); // 10 is start of buyer request form
+                    setFormStep(marketTab === 'supply' ? 1 : 10);
                   } else {
                     toast.error(t('account.signIn'));
                   }
@@ -712,6 +732,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                     onClick={() => {
                       if (user) {
                         setEditingListing(null);
+                        setEditingRequest(null);
                         setIsAddProductModalOpen(true);
                         setFormStep(1);
                       } else {
@@ -831,6 +852,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                     onClick={() => {
                       if (user) {
                         setEditingListing(null);
+                        setEditingRequest(null);
                         setIsAddProductModalOpen(true);
                         setFormStep(10);
                       } else {
