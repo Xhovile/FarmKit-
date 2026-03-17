@@ -49,8 +49,11 @@ service cloud.firestore {
 
     function isAdmin() {
       return isAuthenticated() &&
-        (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin' ||
-         (request.auth.token.email == "isaacmtsiriza310@gmail.com" && request.auth.token.email_verified == true));
+        (
+          (exists(/databases/$(database)/documents/users/$(request.auth.uid)) && 
+           get(/databases/$(database)/documents/users/$(request.auth.uid)).data.role == 'admin') ||
+          (request.auth.token.email == "isaacmtsiriza310@gmail.com" && request.auth.token.email_verified == true)
+        );
     }
 
     function hasRequiredFields(fields) {
@@ -135,7 +138,10 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
-      allow read: if isAuthenticated(); // Allow users to see profiles (some apps need this, adjust if PII is present)
+      // PII Protection: Only owner or admin can read user documents
+      allow get: if isOwner(userId) || isAdmin();
+      allow list: if isAdmin();
+      
       allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
                       (!('role' in request.resource.data) || isAdmin());
       allow update: if isOwner(userId) && isValidUser(request.resource.data) && 

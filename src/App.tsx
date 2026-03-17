@@ -194,6 +194,8 @@ export default function App() {
             });
           } else {
             const initialData = {
+              uid: firebaseUser.uid,
+              email: firebaseUser.email || '',
               name: firebaseUser.displayName || 'Farmer',
               tier: 'Free',
               location: '',
@@ -322,59 +324,29 @@ export default function App() {
   const t_old = (en: string, ny: string) => lang === 'en' ? en : ny;
 
   const uploadImageToCloudinary = async (file: File): Promise<string> => {
-    const cloudName = import.meta.env.VITE_CLOUDINARY_CLOUD_NAME?.trim();
-    const uploadPreset = import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET?.trim();
-
-    if (!cloudName) {
-      throw new Error('Cloudinary Cloud Name is missing. Please set VITE_CLOUDINARY_CLOUD_NAME in your environment variables.');
-    }
-    if (!uploadPreset) {
-      throw new Error('Cloudinary Upload Preset is missing. Please set VITE_CLOUDINARY_UPLOAD_PRESET in your environment variables.');
-    }
-
-    // Optional: Check file size (e.g., 10MB limit)
     if (file.size > 10 * 1024 * 1024) {
       throw new Error('Image file is too large. Maximum size is 10MB.');
     }
 
     const formData = new FormData();
     formData.append('file', file);
-    formData.append('upload_preset', uploadPreset);
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${cloudName}/image/upload`,
-        {
-          method: 'POST',
-          body: formData,
-        }
-      );
+      const response = await fetch('/api/upload', {
+        method: 'POST',
+        body: formData,
+      });
 
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        const errorMessage = errorData.error?.message || 'Image upload to Cloudinary failed.';
-        
-        if (errorMessage.includes('Upload preset')) {
-          throw new Error(`Cloudinary Error: ${errorMessage}. Ensure your upload preset "${uploadPreset}" is created and set to "Unsigned" in Cloudinary settings.`);
-        }
-
-        if (errorMessage.includes('API key') || errorMessage.includes('Unknown API key')) {
-          throw new Error(`Cloudinary Error: ${errorMessage}. This usually happens when your Upload Preset is set to "Signed". Please go to Cloudinary Settings > Upload > Upload presets and change your preset's Signing Mode to "Unsigned".`);
-        }
-        
-        throw new Error(`Cloudinary Error: ${errorMessage}`);
+        throw new Error(errorData.error || 'Upload failed');
       }
 
-      const result = await response.json();
-
-      if (!result.secure_url) {
-        throw new Error('Cloudinary did not return an image URL.');
-      }
-
-      return result.secure_url;
+      const data = await response.json();
+      return data.url;
     } catch (error: any) {
-      if (error.message.includes('Cloudinary Error')) throw error;
-      throw new Error(`Failed to connect to Cloudinary: ${error.message}`);
+      console.error('Cloudinary upload error:', error);
+      throw error;
     }
   };
 

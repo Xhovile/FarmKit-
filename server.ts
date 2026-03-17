@@ -4,9 +4,21 @@ import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
 import { adminAuth, adminDb } from './server/firebaseAdmin';
+import { v2 as cloudinary } from 'cloudinary';
+import multer from 'multer';
+import fs from 'fs';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+// Configure Cloudinary
+cloudinary.config({
+  cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
+  api_key: process.env.CLOUDINARY_API_KEY,
+  api_secret: process.env.CLOUDINARY_API_SECRET,
+});
+
+const upload = multer({ dest: 'uploads/' });
 
 async function startServer() {
   const app = express();
@@ -17,6 +29,44 @@ async function startServer() {
   // API routes
   app.get("/api/health", (req, res) => {
     res.json({ status: "ok" });
+  });
+
+  // Serve Firebase config securely
+  app.get('/api/config/firebase', (req, res) => {
+    try {
+      const configPath = path.join(__dirname, 'firebase-applet-config.json');
+      if (fs.existsSync(configPath)) {
+        const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+        res.json(config);
+      } else {
+        res.status(404).json({ error: 'Firebase config not found' });
+      }
+    } catch (error) {
+      res.status(500).json({ error: 'Failed to load Firebase config' });
+    }
+  });
+
+  // Cloudinary Upload Proxy
+  app.post('/api/upload', upload.single('file'), async (req, res) => {
+    try {
+      if (!req.file) {
+        return res.status(400).json({ error: 'No file uploaded' });
+      }
+
+      const result = await cloudinary.uploader.upload(req.file.path, {
+        folder: 'farmkit',
+        upload_preset: process.env.CLOUDINARY_UPLOAD_PRESET,
+      });
+
+      // Clean up local file
+      fs.unlinkSync(req.file.path);
+
+      res.json({ url: result.secure_url });
+    } catch (error: any) {
+      console.error('Upload error:', error);
+      if (req.file) fs.unlinkSync(req.file.path);
+      res.status(500).json({ error: error.message || 'Upload failed' });
+    }
   });
 
   app.post('/api/account/delete', async (req, res) => {

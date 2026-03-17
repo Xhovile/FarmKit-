@@ -902,6 +902,7 @@ export const AddRequestForm: React.FC<FormProps & {
   });
 
   const lastLoadedRef = useRef<string | null>(null);
+  const objectUrlRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (!initialData) return;
@@ -927,6 +928,11 @@ export const AddRequestForm: React.FC<FormProps & {
     if (lastLoadedRef.current === currentKey) return;
     lastLoadedRef.current = currentKey;
 
+    if (objectUrlRef.current) {
+      URL.revokeObjectURL(objectUrlRef.current);
+      objectUrlRef.current = null;
+    }
+
     setFormData({
       commodity: initialData.commodity || '',
       category: initialData.category || '',
@@ -949,6 +955,15 @@ export const AddRequestForm: React.FC<FormProps & {
       removeExistingImage: false,
     });
   }, [initialData, user]);
+
+  useEffect(() => {
+    return () => {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+        objectUrlRef.current = null;
+      }
+    };
+  }, []);
 
   const [isCategoryOpen, setIsCategoryOpen] = useState(false);
   const [isUnitOpen, setIsUnitOpen] = useState(false);
@@ -1004,10 +1019,17 @@ export const AddRequestForm: React.FC<FormProps & {
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      if (objectUrlRef.current) {
+        URL.revokeObjectURL(objectUrlRef.current);
+      }
+
+      const previewUrl = URL.createObjectURL(file);
+      objectUrlRef.current = previewUrl;
+
       setFormData({
         ...formData,
         imageFile: file,
-        imagePreview: URL.createObjectURL(file),
+        imagePreview: previewUrl,
         removeExistingImage: false,
       });
     }
@@ -1534,6 +1556,11 @@ export const AddRequestForm: React.FC<FormProps & {
                   <img src={formData.imagePreview} className="w-full h-full object-cover" />
                   <button 
                     onClick={() => {
+                      if (objectUrlRef.current) {
+                        URL.revokeObjectURL(objectUrlRef.current);
+                        objectUrlRef.current = null;
+                      }
+
                       setFormData({
                         ...formData,
                         imageFile: null,
