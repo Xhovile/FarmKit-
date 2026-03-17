@@ -402,23 +402,37 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     >
       {/* Market Sub-Nav */}
       <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm p-2 flex gap-2 overflow-x-auto no-scrollbar">
-        <button 
+        <button
           onClick={() => setMarketTab('supply')}
-          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${marketTab === 'supply' ? 'bg-primary text-white shadow-md shadow-primary/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+            marketTab === 'supply'
+              ? 'bg-emerald-600 text-white shadow-md shadow-emerald-500/20'
+              : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
         >
           <LayoutGrid className="w-4 h-4" /> {t('market.supply')}
         </button>
-        <button 
+
+        <button
           onClick={() => setMarketTab('demand')}
-          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${marketTab === 'demand' ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 ${
+            marketTab === 'demand'
+              ? 'bg-indigo-600 text-white shadow-md shadow-indigo-500/20'
+              : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
         >
           <ClipboardList className="w-4 h-4" /> {t('market.demand')}
         </button>
-        <button 
+
+        <button
           onClick={() => setMarketTab('insights')}
-          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 relative ${marketTab === 'insights' ? 'bg-amber-500 text-white shadow-md shadow-amber-500/10' : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'}`}
+          className={`flex-1 min-w-[100px] py-3 px-4 rounded-xl font-bold text-xs transition-all flex items-center justify-center gap-2 relative ${
+            marketTab === 'insights'
+              ? 'bg-amber-500 text-white shadow-md shadow-amber-500/20'
+              : 'text-gray-500 hover:bg-gray-50 dark:hover:bg-gray-700'
+          }`}
         >
-          <TrendingUp className="w-4 h-4" /> 
+          <TrendingUp className="w-4 h-4" />
           {t('market.insights')}
           {!isPremium && <Crown className="w-3 h-3 absolute -top-1 -right-1 text-amber-500 fill-amber-500" />}
         </button>
