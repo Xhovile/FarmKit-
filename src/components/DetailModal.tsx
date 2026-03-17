@@ -296,17 +296,19 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   <Share2 className="w-4 h-4" />
                 </button>
 
-                <button
-                  type="button"
-                  onClick={() => toggleSavedListing?.(selectedItem)}
-                  className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all shadow-sm ${
-                    saved
-                      ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
-                      : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
-                  }`}
-                >
-                  <Bookmark className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
-                </button>
+                {isMarketListing && (
+                  <button
+                    type="button"
+                    onClick={() => toggleSavedListing?.(selectedItem)}
+                    className={`h-10 w-10 rounded-full border flex items-center justify-center transition-all shadow-sm ${
+                      saved
+                        ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
+                        : 'border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-gray-700 dark:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
+                  >
+                    <Bookmark className={`w-4 h-4 ${saved ? 'fill-current' : ''}`} />
+                  </button>
+                )}
 
                 <button
                   type="button"
