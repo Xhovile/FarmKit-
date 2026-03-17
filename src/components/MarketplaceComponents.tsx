@@ -870,6 +870,303 @@ export const MarketplaceFilters: React.FC<{
   );
 };
 
+export const DemandFilters: React.FC<{
+  categories: any[];
+  demandCategory: string;
+  setDemandCategory: (value: string) => void;
+  demandRegion: string;
+  setDemandRegion: (value: string) => void;
+  demandUrgency: string;
+  setDemandUrgency: (value: string) => void;
+  demandBuyerType: string;
+  setDemandBuyerType: (value: string) => void;
+  demandStatus: string;
+  setDemandStatus: (value: string) => void;
+  t: any;
+}> = ({
+  categories,
+  demandCategory,
+  setDemandCategory,
+  demandRegion,
+  setDemandRegion,
+  demandUrgency,
+  setDemandUrgency,
+  demandBuyerType,
+  setDemandBuyerType,
+  demandStatus,
+  setDemandStatus,
+  t
+}) => {
+  const [showAdvanced, setShowAdvanced] = useState(false);
+
+  const [isRegionOpen, setIsRegionOpen] = useState(false);
+  const [isUrgencyOpen, setIsUrgencyOpen] = useState(false);
+  const [isBuyerTypeOpen, setIsBuyerTypeOpen] = useState(false);
+  const [isStatusOpen, setIsStatusOpen] = useState(false);
+
+  const regionRef = useRef<HTMLDivElement | null>(null);
+  const urgencyRef = useRef<HTMLDivElement | null>(null);
+  const buyerTypeRef = useRef<HTMLDivElement | null>(null);
+  const statusRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      const target = event.target as Node;
+
+      if (regionRef.current && !regionRef.current.contains(target)) setIsRegionOpen(false);
+      if (urgencyRef.current && !urgencyRef.current.contains(target)) setIsUrgencyOpen(false);
+      if (buyerTypeRef.current && !buyerTypeRef.current.contains(target)) setIsBuyerTypeOpen(false);
+      if (statusRef.current && !statusRef.current.contains(target)) setIsStatusOpen(false);
+    };
+
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const demandCategories = [
+    { id: 'all', name: 'All categories', nameNy: 'Magulu Onse' },
+    ...categories,
+  ];
+
+  return (
+    <div className="space-y-4 mb-8">
+      <div className="flex items-center gap-3">
+        <div className="flex-1 flex gap-2 overflow-x-auto no-scrollbar py-1">
+          {demandCategories.map((cat) => (
+            <button
+              key={cat.id}
+              onClick={() => setDemandCategory(cat.id)}
+              className={`px-5 py-2.5 rounded-2xl font-bold text-sm whitespace-nowrap transition-all ${
+                demandCategory === cat.id
+                  ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-500/30'
+                  : 'bg-white dark:bg-gray-800 text-gray-500 border border-gray-100 dark:border-gray-700 hover:bg-gray-50'
+              }`}
+            >
+              {cat.id === 'all' ? 'All categories' : t(cat.name, cat.nameNy)}
+            </button>
+          ))}
+        </div>
+
+        <button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className={`h-11 w-11 rounded-2xl flex items-center justify-center transition-all border ${
+            showAdvanced
+              ? 'bg-indigo-600 text-white border-indigo-600'
+              : 'bg-white dark:bg-gray-800 text-gray-500 border-gray-100 dark:border-gray-700'
+          }`}
+        >
+          <Filter className="w-5 h-5" />
+        </button>
+      </div>
+
+      {showAdvanced && (
+        <motion.div
+          initial={{ height: 0, opacity: 0 }}
+          animate={{ height: 'auto', opacity: 1 }}
+          className="bg-gray-50 dark:bg-gray-800/50 rounded-[2rem] p-6 border border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-4 gap-6"
+        >
+          <div className="relative" ref={regionRef}>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              Region
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsRegionOpen((prev) => !prev)}
+              className="w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
+            >
+              <span>{demandRegion === 'all' ? 'All Regions' : demandRegion}</span>
+              <span className="text-gray-400">⌄</span>
+            </button>
+
+            {isRegionOpen && (
+              <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
+                <div className="p-2">
+                  {['all', ...malawiRegions].map((region) => {
+                    const label = region === 'all' ? 'All Regions' : region;
+                    const selected = demandRegion === region;
+
+                    return (
+                      <button
+                        key={region}
+                        type="button"
+                        onClick={() => {
+                          setDemandRegion(region);
+                          setIsRegionOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
+                          selected
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <span className="font-medium">{label}</span>
+                        {selected && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative" ref={urgencyRef}>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              Urgency
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsUrgencyOpen((prev) => !prev)}
+              className="w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
+            >
+              <span>
+                {demandUrgency === 'all'
+                  ? 'All urgency'
+                  : demandUrgency.charAt(0).toUpperCase() + demandUrgency.slice(1)}
+              </span>
+              <span className="text-gray-400">⌄</span>
+            </button>
+
+            {isUrgencyOpen && (
+              <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
+                <div className="p-2">
+                  {['all', 'normal', 'urgent'].map((value) => {
+                    const label =
+                      value === 'all'
+                        ? 'All urgency'
+                        : value.charAt(0).toUpperCase() + value.slice(1);
+                    const selected = demandUrgency === value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setDemandUrgency(value);
+                          setIsUrgencyOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
+                          selected
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <span className="font-medium">{label}</span>
+                        {selected && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative" ref={buyerTypeRef}>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              Buyer type
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsBuyerTypeOpen((prev) => !prev)}
+              className="w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
+            >
+              <span>
+                {demandBuyerType === 'all'
+                  ? 'All buyer types'
+                  : demandBuyerType.charAt(0).toUpperCase() + demandBuyerType.slice(1)}
+              </span>
+              <span className="text-gray-400">⌄</span>
+            </button>
+
+            {isBuyerTypeOpen && (
+              <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
+                <div className="p-2">
+                  {['all', 'individual', 'farmer', 'trader', 'processor', 'business'].map((value) => {
+                    const label =
+                      value === 'all'
+                        ? 'All buyer types'
+                        : value.charAt(0).toUpperCase() + value.slice(1);
+                    const selected = demandBuyerType === value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setDemandBuyerType(value);
+                          setIsBuyerTypeOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
+                          selected
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <span className="font-medium">{label}</span>
+                        {selected && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="relative" ref={statusRef}>
+            <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
+              Status
+            </label>
+            <button
+              type="button"
+              onClick={() => setIsStatusOpen((prev) => !prev)}
+              className="w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
+            >
+              <span>
+                {demandStatus === 'all'
+                  ? 'All statuses'
+                  : demandStatus.charAt(0).toUpperCase() + demandStatus.slice(1)}
+              </span>
+              <span className="text-gray-400">⌄</span>
+            </button>
+
+            {isStatusOpen && (
+              <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
+                <div className="p-2">
+                  {['all', 'open', 'matched', 'closed'].map((value) => {
+                    const label =
+                      value === 'all'
+                        ? 'All statuses'
+                        : value.charAt(0).toUpperCase() + value.slice(1);
+                    const selected = demandStatus === value;
+
+                    return (
+                      <button
+                        key={value}
+                        type="button"
+                        onClick={() => {
+                          setDemandStatus(value);
+                          setIsStatusOpen(false);
+                        }}
+                        className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
+                          selected
+                            ? 'bg-indigo-50 text-indigo-600'
+                            : 'hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200'
+                        }`}
+                      >
+                        <span className="font-medium">{label}</span>
+                        {selected && <CheckCircle2 className="w-4 h-4" />}
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+        </motion.div>
+      )}
+    </div>
+  );
+};
+
 export const SellerOnboardingCTA: React.FC<{ t: any; onUpgrade: () => void }> = ({ t, onUpgrade }) => (
   <div className="bg-gradient-to-br from-primary to-emerald-600 p-8 rounded-[2rem] text-white shadow-xl relative overflow-hidden group">
     <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />

@@ -70,6 +70,7 @@ import {
   ListingCard, 
   BuyerRequestCard, 
   MarketplaceFilters,
+  DemandFilters,
   SellerOnboardingCTA,
   SellerCard
 } from '../components/MarketplaceComponents';
@@ -129,10 +130,16 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [selectedDeliveryMethod, setSelectedDeliveryMethod] = useState('all');
   const [selectedRegion, setSelectedRegion] = useState('all');
 
+  // Demand Filters
+  const [demandCategory, setDemandCategory] = useState('all');
+  const [demandRegion, setDemandRegion] = useState('all');
+  const [demandUrgency, setDemandUrgency] = useState('all');
+  const [demandBuyerType, setDemandBuyerType] = useState('all');
+  const [demandStatus, setDemandStatus] = useState('open');
+
   useEffect(() => {
     const requestsQuery = query(
-      collection(db, 'buyer_requests'),
-      where('status', '==', 'open')
+      collection(db, 'buyer_requests')
     );
 
     const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
@@ -692,7 +699,23 @@ export const MarketPage: React.FC<MarketPageProps> = ({
           )}
 
           {marketTab === 'demand' && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            <>
+              <DemandFilters
+                categories={marketCategories}
+                demandCategory={demandCategory}
+                setDemandCategory={setDemandCategory}
+                demandRegion={demandRegion}
+                setDemandRegion={setDemandRegion}
+                demandUrgency={demandUrgency}
+                setDemandUrgency={setDemandUrgency}
+                demandBuyerType={demandBuyerType}
+                setDemandBuyerType={setDemandBuyerType}
+                demandStatus={demandStatus}
+                setDemandStatus={setDemandStatus}
+                t={t}
+              />
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {requests.length === 0 ? (
                 <div className="col-span-full bg-white dark:bg-gray-800 rounded-[2.5rem] p-12 text-center border border-gray-100 dark:border-gray-700">
                   <ClipboardList className="w-16 h-16 text-gray-200 mx-auto mb-4" />
@@ -714,25 +737,95 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                   </button>
                 </div>
               ) : (
-                requests
-                  .filter(req => 
-                    req.commodity.toLowerCase().includes(marketSearchQuery.toLowerCase()) || 
-                    req.location.toLowerCase().includes(marketSearchQuery.toLowerCase()) ||
-                    req.buyerName.toLowerCase().includes(marketSearchQuery.toLowerCase())
-                  )
-                  .map(req => (
-                    <BuyerRequestCard 
-                      key={req.id} 
-                      request={req} 
-                      t={t} 
-                      onOpenDetails={handleOpenRequestDetails} 
-                    />
-                  ))
+                <>
+                  {requests
+                    .filter((req) => {
+                      const q = marketSearchQuery.toLowerCase();
+
+                      const matchesSearch =
+                        req.commodity.toLowerCase().includes(q) ||
+                        req.location.toLowerCase().includes(q) ||
+                        req.buyerName.toLowerCase().includes(q);
+
+                      const matchesCategory =
+                        demandCategory === 'all' || req.category === demandCategory;
+
+                      const matchesRegion =
+                        demandRegion === 'all' || req.locationData?.region === demandRegion;
+
+                      const matchesUrgency =
+                        demandUrgency === 'all' || req.urgency === demandUrgency;
+
+                      const matchesBuyerType =
+                        demandBuyerType === 'all' || req.buyerType === demandBuyerType;
+
+                      const matchesStatus =
+                        demandStatus === 'all' || req.status === demandStatus;
+
+                      return (
+                        matchesSearch &&
+                        matchesCategory &&
+                        matchesRegion &&
+                        matchesUrgency &&
+                        matchesBuyerType &&
+                        matchesStatus
+                      );
+                    })
+                    .map((req) => (
+                      <BuyerRequestCard
+                        key={req.id}
+                        request={req}
+                        t={t}
+                        onOpenDetails={handleOpenRequestDetails}
+                      />
+                    ))}
+
+                  {requests.filter((req) => {
+                    const q = marketSearchQuery.toLowerCase();
+
+                    const matchesSearch =
+                      req.commodity.toLowerCase().includes(q) ||
+                      req.location.toLowerCase().includes(q) ||
+                      req.buyerName.toLowerCase().includes(q);
+
+                    const matchesCategory =
+                      demandCategory === 'all' || req.category === demandCategory;
+
+                    const matchesRegion =
+                      demandRegion === 'all' || req.locationData?.region === demandRegion;
+
+                    const matchesUrgency =
+                      demandUrgency === 'all' || req.urgency === demandUrgency;
+
+                    const matchesBuyerType =
+                      demandBuyerType === 'all' || req.buyerType === demandBuyerType;
+
+                    const matchesStatus =
+                      demandStatus === 'all' || req.status === demandStatus;
+
+                    return (
+                      matchesSearch &&
+                      matchesCategory &&
+                      matchesRegion &&
+                      matchesUrgency &&
+                      matchesBuyerType &&
+                      matchesStatus
+                    );
+                  }).length === 0 && (
+                    <div className="col-span-full bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">
+                      <h3 className="text-lg font-bold mb-2">No matching requests</h3>
+                      <p className="text-sm text-gray-500">
+                        Try changing your demand filters or search terms.
+                      </p>
+                    </div>
+                  )}
+                </>
               )}
             </div>
-          )}
-        </>
-      )}
+          </>
+        )}
+      </>
+    )}
 
       {/* Report Modal */}
       {reportingItem && (
