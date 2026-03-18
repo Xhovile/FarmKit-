@@ -1,26 +1,15 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { 
-  UserCircle, 
-  Settings, 
-  X, 
-  User, 
-  Camera, 
-  LogOut, 
-  HelpCircle, 
-  Share2, 
+import {
+  UserCircle,
+  Settings,
+  X,
+  User,
+  Camera,
+  LogOut,
+  HelpCircle,
   MapPin,
-  Phone,
   Save,
-  Package,
-  Star,
-  ThumbsUp,
-  Crown,
-  ArrowRight,
-  ClipboardList,
-  TrendingUp,
-  Building2,
-  CheckCircle2,
   Languages
 } from 'lucide-react';
 import { auth, db } from '../lib/firebase';
