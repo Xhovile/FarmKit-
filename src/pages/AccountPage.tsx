@@ -121,6 +121,9 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   const [isEditingSellerProfile, setIsEditingSellerProfile] = React.useState(false);
   const [isEditingOrganizationProfile, setIsEditingOrganizationProfile] = React.useState(false);
 
+  const [isSwitchingPrimaryRole, setIsSwitchingPrimaryRole] = React.useState(false);
+  const [selectedPrimaryRole, setSelectedPrimaryRole] = React.useState<UserType['primaryRole']>(user.primaryRole);
+
   const [sellerEditForm, setSellerEditForm] = React.useState({
     businessName: user.sellerProfile?.businessName || '',
     category: user.sellerProfile?.category || '',
@@ -285,6 +288,31 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       setIsEditingOrganizationProfile(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update organisation profile.');
+    }
+  };
+
+  const handlePrimaryRoleSwitch = async () => {
+    if (!user) return;
+
+    if (!user.roles.includes(selectedPrimaryRole)) {
+      toast.error('You can only switch to a role already on your account.');
+      return;
+    }
+
+    try {
+      await updateDoc(doc(db, 'users', user.uid), {
+        primaryRole: selectedPrimaryRole,
+      });
+
+      setUser({
+        ...user,
+        primaryRole: selectedPrimaryRole,
+      });
+
+      toast.success('Primary role updated.');
+      setIsSwitchingPrimaryRole(false);
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update primary role.');
     }
   };
 
@@ -453,10 +481,27 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                         key={role}
                         className="px-3 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-xs font-semibold"
                       >
-                        {roleLabelMap[role]}
+                        <div className="flex items-center gap-2">
+                          <span>{roleLabelMap[role]}</span>
+                          {user.primaryRole === role && (
+                            <span className="text-[10px] font-bold text-emerald-600 uppercase">Main</span>
+                          )}
+                        </div>
                       </span>
                     ))}
                   </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    onClick={() => {
+                      setSelectedPrimaryRole(user.primaryRole);
+                      setIsSwitchingPrimaryRole(true);
+                    }}
+                    className="w-full py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-sm font-bold rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
+                  >
+                    Switch Primary Role
+                  </button>
                 </div>
               </div>
 
@@ -636,6 +681,65 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           )}
         </div>
       </div>
+
+      {isSwitchingPrimaryRole && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsSwitchingPrimaryRole(false)}
+          />
+          <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-5">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-2xl font-bold">Switch Primary Role</h3>
+                <p className="text-sm text-gray-500">Choose which role should be your main account identity.</p>
+              </div>
+              <button
+                onClick={() => setIsSwitchingPrimaryRole(false)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-3">
+              {user.roles.map((role) => (
+                <button
+                  key={role}
+                  onClick={() => setSelectedPrimaryRole(role)}
+                  className={`w-full text-left px-4 py-4 rounded-2xl border transition-all ${
+                    selectedPrimaryRole === role
+                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
+                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-400'
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <span className="font-bold">{roleLabelMap[role]}</span>
+                    {selectedPrimaryRole === role && (
+                      <span className="text-xs font-bold text-emerald-600">Selected</span>
+                    )}
+                  </div>
+                </button>
+              ))}
+            </div>
+
+            <div className="flex gap-3 pt-2">
+              <button
+                onClick={() => setIsSwitchingPrimaryRole(false)}
+                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePrimaryRoleSwitch}
+                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
+              >
+                Save Role
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {isEditingSellerProfile && user.sellerProfile && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
