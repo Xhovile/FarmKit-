@@ -28,10 +28,6 @@ import { doc, setDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { User as UserType } from '../types';
 
-// Real data states (placeholders for now)
-const marketplaceListings: any[] = [];
-const buyerRequests: any[] = [];
-
 interface AccountPageProps {
   t: (key: string) => string;
   lang: 'en' | 'ny';
@@ -93,9 +89,15 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   };
 
   const statusLabelMap: Record<UserType['status'], string> = {
-    basic: 'Basic',
-    verified: 'Verified',
-    premium: 'Premium',
+    basic: 'Basic Account',
+    verified: 'Verified Account',
+    premium: 'Premium Account',
+  };
+
+  const statusBadgeClassMap: Record<UserType['status'], string> = {
+    basic: 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400',
+    verified: 'bg-emerald-500 text-white',
+    premium: 'bg-amber-500 text-white',
   };
 
   const canSell =
@@ -143,8 +145,10 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             
             {!isEditingProfile && (
               <div className="flex gap-2 mb-2">
-                <span className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${user?.status === 'verified' ? 'bg-emerald-500 text-white' : user?.status === 'premium' ? 'bg-amber-500 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'}`}>
-                  {user?.status === 'verified' ? t('account.verifiedSeller') : user?.status === 'premium' ? t('account.premiumMember') : t('account.freeMember')}
+                <span
+                  className={`px-4 py-1.5 rounded-full text-xs font-bold shadow-sm ${statusBadgeClassMap[user.status]}`}
+                >
+                  {statusLabelMap[user.status]}
                 </span>
               </div>
             )}
@@ -323,73 +327,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           )}
         </div>
       </div>
-
-      {/* My Listings & Requests */}
-      {(marketplaceListings.length > 0 || buyerRequests.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {marketplaceListings.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black flex items-center gap-2">
-                  <Package className="w-6 h-6 text-primary" />
-                  {t('account.myListings')}
-                </h3>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[10px] font-black uppercase tracking-widest">
-                  {marketplaceListings.filter(l => l.seller.id === user.uid).length} {t('common.active')}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {marketplaceListings.filter(l => l.seller.id === user.uid).map(listing => (
-                  <div key={listing.id} className="flex items-center gap-4 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                    <img src={listing.image} alt={listing.title} className="w-12 h-12 rounded-xl object-cover" />
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-sm font-bold truncate">{listing.title}</h4>
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">MK {listing.price.toLocaleString()} / {listing.unit}</p>
-                    </div>
-                    <button className="p-2 hover:bg-white dark:hover:bg-gray-600 rounded-lg transition-all">
-                      <ArrowRight className="w-4 h-4 text-primary" />
-                    </button>
-                  </div>
-                ))}
-                <button className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 font-bold text-sm hover:border-primary hover:text-primary transition-all">
-                  + {t('forms.addListing')}
-                </button>
-              </div>
-            </div>
-          )}
-
-          {buyerRequests.length > 0 && (
-            <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-xl font-black flex items-center gap-2">
-                  <ClipboardList className="w-6 h-6 text-indigo-600" />
-                  {t('account.myRequests')}
-                </h3>
-                <span className="px-3 py-1 bg-gray-100 dark:bg-gray-700 rounded-full text-[10px] font-black uppercase tracking-widest">
-                  {buyerRequests.length} {t('common.active')}
-                </span>
-              </div>
-              <div className="space-y-3">
-                {buyerRequests.slice(0, 2).map(request => (
-                  <div key={request.id} className="p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700">
-                    <div className="flex justify-between items-start mb-2">
-                      <h4 className="text-sm font-bold">{request.commodity}</h4>
-                      <span className="text-[10px] font-black text-indigo-600 uppercase tracking-widest">{request.status}</span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <p className="text-[10px] text-gray-500 font-bold uppercase tracking-wider">{request.quantity} {request.unit}</p>
-                      <p className="text-[10px] text-primary font-bold uppercase tracking-wider">{request.priceRange.split('per')[0]}</p>
-                    </div>
-                  </div>
-                ))}
-                <button className="w-full py-3 border-2 border-dashed border-gray-200 dark:border-gray-700 rounded-2xl text-gray-400 font-bold text-sm hover:border-indigo-600 hover:text-indigo-600 transition-all">
-                  + {t('forms.postRequest')}
-                </button>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
     </motion.div>
   );

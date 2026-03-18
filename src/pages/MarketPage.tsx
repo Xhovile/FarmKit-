@@ -488,7 +488,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
 
     setSelectedItem({
       ...listing,
-      image: listing.imageUrl,
+      image: listing.imageUrl || '/placeholder-image.png',
       type: 'market_listing',
     });
   };

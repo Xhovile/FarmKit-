@@ -108,8 +108,6 @@ type ListingFormData = {
   expiryDate?: string;
 };
 
-type LegacyTier = 'Free' | 'Premium' | 'Verified Seller';
-
 const normalizeRoles = (roles: unknown): import('./types').UserRole[] => {
   const validRoles = new Set(['buyer', 'seller', 'business', 'cooperative', 'ngo']);
 
