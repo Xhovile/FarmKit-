@@ -29,7 +29,7 @@ export interface MarketListing {
 
   sellerId: string;
   sellerName: string;
-  sellerTier: string;
+  sellerStatus: AccountStatus;
   sellerType?: SellerType;
 
   verified: boolean;
@@ -69,6 +69,9 @@ export interface MarketListing {
   expiryDate?: string;
 }
 
+export type UserRole = 'buyer' | 'seller' | 'business' | 'cooperative' | 'ngo';
+export type AccountStatus = 'basic' | 'verified' | 'premium';
+
 export interface SellerProfile {
   type: 'individual_seller';
   businessName: string;
@@ -95,11 +98,15 @@ export interface User {
   location: string;
   bio: string;
   avatar: string;
-  primaryRole: 'buyer' | 'seller' | 'organization';
-  roles: string[];
-  status: 'basic' | 'verified' | 'premium';
+
+  primaryRole: UserRole;
+  roles: UserRole[];
+
+  status: AccountStatus;
+
   sellerProfile: SellerProfile | null;
   organizationProfile: OrganizationProfile | null;
+
   createdAt: string;
   emailVerified: boolean;
 }

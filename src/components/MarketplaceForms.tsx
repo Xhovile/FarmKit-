@@ -144,7 +144,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
     
     deliveryMethod: initialData?.deliveryMethod || 'pickup',
     description: initialData?.description || '',
-    businessName: initialData?.businessName || user?.businessName || user?.name || '',
+    businessName: initialData?.businessName || user?.sellerProfile?.businessName || user?.organizationProfile?.organizationName || user?.name || '',
     phone: initialData?.phone || user?.phone || '',
     sellerType: initialData?.sellerType || 'farmer',
     
@@ -245,7 +245,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
       
       deliveryMethod: initialData.deliveryMethod || 'pickup',
       description: initialData.description || '',
-      businessName: initialData.businessName || user?.businessName || user?.name || '',
+      businessName: initialData.businessName || user?.sellerProfile?.businessName || user?.organizationProfile?.organizationName || user?.name || '',
       phone: initialData.phone || user?.phone || '',
       sellerType: initialData.sellerType || 'farmer',
       

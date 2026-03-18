@@ -84,6 +84,26 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     );
   }
 
+  const roleLabelMap: Record<UserType['primaryRole'], string> = {
+    buyer: 'Buyer',
+    seller: 'Seller',
+    business: 'Business',
+    cooperative: 'Cooperative',
+    ngo: 'NGO',
+  };
+
+  const statusLabelMap: Record<UserType['status'], string> = {
+    basic: 'Basic',
+    verified: 'Verified',
+    premium: 'Premium',
+  };
+
+  const canSell =
+    user.roles.includes('seller') ||
+    user.roles.includes('business') ||
+    user.roles.includes('cooperative') ||
+    user.roles.includes('ngo');
+
   return (
     <motion.div 
       key="account-auth"
@@ -222,43 +242,50 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 </div>
               )}
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
-                  <div className="w-10 h-10 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400 rounded-full flex items-center justify-center">
-                    <Package className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase">{t('common.listings')}</p>
-                    <p className="text-lg font-bold">{marketplaceListings.length}</p>
-                  </div>
-                </div>
-                <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
-                  <div className="w-10 h-10 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center">
-                    <Star className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase">{t('account.rating')}</p>
-                    <p className="text-lg font-bold">0/5</p>
+              <div className="bg-gray-50 dark:bg-gray-700/50 p-5 rounded-2xl border border-gray-100 dark:border-gray-700 space-y-4">
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Account Type
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    <span className="px-3 py-1 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                      {roleLabelMap[user.primaryRole]}
+                    </span>
+                    <span className="px-3 py-1 rounded-full bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-200 text-xs font-bold">
+                      {statusLabelMap[user.status]}
+                    </span>
                   </div>
                 </div>
-                <div className="p-4 bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm flex items-center gap-4">
-                  <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400 rounded-full flex items-center justify-center">
-                    <ThumbsUp className="w-5 h-5" />
-                  </div>
-                  <div>
-                    <p className="text-xs text-gray-400 font-bold uppercase">{t('account.followers')}</p>
-                    <p className="text-lg font-bold">0</p>
+
+                <div>
+                  <h4 className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-2">
+                    Active Roles
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {user.roles.map((role) => (
+                      <span
+                        key={role}
+                        className="px-3 py-1 rounded-full bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 text-xs font-semibold"
+                      >
+                        {roleLabelMap[role]}
+                      </span>
+                    ))}
                   </div>
                 </div>
+
+                {!canSell && (
+                  <div className="pt-2">
+                    <button
+                      className="w-full py-3 bg-emerald-600 text-white font-bold rounded-xl hover:bg-emerald-700 transition-all"
+                      onClick={() => toast('Role upgrade flow comes next.')}
+                    >
+                      Become a Seller or Organisation
+                    </button>
+                  </div>
+                )}
               </div>
 
-              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-5 gap-4">
-                <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
-                    <Settings className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">{t('common.settings')}</span>
-                </button>
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-3 gap-4">
                 <button 
                   onClick={() => setShowTour(true)}
                   className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
@@ -267,12 +294,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     <HelpCircle className="w-6 h-6" />
                   </div>
                   <span className="text-xs font-bold text-gray-500">{t('account.helpTour')}</span>
-                </button>
-                <button className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group">
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
-                    <Share2 className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">{t('account.shareProfile')}</span>
                 </button>
                 <button
                   onClick={() => setLang(lang === 'en' ? 'ny' : 'en')}
@@ -302,66 +323,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           )}
         </div>
       </div>
-
-      {/* Seller Dashboard (Only for Verified Sellers or Premium) */}
-      {(user?.status === 'verified' || user?.status === 'premium') && (marketplaceListings.length > 0 || buyerRequests.length > 0) && (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-2xl flex items-center justify-center">
-                <TrendingUp className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black">{t('account.sellerInsights')}</h3>
-                <p className="text-xs text-gray-500 uppercase tracking-widest">{t('account.performanceOverview')}</p>
-              </div>
-            </div>
-            <div className="space-y-4">
-              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
-                <span className="text-sm font-bold text-gray-500">{t('account.totalViews')}</span>
-                <span className="text-lg font-black">0</span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
-                <span className="text-sm font-bold text-gray-500">{t('account.activeLeads')}</span>
-                <span className="text-lg font-black text-primary">0</span>
-              </div>
-              <div className="flex justify-between items-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl">
-                <span className="text-sm font-bold text-gray-500">{t('account.conversionRate')}</span>
-                <span className="text-lg font-black text-emerald-600">0%</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white dark:bg-gray-800 rounded-3xl p-8 shadow-sm border border-gray-100 dark:border-gray-700">
-            <div className="flex items-center gap-4 mb-6">
-              <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 rounded-2xl flex items-center justify-center">
-                <Building2 className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-xl font-black">{t('account.businessProfile')}</h3>
-                <p className="text-xs text-gray-500 uppercase tracking-widest">{t('account.publicIdentity')}</p>
-              </div>
-            </div>
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold">{t('account.verifiedStatus')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold">{t('account.listingPriority')}</span>
-              </div>
-              <div className="flex items-center gap-2 text-sm">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                <span className="font-bold">{t('account.directLeads')}</span>
-              </div>
-              <button className="w-full mt-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all">
-                {t('account.editBusinessDetails')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* My Listings & Requests */}
       {(marketplaceListings.length > 0 || buyerRequests.length > 0) && (
@@ -430,92 +391,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         </div>
       )}
 
-      {/* Premium Upgrade CTA */}
-      {!isEditingProfile && user?.status === 'basic' && (
-        <div className="bg-amber-600 p-8 rounded-[2.5rem] text-white shadow-lg relative overflow-hidden group">
-          <div className="absolute -right-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-700" />
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center">
-                <Crown className="w-7 h-7 text-white" />
-              </div>
-              <h3 className="text-2xl font-black">{t('account.unlockPremium')}</h3>
-            </div>
-            <p className="text-amber-50 mb-8 max-w-xl leading-relaxed">
-              {t('account.premiumDesc')}
-            </p>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-8">
-              <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl border border-white/10">
-                <TrendingUp className="w-5 h-5 text-amber-200" />
-                <span className="text-sm font-bold">{t('market.trends')}</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl border border-white/10">
-                <MapPin className="w-5 h-5 text-amber-200" />
-                <span className="text-sm font-bold">{t('market.pesticideMap')}</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl border border-white/10">
-                <CheckCircle2 className="w-5 h-5 text-amber-200" />
-                <span className="text-sm font-bold">{t('common.training')}</span>
-              </div>
-              <div className="flex items-center gap-3 bg-white/10 p-4 rounded-2xl border border-white/10">
-                <Star className="w-5 h-5 text-amber-200" />
-                <span className="text-sm font-bold">{t('account.prioritySupport')}</span>
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                if (user) {
-                  toast.success(t('account.applicationSubmitted'));
-                }
-              }}
-              className="px-10 py-4 bg-white text-amber-600 font-black rounded-2xl shadow-xl hover:bg-amber-50 transition-all flex items-center gap-2 active:scale-95"
-            >
-              {t('account.applyNow')} <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Verified Seller CTA */}
-      {!isEditingProfile && user?.status !== 'verified' && (
-        <div className="bg-white dark:bg-gray-800 p-8 rounded-[2.5rem] shadow-sm border border-gray-100 dark:border-gray-700 relative overflow-hidden group">
-          <div className="relative z-10">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 rounded-2xl flex items-center justify-center">
-                <Building2 className="w-7 h-7" />
-              </div>
-              <h3 className="text-2xl font-black text-gray-900 dark:text-white">{t('account.becomeVerifiedSeller')}</h3>
-            </div>
-            <p className="text-gray-500 mb-8 max-w-xl leading-relaxed">
-              {t('account.verifiedSellerDesc')}
-            </p>
-            <div className="flex flex-wrap gap-4 mb-8">
-              <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                {t('account.unlimitedListings')}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                {t('account.verifiedBadge')}
-              </div>
-              <div className="flex items-center gap-2 text-sm font-bold text-gray-600 dark:text-gray-400">
-                <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                {t('account.prioritySearch')}
-              </div>
-            </div>
-            <button 
-              onClick={() => {
-                if (user) {
-                  toast.success(t('account.applicationSubmitted'));
-                }
-              }}
-              className="px-10 py-4 bg-emerald-600 text-white font-black rounded-2xl shadow-xl shadow-emerald-500/20 hover:bg-emerald-700 transition-all flex items-center gap-2 active:scale-95"
-            >
-              {t('account.applyForVerification')} <ArrowRight className="w-5 h-5" />
-            </button>
-          </div>
-        </div>
-      )}
     </motion.div>
   );
 };

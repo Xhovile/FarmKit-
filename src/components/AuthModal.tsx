@@ -99,17 +99,17 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
         // Create Firestore document
         await setDoc(doc(db, 'users', user.uid), {
           name,
-          email,
+          email: user.email || email,
           phone: '',
           location: '',
           bio: '',
-          avatar: '',
+          avatar: user.photoURL || '',
           primaryRole: 'buyer',
           roles: ['buyer'],
           status: 'basic',
           sellerProfile: null,
           organizationProfile: null,
-          emailVerified: false,
+          emailVerified: user.emailVerified,
           createdAt: new Date().toISOString()
         });
 

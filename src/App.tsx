@@ -108,6 +108,76 @@ type ListingFormData = {
   expiryDate?: string;
 };
 
+type LegacyTier = 'Free' | 'Premium' | 'Verified Seller';
+
+const normalizeRoles = (roles: unknown): import('./types').UserRole[] => {
+  const validRoles = new Set(['buyer', 'seller', 'business', 'cooperative', 'ngo']);
+
+  if (!Array.isArray(roles)) return ['buyer'];
+
+  const cleaned = roles.filter(
+    (role): role is import('./types').UserRole =>
+      typeof role === 'string' && validRoles.has(role)
+  );
+
+  return cleaned.length > 0 ? cleaned : ['buyer'];
+};
+
+const deriveStatus = (data: any): import('./types').AccountStatus => {
+  if (data?.status === 'verified' || data?.status === 'premium' || data?.status === 'basic') {
+    return data.status;
+  }
+
+  if (data?.tier === 'Verified Seller') return 'verified';
+  if (data?.tier === 'Premium') return 'premium';
+  return 'basic';
+};
+
+const derivePrimaryRole = (data: any, roles: import('./types').UserRole[]): import('./types').UserRole => {
+  if (
+    data?.primaryRole === 'buyer' ||
+    data?.primaryRole === 'seller' ||
+    data?.primaryRole === 'business' ||
+    data?.primaryRole === 'cooperative' ||
+    data?.primaryRole === 'ngo'
+  ) {
+    return data.primaryRole;
+  }
+
+  if (roles.includes('seller')) return 'seller';
+  if (roles.includes('business')) return 'business';
+  if (roles.includes('cooperative')) return 'cooperative';
+  if (roles.includes('ngo')) return 'ngo';
+
+  return 'buyer';
+};
+
+const normalizeUserData = (firebaseUser: any, data: any) => {
+  const roles = normalizeRoles(data?.roles);
+  const primaryRole = derivePrimaryRole(data, roles);
+  const status = deriveStatus(data);
+
+  return {
+    uid: firebaseUser.uid,
+    name: data?.name || firebaseUser.displayName || 'Farmer',
+    email: data?.email || firebaseUser.email || '',
+    phone: data?.phone || '',
+    location: data?.location || '',
+    bio: data?.bio || '',
+    avatar: data?.avatar || firebaseUser.photoURL || '',
+
+    primaryRole,
+    roles,
+    status,
+
+    sellerProfile: data?.sellerProfile || null,
+    organizationProfile: data?.organizationProfile || null,
+
+    createdAt: data?.createdAt || new Date().toISOString(),
+    emailVerified: firebaseUser.emailVerified,
+  };
+};
+
 export default function App() {
   const { t, lang, setLang } = useTranslation();
   const [activeTab, setActiveTab] = useState<Tab>('info');
@@ -164,31 +234,50 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          const userDoc = await getDoc(doc(db, 'users', firebaseUser.uid));
+          const userRef = doc(db, 'users', firebaseUser.uid);
+          const userDoc = await getDoc(userRef);
+
           if (userDoc.exists()) {
-            const data = userDoc.data() as any;
-            setUser({
-              uid: firebaseUser.uid,
-              email: firebaseUser.email || '',
-              name: data.name || firebaseUser.displayName || 'Farmer',
-              phone: data.phone || '',
-              location: data.location || '',
-              bio: data.bio || '',
-              avatar: data.avatar || firebaseUser.photoURL || '',
-              primaryRole: data.primaryRole || 'buyer',
-              roles: data.roles || ['buyer'],
-              status: data.status || (data.tier === 'Verified Seller' ? 'verified' : data.tier === 'Premium' ? 'premium' : 'basic'),
-              sellerProfile: data.sellerProfile || null,
-              organizationProfile: data.organizationProfile || null,
-              createdAt: data.createdAt || new Date().toISOString(),
-              emailVerified: firebaseUser.emailVerified
-            } as User);
+            const rawData = userDoc.data();
+            const normalizedUser = normalizeUserData(firebaseUser, rawData);
+
+            setUser(normalizedUser);
             setProfileFormData({
-              name: data.name || '',
-              location: data.location || '',
-              phone: data.phone || '',
-              bio: data.bio || ''
+              name: normalizedUser.name,
+              location: normalizedUser.location,
+              phone: normalizedUser.phone,
+              bio: normalizedUser.bio,
             });
+
+            const needsNormalization =
+              rawData.primaryRole !== normalizedUser.primaryRole ||
+              JSON.stringify(rawData.roles || []) !== JSON.stringify(normalizedUser.roles) ||
+              rawData.status !== normalizedUser.status ||
+              rawData.email !== normalizedUser.email ||
+              rawData.emailVerified !== normalizedUser.emailVerified ||
+              rawData.avatar !== normalizedUser.avatar;
+
+            if (needsNormalization) {
+              await setDoc(
+                userRef,
+                {
+                  name: normalizedUser.name,
+                  email: normalizedUser.email,
+                  phone: normalizedUser.phone,
+                  location: normalizedUser.location,
+                  bio: normalizedUser.bio,
+                  avatar: normalizedUser.avatar,
+                  primaryRole: normalizedUser.primaryRole,
+                  roles: normalizedUser.roles,
+                  status: normalizedUser.status,
+                  sellerProfile: normalizedUser.sellerProfile,
+                  organizationProfile: normalizedUser.organizationProfile,
+                  createdAt: normalizedUser.createdAt,
+                  emailVerified: normalizedUser.emailVerified,
+                },
+                { merge: true }
+              );
+            }
           } else {
             const initialData = {
               name: firebaseUser.displayName || 'Farmer',
@@ -197,24 +286,27 @@ export default function App() {
               location: '',
               bio: '',
               avatar: firebaseUser.photoURL || '',
-              primaryRole: 'buyer',
-              roles: ['buyer'],
-              status: 'basic',
+              primaryRole: 'buyer' as const,
+              roles: ['buyer'] as import('./types').UserRole[],
+              status: 'basic' as const,
               sellerProfile: null,
               organizationProfile: null,
               emailVerified: firebaseUser.emailVerified,
-              createdAt: new Date().toISOString()
+              createdAt: new Date().toISOString(),
             };
-            await setDoc(doc(db, 'users', firebaseUser.uid), initialData);
+
+            await setDoc(userRef, initialData);
+
             setUser({
               uid: firebaseUser.uid,
-              ...initialData
-            } as User);
+              ...initialData,
+            });
+
             setProfileFormData({
               name: initialData.name,
               location: initialData.location,
               phone: initialData.phone,
-              bio: initialData.bio
+              bio: initialData.bio,
             });
           }
         } catch (error) {
@@ -416,6 +508,16 @@ export default function App() {
       throw new Error('You must be signed in to create a listing.');
     }
 
+    const canSell =
+      user.roles.includes('seller') ||
+      user.roles.includes('business') ||
+      user.roles.includes('cooperative') ||
+      user.roles.includes('ngo');
+
+    if (!canSell) {
+      throw new Error('Please upgrade your account to a seller or organisation before creating listings.');
+    }
+
     const cleanedTitle = data.title.trim();
     const cleanedCategory = data.category.trim();
     const cleanedUnit = data.unit.trim();
@@ -504,7 +606,7 @@ export default function App() {
         phone: cleanedPhone,
         sellerId: user.uid,
         sellerName: user.name || 'Seller',
-        sellerTier: user.status === 'verified' ? 'Verified Seller' : user.status === 'premium' ? 'Premium' : 'Free',
+        sellerStatus: user.status,
         sellerType: data.sellerType || 'farmer',
         verified: user.status === 'verified',
         imageUrl: imageUrls[0] || null,
@@ -648,6 +750,7 @@ export default function App() {
         description: cleanedDescription,
         businessName: cleanedBusinessName || user.name || 'Seller',
         phone: cleanedPhone,
+        sellerStatus: user.status,
         sellerType: data.sellerType || 'farmer',
         imageUrl: imageUrls[0] || null,
         imageUrls,

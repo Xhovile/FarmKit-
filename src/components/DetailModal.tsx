@@ -525,7 +525,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
 
                     {isMarketListing && (
                       <span className="px-3 py-1.5 border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 rounded-full text-xs font-medium text-gray-700 dark:text-gray-200 shadow-sm">
-                        Seller tier: {selectedItem.sellerTier || 'Standard'}
+                        Seller status: {selectedItem.sellerStatus || 'Basic'}
                       </span>
                     )}
                   </div>
