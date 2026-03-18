@@ -519,166 +519,168 @@ export const AccountPage: React.FC<AccountPageProps> = ({
               setSelectedRole(null);
             }}
           />
-          <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold">Upgrade Account</h3>
-                <p className="text-sm text-gray-500">Choose how you want to use FarmKit.</p>
-              </div>
-              <button
-                onClick={() => {
-                  setIsRoleModalOpen(false);
-                  setSelectedRole(null);
-                }}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            {!selectedRole ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 md:p-8 overflow-y-auto space-y-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="text-2xl font-bold">Upgrade Account</h3>
+                  <p className="text-sm text-gray-500">Choose how you want to use FarmKit.</p>
+                </div>
                 <button
-                  onClick={() => !user.roles.includes('seller') && setSelectedRole('seller')}
-                  disabled={user.roles.includes('seller')}
-                  className={`p-5 rounded-2xl border text-left ${
-                    user.roles.includes('seller')
-                      ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                  }`}
+                  onClick={() => {
+                    setIsRoleModalOpen(false);
+                    setSelectedRole(null);
+                  }}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
                 >
-                  <Store className="w-7 h-7 mb-3 text-emerald-600" />
-                  <h4 className="font-bold">Individual Seller</h4>
-                  <p className="text-sm text-gray-500">Sell products as an individual farmer or trader.</p>
-                </button>
-
-                <button
-                  onClick={() => !user.roles.includes('business') && setSelectedRole('business')}
-                  disabled={user.roles.includes('business')}
-                  className={`p-5 rounded-2xl border text-left ${
-                    user.roles.includes('business')
-                      ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                  }`}
-                >
-                  <Building2 className="w-7 h-7 mb-3 text-emerald-600" />
-                  <h4 className="font-bold">Business</h4>
-                  <p className="text-sm text-gray-500">Register a company or commercial entity.</p>
-                </button>
-
-                <button
-                  onClick={() => !user.roles.includes('cooperative') && setSelectedRole('cooperative')}
-                  disabled={user.roles.includes('cooperative')}
-                  className={`p-5 rounded-2xl border text-left ${
-                    user.roles.includes('cooperative')
-                      ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                  }`}
-                >
-                  <Users className="w-7 h-7 mb-3 text-emerald-600" />
-                  <h4 className="font-bold">Cooperative</h4>
-                  <p className="text-sm text-gray-500">Register a farmer group or cooperative.</p>
-                </button>
-
-                <button
-                  onClick={() => !user.roles.includes('ngo') && setSelectedRole('ngo')}
-                  disabled={user.roles.includes('ngo')}
-                  className={`p-5 rounded-2xl border text-left ${
-                    user.roles.includes('ngo')
-                      ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                  }`}
-                >
-                  <HandHelping className="w-7 h-7 mb-3 text-emerald-600" />
-                  <h4 className="font-bold">NGO</h4>
-                  <p className="text-sm text-gray-500">Register a development or support organisation.</p>
+                  <X className="w-5 h-5" />
                 </button>
               </div>
-            ) : (
-              <div className="space-y-4">
-                {selectedRole === 'seller' ? (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Business name"
-                      value={roleForm.businessName}
-                      onChange={(e) => setRoleForm({ ...roleForm, businessName: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Category"
-                      value={roleForm.category}
-                      onChange={(e) => setRoleForm({ ...roleForm, category: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="District"
-                      value={roleForm.district}
-                      onChange={(e) => setRoleForm({ ...roleForm, district: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <select
-                      value={roleForm.deliveryMethod}
-                      onChange={(e) => setRoleForm({ ...roleForm, deliveryMethod: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    >
-                      <option value="pickup">Pickup</option>
-                      <option value="delivery">Delivery</option>
-                      <option value="both">Both</option>
-                    </select>
-                  </>
-                ) : (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Organisation name"
-                      value={roleForm.organizationName}
-                      onChange={(e) => setRoleForm({ ...roleForm, organizationName: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="Contact person"
-                      value={roleForm.contactPerson}
-                      onChange={(e) => setRoleForm({ ...roleForm, contactPerson: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <input
-                      type="text"
-                      placeholder="District"
-                      value={roleForm.district}
-                      onChange={(e) => setRoleForm({ ...roleForm, district: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                    <textarea
-                      placeholder="Description"
-                      rows={3}
-                      value={roleForm.description}
-                      onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </>
-                )}
 
-                <div className="flex gap-3 pt-2">
+              {!selectedRole ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <button
-                    onClick={() => setSelectedRole(null)}
-                    className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
+                    onClick={() => !user.roles.includes('seller') && setSelectedRole('seller')}
+                    disabled={user.roles.includes('seller')}
+                    className={`p-5 rounded-2xl border text-left ${
+                      user.roles.includes('seller')
+                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
+                    }`}
                   >
-                    Back
+                    <Store className="w-7 h-7 mb-3 text-emerald-600" />
+                    <h4 className="font-bold">Individual Seller</h4>
+                    <p className="text-sm text-gray-500">Sell products as an individual farmer or trader.</p>
                   </button>
+
                   <button
-                    onClick={handleRoleUpgrade}
-                    disabled={isSubmittingRole}
-                    className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50"
+                    onClick={() => !user.roles.includes('business') && setSelectedRole('business')}
+                    disabled={user.roles.includes('business')}
+                    className={`p-5 rounded-2xl border text-left ${
+                      user.roles.includes('business')
+                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
+                    }`}
                   >
-                    {isSubmittingRole ? 'Saving...' : 'Continue'}
+                    <Building2 className="w-7 h-7 mb-3 text-emerald-600" />
+                    <h4 className="font-bold">Business</h4>
+                    <p className="text-sm text-gray-500">Register a company or commercial entity.</p>
+                  </button>
+
+                  <button
+                    onClick={() => !user.roles.includes('cooperative') && setSelectedRole('cooperative')}
+                    disabled={user.roles.includes('cooperative')}
+                    className={`p-5 rounded-2xl border text-left ${
+                      user.roles.includes('cooperative')
+                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
+                    }`}
+                  >
+                    <Users className="w-7 h-7 mb-3 text-emerald-600" />
+                    <h4 className="font-bold">Cooperative</h4>
+                    <p className="text-sm text-gray-500">Register a farmer group or cooperative.</p>
+                  </button>
+
+                  <button
+                    onClick={() => !user.roles.includes('ngo') && setSelectedRole('ngo')}
+                    disabled={user.roles.includes('ngo')}
+                    className={`p-5 rounded-2xl border text-left ${
+                      user.roles.includes('ngo')
+                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
+                    }`}
+                  >
+                    <HandHelping className="w-7 h-7 mb-3 text-emerald-600" />
+                    <h4 className="font-bold">NGO</h4>
+                    <p className="text-sm text-gray-500">Register a development or support organisation.</p>
                   </button>
                 </div>
-              </div>
-            )}
+              ) : (
+                <div className="space-y-4">
+                  {selectedRole === 'seller' ? (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Business name"
+                        value={roleForm.businessName}
+                        onChange={(e) => setRoleForm({ ...roleForm, businessName: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Category"
+                        value={roleForm.category}
+                        onChange={(e) => setRoleForm({ ...roleForm, category: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="District"
+                        value={roleForm.district}
+                        onChange={(e) => setRoleForm({ ...roleForm, district: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <select
+                        value={roleForm.deliveryMethod}
+                        onChange={(e) => setRoleForm({ ...roleForm, deliveryMethod: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      >
+                        <option value="pickup">Pickup</option>
+                        <option value="delivery">Delivery</option>
+                        <option value="both">Both</option>
+                      </select>
+                    </>
+                  ) : (
+                    <>
+                      <input
+                        type="text"
+                        placeholder="Organisation name"
+                        value={roleForm.organizationName}
+                        onChange={(e) => setRoleForm({ ...roleForm, organizationName: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="Contact person"
+                        value={roleForm.contactPerson}
+                        onChange={(e) => setRoleForm({ ...roleForm, contactPerson: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <input
+                        type="text"
+                        placeholder="District"
+                        value={roleForm.district}
+                        onChange={(e) => setRoleForm({ ...roleForm, district: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                      <textarea
+                        placeholder="Description"
+                        rows={3}
+                        value={roleForm.description}
+                        onChange={(e) => setRoleForm({ ...roleForm, description: e.target.value })}
+                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
+                      />
+                    </>
+                  )}
+
+                  <div className="flex gap-3 pt-2">
+                    <button
+                      onClick={() => setSelectedRole(null)}
+                      className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
+                    >
+                      Back
+                    </button>
+                    <button
+                      onClick={handleRoleUpgrade}
+                      disabled={isSubmittingRole}
+                      className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700 disabled:opacity-50"
+                    >
+                      {isSubmittingRole ? 'Saving...' : 'Continue'}
+                    </button>
+                  </div>
+                </div>
+              )}
+            </div>
           </div>
         </div>
       )}
