@@ -2,7 +2,13 @@ import React from 'react';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { db } from '../lib/firebase';
-import { User as UserType } from '../types';
+import { 
+  User as UserType, 
+  SellerUpgradeForm, 
+  BusinessUpgradeForm, 
+  CooperativeUpgradeForm, 
+  NgoUpgradeForm 
+} from '../types';
 
 export type AccountView =
   | 'hub'
@@ -53,7 +59,7 @@ export const useAccountPageController = ({
       });
     }
   }, [user]);
-  const [sellerUpgradeForm, setSellerUpgradeForm] = React.useState({
+  const [sellerUpgradeForm, setSellerUpgradeForm] = React.useState<SellerUpgradeForm>({
     businessName: '',
     fullName: user?.name || '',
     phone: user?.phone || '',
@@ -66,7 +72,7 @@ export const useAccountPageController = ({
     description: '',
   });
 
-  const [businessUpgradeForm, setBusinessUpgradeForm] = React.useState({
+  const [businessUpgradeForm, setBusinessUpgradeForm] = React.useState<BusinessUpgradeForm>({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
@@ -79,7 +85,7 @@ export const useAccountPageController = ({
     description: '',
   });
 
-  const [cooperativeUpgradeForm, setCooperativeUpgradeForm] = React.useState({
+  const [cooperativeUpgradeForm, setCooperativeUpgradeForm] = React.useState<CooperativeUpgradeForm>({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
@@ -92,7 +98,7 @@ export const useAccountPageController = ({
     description: '',
   });
 
-  const [ngoUpgradeForm, setNgoUpgradeForm] = React.useState({
+  const [ngoUpgradeForm, setNgoUpgradeForm] = React.useState<NgoUpgradeForm>({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
@@ -214,8 +220,9 @@ export const useAccountPageController = ({
       setIsAccountModalOpen(false);
       setAccountView('hub');
       toast.success(t('account.profileUpdated'));
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update profile.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update profile.';
+      toast.error(message);
     } finally {
       setIsSubmittingProfile(false);
     }
@@ -227,7 +234,7 @@ export const useAccountPageController = ({
     const nextRoles = Array.from(new Set([...user.roles, selectedRole]));
     const nextPrimaryRole = user.primaryRole === 'buyer' ? selectedRole : user.primaryRole;
 
-    const updatePayload: any = {
+    const updatePayload: Partial<UserType> = {
       roles: nextRoles,
       primaryRole: nextPrimaryRole,
     };
@@ -444,8 +451,9 @@ export const useAccountPageController = ({
         organizationType: '',
         description: '',
       });
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to upgrade account.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to upgrade account.';
+      toast.error(message);
     } finally {
       setIsSubmittingRole(false);
     }
@@ -502,8 +510,9 @@ export const useAccountPageController = ({
       toast.success('Seller profile updated.');
       setIsAccountModalOpen(false);
       setAccountView('hub');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update seller profile.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update seller profile.';
+      toast.error(message);
     } finally {
       setIsSubmittingSellerProfile(false);
     }
@@ -584,8 +593,9 @@ export const useAccountPageController = ({
       toast.success('Organisation profile updated.');
       setIsAccountModalOpen(false);
       setAccountView('hub');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update organisation profile.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update organisation profile.';
+      toast.error(message);
     } finally {
       setIsSubmittingOrganizationProfile(false);
     }
@@ -613,8 +623,9 @@ export const useAccountPageController = ({
       toast.success('Primary role updated.');
       setIsAccountModalOpen(false);
       setAccountView('hub');
-    } catch (error: any) {
-      toast.error(error.message || 'Failed to update primary role.');
+    } catch (error: unknown) {
+      const message = error instanceof Error ? error.message : 'Failed to update primary role.';
+      toast.error(message);
     } finally {
       setIsSubmittingRoleSwitch(false);
     }

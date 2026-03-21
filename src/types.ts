@@ -100,12 +100,63 @@ export interface OrganizationProfile {
   businessType?: string;
   productsOrServices?: string;
   registrationNumber?: string;
+  organizationType?: string;
   area?: string;
   memberCount?: string;
   mainCommodities?: string;
   focusArea?: string;
   servicesOffered?: string;
   websiteOrSocial?: string;
+}
+
+export interface SellerUpgradeForm {
+  businessName: string;
+  fullName: string;
+  phone: string;
+  region: string;
+  district: string;
+  area: string;
+  category: string;
+  deliveryMethod: string;
+  experienceYears: string;
+  description: string;
+}
+
+export interface BusinessUpgradeForm {
+  organizationName: string;
+  contactPerson: string;
+  phone: string;
+  region: string;
+  district: string;
+  address: string;
+  businessType: string;
+  productsOrServices: string;
+  registrationNumber: string;
+  description: string;
+}
+
+export interface CooperativeUpgradeForm {
+  organizationName: string;
+  contactPerson: string;
+  phone: string;
+  region: string;
+  district: string;
+  area: string;
+  memberCount: string;
+  mainCommodities: string;
+  registrationNumber: string;
+  description: string;
+}
+
+export interface NgoUpgradeForm {
+  organizationName: string;
+  contactPerson: string;
+  phone: string;
+  region: string;
+  district: string;
+  address: string;
+  organizationType: string;
+  description: string;
 }
 
 export interface User {

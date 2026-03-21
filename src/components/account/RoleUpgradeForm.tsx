@@ -1,29 +1,31 @@
 import React from 'react';
-import { motion, AnimatePresence } from 'motion/react';
-import { X, Store, Building2, Users, HandHelping, Save } from 'lucide-react';
-import { User as UserType } from '../../types';
+import { Save } from 'lucide-react';
+import { 
+  User as UserType, 
+  SellerUpgradeForm, 
+  BusinessUpgradeForm, 
+  CooperativeUpgradeForm, 
+  NgoUpgradeForm 
+} from '../../types';
 
-interface RoleUpgradeModalProps {
+interface RoleUpgradeFormProps {
   selectedRole: 'seller' | 'business' | 'cooperative' | 'ngo' | null;
-  setSelectedRole: (role: 'seller' | 'business' | 'cooperative' | 'ngo' | null) => void;
-  sellerUpgradeForm: any;
-  setSellerUpgradeForm: (val: any) => void;
-  businessUpgradeForm: any;
-  setBusinessUpgradeForm: (val: any) => void;
-  cooperativeUpgradeForm: any;
-  setCooperativeUpgradeForm: (val: any) => void;
-  ngoUpgradeForm: any;
-  setNgoUpgradeForm: (val: any) => void;
+  sellerUpgradeForm: SellerUpgradeForm;
+  setSellerUpgradeForm: (val: SellerUpgradeForm) => void;
+  businessUpgradeForm: BusinessUpgradeForm;
+  setBusinessUpgradeForm: (val: BusinessUpgradeForm) => void;
+  cooperativeUpgradeForm: CooperativeUpgradeForm;
+  setCooperativeUpgradeForm: (val: CooperativeUpgradeForm) => void;
+  ngoUpgradeForm: NgoUpgradeForm;
+  setNgoUpgradeForm: (val: NgoUpgradeForm) => void;
   handleRoleUpgrade: () => Promise<void>;
   isSubmittingRole: boolean;
-  user: UserType;
   malawiRegions: string[];
   malawiDistrictsByRegion: Record<string, string[]>;
 }
 
-const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
+const RoleUpgradeForm: React.FC<RoleUpgradeFormProps> = ({
   selectedRole,
-  setSelectedRole,
   sellerUpgradeForm,
   setSellerUpgradeForm,
   businessUpgradeForm,
@@ -34,7 +36,6 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
   setNgoUpgradeForm,
   handleRoleUpgrade,
   isSubmittingRole,
-  user,
   malawiRegions,
   malawiDistrictsByRegion,
 }) => {
@@ -494,4 +495,4 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
   );
 };
 
-export default RoleUpgradeModal;
+export default RoleUpgradeForm;

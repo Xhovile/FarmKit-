@@ -403,7 +403,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
               {accountView === 'upgradeRole' && (
                 <RoleUpgradeForm
                   selectedRole={selectedRole}
-                  setSelectedRole={setSelectedRole}
                   sellerUpgradeForm={sellerUpgradeForm}
                   setSellerUpgradeForm={setSellerUpgradeForm}
                   businessUpgradeForm={businessUpgradeForm}
@@ -414,7 +413,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                   setNgoUpgradeForm={setNgoUpgradeForm}
                   handleRoleUpgrade={handleRoleUpgrade}
                   isSubmittingRole={isSubmittingRole}
-                  user={user}
                   malawiRegions={malawiRegions}
                   malawiDistrictsByRegion={malawiDistrictsByRegion}
                 />
