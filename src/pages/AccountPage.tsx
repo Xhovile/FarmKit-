@@ -1,7 +1,13 @@
 import React from 'react';
 import { motion } from 'motion/react';
 import {
-  UserCircle
+  UserCircle,
+  X,
+  Store,
+  Building2,
+  Users,
+  HandHelping,
+  Save
 } from 'lucide-react';
 import { db } from '../lib/firebase';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
@@ -32,6 +38,15 @@ interface AccountPageProps {
   setIsAuthModalOpen: (val: boolean) => void;
   setShowTour: (val: boolean) => void;
 }
+
+type AccountView =
+  | 'hub'
+  | 'editPersonal'
+  | 'editSeller'
+  | 'editOrganization'
+  | 'switchRole'
+  | 'upgradeRole'
+  | 'selectUpgradeRole';
 
 export const AccountPage: React.FC<AccountPageProps> = ({
   t,
@@ -79,7 +94,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     ngo: 'NGO',
   } as const;
 
-  const [isRoleModalOpen, setIsRoleModalOpen] = React.useState(false);
+  const [accountView, setAccountView] = React.useState<AccountView>('hub');
+  const [isAccountModalOpen, setIsAccountModalOpen] = React.useState(false);
   const [isSubmittingProfile, setIsSubmittingProfile] = React.useState(false);
   const [isSubmittingSellerProfile, setIsSubmittingSellerProfile] = React.useState(false);
   const [isSubmittingOrganizationProfile, setIsSubmittingOrganizationProfile] = React.useState(false);
@@ -134,10 +150,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
 
   const [isSubmittingRole, setIsSubmittingRole] = React.useState(false);
 
-  const [isEditingSellerProfile, setIsEditingSellerProfile] = React.useState(false);
-  const [isEditingOrganizationProfile, setIsEditingOrganizationProfile] = React.useState(false);
-
-  const [isSwitchingPrimaryRole, setIsSwitchingPrimaryRole] = React.useState(false);
   const [selectedPrimaryRole, setSelectedPrimaryRole] = React.useState<UserType['primaryRole']>(user?.primaryRole || 'buyer');
 
   const [sellerEditForm, setSellerEditForm] = React.useState({
@@ -173,7 +185,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   });
 
   React.useEffect(() => {
-    if (isEditingSellerProfile && user?.sellerProfile) {
+    if (accountView === 'editSeller' && user?.sellerProfile) {
       setSellerEditForm({
         businessName: user.sellerProfile.businessName || '',
         fullName: user.sellerProfile.fullName || '',
@@ -187,10 +199,10 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         description: user.sellerProfile.description || '',
       });
     }
-  }, [isEditingSellerProfile, user?.sellerProfile]);
+  }, [accountView, user?.sellerProfile]);
 
   React.useEffect(() => {
-    if (isEditingOrganizationProfile && user?.organizationProfile) {
+    if (accountView === 'editOrganization' && user?.organizationProfile) {
       setOrganizationEditForm({
         organizationName: user.organizationProfile.organizationName || '',
         contactPerson: user.organizationProfile.contactPerson || '',
@@ -210,7 +222,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         description: user.organizationProfile.description || '',
       });
     }
-  }, [isEditingOrganizationProfile, user?.organizationProfile]);
+  }, [accountView, user?.organizationProfile]);
 
   if (!user) {
     return (
@@ -268,7 +280,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
 
       await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
       setUser({ ...user, ...updatedData });
-      setIsEditingProfile(false);
+      setIsAccountModalOpen(false);
+      setAccountView('hub');
       toast.success(t('account.profileUpdated'));
     } catch (error: any) {
       toast.error(error.message || 'Failed to update profile.');
@@ -441,7 +454,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       });
 
       toast.success('Account upgraded successfully.');
-      setIsRoleModalOpen(false);
+      setIsAccountModalOpen(false);
+      setAccountView('hub');
       setSelectedRole(null);
 
       setSellerUpgradeForm({
@@ -546,7 +560,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       });
 
       toast.success('Seller profile updated.');
-      setIsEditingSellerProfile(false);
+      setIsAccountModalOpen(false);
+      setAccountView('hub');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update seller profile.');
     } finally {
@@ -627,7 +642,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       });
 
       toast.success('Organisation profile updated.');
-      setIsEditingOrganizationProfile(false);
+      setIsAccountModalOpen(false);
+      setAccountView('hub');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update organisation profile.');
     } finally {
@@ -654,7 +670,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       });
 
       toast.success('Primary role updated.');
-      setIsSwitchingPrimaryRole(false);
+      setIsAccountModalOpen(false);
+      setAccountView('hub');
     } catch (error: any) {
       toast.error(error.message || 'Failed to update primary role.');
     }
@@ -676,12 +693,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       <PersonalAccountCard
         user={user}
         t={t}
-        isEditingProfile={isEditingProfile}
-        setIsEditingProfile={setIsEditingProfile}
-        profileFormData={profileFormData}
-        setProfileFormData={setProfileFormData}
-        handleProfileUpdate={handleProfileUpdate}
-        isSubmittingProfile={isSubmittingProfile}
+        setIsAccountModalOpen={setIsAccountModalOpen}
+        setAccountView={setAccountView}
         statusBadgeClassMap={statusBadgeClassMap}
         statusLabelMap={statusLabelMap}
       />
@@ -695,14 +708,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       {user.sellerProfile && (
         <SellerProfileCard
           user={user}
-          setIsEditingSellerProfile={setIsEditingSellerProfile}
+          setIsAccountModalOpen={setIsAccountModalOpen}
+          setAccountView={setAccountView}
         />
       )}
 
       {user.organizationProfile && (
         <OrganizationProfileCard
           user={user}
-          setIsEditingOrganizationProfile={setIsEditingOrganizationProfile}
+          setIsAccountModalOpen={setIsAccountModalOpen}
+          setAccountView={setAccountView}
           organizationTypeLabelMap={organizationTypeLabelMap}
         />
       )}
@@ -710,8 +725,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       <AccountActionsCard
         user={user}
         t={t}
-        setIsRoleModalOpen={setIsRoleModalOpen}
-        setIsSwitchingPrimaryRole={setIsSwitchingPrimaryRole}
+        setIsAccountModalOpen={setIsAccountModalOpen}
+        setAccountView={setAccountView}
         setSelectedPrimaryRole={setSelectedPrimaryRole}
         canSell={canSell}
         lang={lang}
@@ -720,56 +735,234 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         setUser={setUser}
       />
 
-      <RoleUpgradeModal
-        isOpen={isRoleModalOpen}
-        onClose={() => {
-          setIsRoleModalOpen(false);
-          setSelectedRole(null);
-        }}
-        selectedRole={selectedRole}
-        setSelectedRole={setSelectedRole}
-        sellerUpgradeForm={sellerUpgradeForm}
-        setSellerUpgradeForm={setSellerUpgradeForm}
-        businessUpgradeForm={businessUpgradeForm}
-        setBusinessUpgradeForm={setBusinessUpgradeForm}
-        cooperativeUpgradeForm={cooperativeUpgradeForm}
-        setCooperativeUpgradeForm={setCooperativeUpgradeForm}
-        ngoUpgradeForm={ngoUpgradeForm}
-        setNgoUpgradeForm={setNgoUpgradeForm}
-        handleRoleUpgrade={handleRoleUpgrade}
-        isSubmittingRole={isSubmittingRole}
-        user={user}
-        malawiRegions={malawiRegions}
-        malawiDistrictsByRegion={malawiDistrictsByRegion}
-      />
+      {isAccountModalOpen && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+          <div
+            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+            onClick={() => setIsAccountModalOpen(false)}
+          />
+          <div className="relative w-full max-w-2xl max-h-[90vh] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
+            <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+              <div>
+                <h3 className="text-xl font-bold">
+                  {accountView === 'editPersonal' && 'Edit Personal Account'}
+                  {accountView === 'editSeller' && 'Edit Seller Profile'}
+                  {accountView === 'editOrganization' && 'Edit Organisation Profile'}
+                  {accountView === 'switchRole' && 'Switch Primary Role'}
+                  {accountView === 'selectUpgradeRole' && 'Upgrade Account'}
+                  {accountView === 'upgradeRole' && 'Complete Role Upgrade'}
+                </h3>
+              </div>
 
-      <PrimaryRoleModal
-        isOpen={isSwitchingPrimaryRole}
-        onClose={() => setIsSwitchingPrimaryRole(false)}
-        user={user}
-        selectedPrimaryRole={selectedPrimaryRole}
-        setSelectedPrimaryRole={setSelectedPrimaryRole}
-        handleSwitchPrimaryRole={handlePrimaryRoleSwitch}
-        roleLabelMap={roleLabelMap}
-      />
+              <button
+                onClick={() => setIsAccountModalOpen(false)}
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
 
-      <EditSellerProfileModal
-        isOpen={isEditingSellerProfile}
-        onClose={() => setIsEditingSellerProfile(false)}
-        sellerEditForm={sellerEditForm}
-        setSellerEditForm={setSellerEditForm}
-        handleSellerProfileUpdate={handleSellerProfileUpdate}
-        isSubmittingSellerProfile={isSubmittingSellerProfile}
-      />
+            <div className="p-6 overflow-y-auto overscroll-contain flex-1">
+              {accountView === 'editPersonal' && (
+                <div className="space-y-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('account.fullName')}</label>
+                      <input 
+                        type="text" 
+                        value={profileFormData.name}
+                        onChange={e => setProfileFormData({...profileFormData, name: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Region</label>
+                      <select 
+                        value={profileFormData.region}
+                        onChange={e => setProfileFormData({...profileFormData, region: e.target.value, district: ''})}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none appearance-none"
+                      >
+                        <option value="">Select Region</option>
+                        {malawiRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">District</label>
+                      <select 
+                        value={profileFormData.district}
+                        onChange={e => setProfileFormData({...profileFormData, district: e.target.value})}
+                        disabled={!profileFormData.region}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none appearance-none disabled:opacity-50"
+                      >
+                        <option value="">Select District</option>
+                        {profileFormData.region && malawiDistrictsByRegion[profileFormData.region as keyof typeof malawiDistrictsByRegion]?.map(d => (
+                          <option key={d} value={d}>{d}</option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Area / Market</label>
+                      <input 
+                        type="text" 
+                        value={profileFormData.location}
+                        onChange={e => setProfileFormData({...profileFormData, location: e.target.value})}
+                        placeholder="e.g. Area 25, Limbe Market"
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('account.phoneNumber')}</label>
+                      <input 
+                        type="tel" 
+                        value={profileFormData.phone}
+                        onChange={e => setProfileFormData({...profileFormData, phone: e.target.value})}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                      />
+                    </div>
+                    <div className="md:col-span-2">
+                      <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('account.bio')}</label>
+                      <textarea 
+                        value={profileFormData.bio}
+                        onChange={e => setProfileFormData({...profileFormData, bio: e.target.value})}
+                        rows={3}
+                        className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
+                      />
+                    </div>
+                  </div>
+                  <div className="flex gap-3 pt-4">
+                    <button 
+                      onClick={() => setIsAccountModalOpen(false)}
+                      className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 transition-all"
+                    >
+                      {t('common.cancel')}
+                    </button>
+                    <button 
+                      onClick={handleProfileUpdate}
+                      disabled={isSubmittingProfile}
+                      className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSubmittingProfile ? (
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                      ) : (
+                        <Save className="w-5 h-5" />
+                      )}
+                      {isSubmittingProfile ? 'Saving...' : t('common.save')}
+                    </button>
+                  </div>
+                </div>
+              )}
 
-      <EditOrganizationProfileModal
-        isOpen={isEditingOrganizationProfile}
-        onClose={() => setIsEditingOrganizationProfile(false)}
-        organizationEditForm={organizationEditForm}
-        setOrganizationEditForm={setOrganizationEditForm}
-        handleOrganizationProfileUpdate={handleOrganizationProfileUpdate}
-        isSubmittingOrganizationProfile={isSubmittingOrganizationProfile}
-      />
+              {accountView === 'editSeller' && (
+                <EditSellerProfileModal
+                  sellerEditForm={sellerEditForm}
+                  setSellerEditForm={setSellerEditForm}
+                  handleSellerProfileUpdate={handleSellerProfileUpdate}
+                  isSubmittingSellerProfile={isSubmittingSellerProfile}
+                />
+              )}
+
+              {accountView === 'editOrganization' && (
+                <EditOrganizationProfileModal
+                  organizationEditForm={organizationEditForm}
+                  setOrganizationEditForm={setOrganizationEditForm}
+                  handleOrganizationProfileUpdate={handleOrganizationProfileUpdate}
+                  isSubmittingOrganizationProfile={isSubmittingOrganizationProfile}
+                />
+              )}
+
+              {accountView === 'switchRole' && (
+                <PrimaryRoleModal
+                  user={user}
+                  selectedPrimaryRole={selectedPrimaryRole}
+                  setSelectedPrimaryRole={setSelectedPrimaryRole}
+                  handleSwitchPrimaryRole={handlePrimaryRoleSwitch}
+                  roleLabelMap={roleLabelMap}
+                />
+              )}
+
+              {accountView === 'selectUpgradeRole' && (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <button
+                    onClick={() => {
+                      setSelectedRole('seller');
+                      setAccountView('upgradeRole');
+                    }}
+                    className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-primary transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Store className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
+                    </div>
+                    <h4 className="font-bold mb-1">Individual Seller</h4>
+                    <p className="text-xs text-gray-500">Sell your own farm produce</p>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedRole('business');
+                      setAccountView('upgradeRole');
+                    }}
+                    className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-primary transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
+                    </div>
+                    <h4 className="font-bold mb-1">Agro-Business</h4>
+                    <p className="text-xs text-gray-500">Registered company or shop</p>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedRole('cooperative');
+                      setAccountView('upgradeRole');
+                    }}
+                    className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-primary transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <Users className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+                    </div>
+                    <h4 className="font-bold mb-1">Cooperative</h4>
+                    <p className="text-xs text-gray-500">Farmer group or association</p>
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setSelectedRole('ngo');
+                      setAccountView('upgradeRole');
+                    }}
+                    className="p-6 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:border-primary transition-all text-left group"
+                  >
+                    <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                      <HandHelping className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+                    </div>
+                    <h4 className="font-bold mb-1">NGO / Agency</h4>
+                    <p className="text-xs text-gray-500">Non-profit or government</p>
+                  </button>
+                </div>
+              )}
+
+              {accountView === 'upgradeRole' && (
+                <RoleUpgradeModal
+                  selectedRole={selectedRole}
+                  setSelectedRole={setSelectedRole}
+                  sellerUpgradeForm={sellerUpgradeForm}
+                  setSellerUpgradeForm={setSellerUpgradeForm}
+                  businessUpgradeForm={businessUpgradeForm}
+                  setBusinessUpgradeForm={setBusinessUpgradeForm}
+                  cooperativeUpgradeForm={cooperativeUpgradeForm}
+                  setCooperativeUpgradeForm={setCooperativeUpgradeForm}
+                  ngoUpgradeForm={ngoUpgradeForm}
+                  setNgoUpgradeForm={setNgoUpgradeForm}
+                  handleRoleUpgrade={handleRoleUpgrade}
+                  isSubmittingRole={isSubmittingRole}
+                  user={user}
+                  malawiRegions={malawiRegions}
+                  malawiDistrictsByRegion={malawiDistrictsByRegion}
+                />
+              )}
+            </div>
+          </div>
+        </div>
+      )}
     </motion.div>
   );
 };

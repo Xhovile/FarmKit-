@@ -7,8 +7,8 @@ import { toast } from 'react-hot-toast';
 interface AccountActionsCardProps {
   user: UserType;
   t: (key: string) => string;
-  setIsRoleModalOpen: (val: boolean) => void;
-  setIsSwitchingPrimaryRole: (val: boolean) => void;
+  setIsAccountModalOpen: (val: boolean) => void;
+  setAccountView: (view: any) => void;
   setSelectedPrimaryRole: (val: any) => void;
   canSell: boolean;
   lang: 'en' | 'ny';
@@ -20,8 +20,8 @@ interface AccountActionsCardProps {
 const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
   user,
   t,
-  setIsRoleModalOpen,
-  setIsSwitchingPrimaryRole,
+  setIsAccountModalOpen,
+  setAccountView,
   setSelectedPrimaryRole,
   canSell,
   lang,
@@ -46,7 +46,8 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
         <button 
           onClick={() => {
             setSelectedPrimaryRole(user.primaryRole);
-            setIsSwitchingPrimaryRole(true);
+            setAccountView('switchRole');
+            setIsAccountModalOpen(true);
           }}
           className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
         >
@@ -61,7 +62,10 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
 
         {!canSell && (
           <button 
-            onClick={() => setIsRoleModalOpen(true)}
+            onClick={() => {
+              setAccountView('selectUpgradeRole');
+              setIsAccountModalOpen(true);
+            }}
             className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
           >
             <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
