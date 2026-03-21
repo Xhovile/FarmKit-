@@ -70,6 +70,7 @@ export const useAccountPageController = ({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
+    region: '',
     district: '',
     address: '',
     businessType: '',
@@ -82,6 +83,7 @@ export const useAccountPageController = ({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
+    region: '',
     district: '',
     area: '',
     memberCount: '',
@@ -94,6 +96,7 @@ export const useAccountPageController = ({
     organizationName: '',
     contactPerson: user?.name || '',
     phone: user?.phone || '',
+    region: '',
     district: '',
     address: '',
     organizationType: '',
@@ -271,6 +274,7 @@ export const useAccountPageController = ({
         !businessUpgradeForm.organizationName.trim() ||
         !businessUpgradeForm.contactPerson.trim() ||
         !businessUpgradeForm.phone.trim() ||
+        !businessUpgradeForm.region.trim() ||
         !businessUpgradeForm.district.trim() ||
         !businessUpgradeForm.address.trim() ||
         !businessUpgradeForm.businessType.trim() ||
@@ -291,6 +295,7 @@ export const useAccountPageController = ({
         organizationName: businessUpgradeForm.organizationName.trim(),
         contactPerson: businessUpgradeForm.contactPerson.trim(),
         phone: businessUpgradeForm.phone.trim(),
+        region: businessUpgradeForm.region.trim(),
         district: businessUpgradeForm.district.trim(),
         address: businessUpgradeForm.address.trim(),
         businessType: businessUpgradeForm.businessType.trim(),
@@ -306,6 +311,7 @@ export const useAccountPageController = ({
         !cooperativeUpgradeForm.organizationName.trim() ||
         !cooperativeUpgradeForm.contactPerson.trim() ||
         !cooperativeUpgradeForm.phone.trim() ||
+        !cooperativeUpgradeForm.region.trim() ||
         !cooperativeUpgradeForm.district.trim() ||
         !cooperativeUpgradeForm.area.trim() ||
         !cooperativeUpgradeForm.memberCount.trim() ||
@@ -326,6 +332,7 @@ export const useAccountPageController = ({
         organizationName: cooperativeUpgradeForm.organizationName.trim(),
         contactPerson: cooperativeUpgradeForm.contactPerson.trim(),
         phone: cooperativeUpgradeForm.phone.trim(),
+        region: cooperativeUpgradeForm.region.trim(),
         district: cooperativeUpgradeForm.district.trim(),
         area: cooperativeUpgradeForm.area.trim(),
         memberCount: cooperativeUpgradeForm.memberCount.trim(),
@@ -341,6 +348,7 @@ export const useAccountPageController = ({
         !ngoUpgradeForm.organizationName.trim() ||
         !ngoUpgradeForm.contactPerson.trim() ||
         !ngoUpgradeForm.phone.trim() ||
+        !ngoUpgradeForm.region.trim() ||
         !ngoUpgradeForm.district.trim() ||
         !ngoUpgradeForm.address.trim() ||
         !ngoUpgradeForm.organizationType.trim() ||
@@ -360,6 +368,7 @@ export const useAccountPageController = ({
         organizationName: ngoUpgradeForm.organizationName.trim(),
         contactPerson: ngoUpgradeForm.contactPerson.trim(),
         phone: ngoUpgradeForm.phone.trim(),
+        region: ngoUpgradeForm.region.trim(),
         district: ngoUpgradeForm.district.trim(),
         address: ngoUpgradeForm.address.trim(),
         organizationType: ngoUpgradeForm.organizationType.trim(),
@@ -403,6 +412,7 @@ export const useAccountPageController = ({
         organizationName: '',
         contactPerson: user.name || '',
         phone: user.phone || '',
+        region: '',
         district: '',
         address: '',
         businessType: '',
@@ -415,6 +425,7 @@ export const useAccountPageController = ({
         organizationName: '',
         contactPerson: user.name || '',
         phone: user.phone || '',
+        region: '',
         district: '',
         area: '',
         memberCount: '',
@@ -427,6 +438,7 @@ export const useAccountPageController = ({
         organizationName: '',
         contactPerson: user.name || '',
         phone: user.phone || '',
+        region: '',
         district: '',
         address: '',
         organizationType: '',

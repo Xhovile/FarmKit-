@@ -152,197 +152,323 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
         )}
 
         {selectedRole === 'business' && (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Registered business name"
-              value={businessUpgradeForm.organizationName}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, organizationName: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Contact person"
-              value={businessUpgradeForm.contactPerson}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, contactPerson: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={businessUpgradeForm.phone}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, phone: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="District"
-              value={businessUpgradeForm.district}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, district: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Exact address"
-              value={businessUpgradeForm.address}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, address: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Business type"
-              value={businessUpgradeForm.businessType}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, businessType: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Products or services offered"
-              value={businessUpgradeForm.productsOrServices}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, productsOrServices: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Registration number"
-              value={businessUpgradeForm.registrationNumber}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, registrationNumber: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <textarea
-              placeholder="Short business description"
-              rows={4}
-              value={businessUpgradeForm.description}
-              onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, description: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Business Name</label>
+              <input
+                type="text"
+                placeholder="Registered business name"
+                value={businessUpgradeForm.organizationName}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, organizationName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Contact Person</label>
+              <input
+                type="text"
+                placeholder="Contact person"
+                value={businessUpgradeForm.contactPerson}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, contactPerson: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Phone Number</label>
+              <input
+                type="text"
+                placeholder="Phone number"
+                value={businessUpgradeForm.phone}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, phone: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Region</label>
+              <select
+                value={businessUpgradeForm.region}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, region: e.target.value, district: '' })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                <option value="">Select Region</option>
+                {malawiRegions.map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">District</label>
+              <select
+                value={businessUpgradeForm.district}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, district: e.target.value })}
+                disabled={!businessUpgradeForm.region}
+                className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!businessUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <option value="">Select District</option>
+                {businessUpgradeForm.region && malawiDistrictsByRegion[businessUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
+                  <option key={district} value={district}>{district}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Exact Address</label>
+              <input
+                type="text"
+                placeholder="Exact address"
+                value={businessUpgradeForm.address}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, address: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Business Type</label>
+              <input
+                type="text"
+                placeholder="Business type"
+                value={businessUpgradeForm.businessType}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, businessType: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Products/Services</label>
+              <input
+                type="text"
+                placeholder="Products or services offered"
+                value={businessUpgradeForm.productsOrServices}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, productsOrServices: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Registration Number</label>
+              <input
+                type="text"
+                placeholder="Registration number"
+                value={businessUpgradeForm.registrationNumber}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, registrationNumber: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="col-span-full space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Description</label>
+              <textarea
+                placeholder="Short business description"
+                rows={4}
+                value={businessUpgradeForm.description}
+                onChange={(e) => setBusinessUpgradeForm({ ...businessUpgradeForm, description: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary min-h-[100px]"
+              />
+            </div>
           </div>
         )}
 
         {selectedRole === 'cooperative' && (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Cooperative name"
-              value={cooperativeUpgradeForm.organizationName}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, organizationName: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Contact person"
-              value={cooperativeUpgradeForm.contactPerson}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, contactPerson: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={cooperativeUpgradeForm.phone}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, phone: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="District"
-              value={cooperativeUpgradeForm.district}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, district: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="EPA / area"
-              value={cooperativeUpgradeForm.area}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, area: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Number of members"
-              value={cooperativeUpgradeForm.memberCount}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, memberCount: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Main commodities handled"
-              value={cooperativeUpgradeForm.mainCommodities}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, mainCommodities: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Registration number"
-              value={cooperativeUpgradeForm.registrationNumber}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, registrationNumber: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <textarea
-              placeholder="Short cooperative description"
-              rows={4}
-              value={cooperativeUpgradeForm.description}
-              onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, description: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Cooperative Name</label>
+              <input
+                type="text"
+                placeholder="Cooperative name"
+                value={cooperativeUpgradeForm.organizationName}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, organizationName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Contact Person</label>
+              <input
+                type="text"
+                placeholder="Contact person"
+                value={cooperativeUpgradeForm.contactPerson}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, contactPerson: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Phone Number</label>
+              <input
+                type="text"
+                placeholder="Phone number"
+                value={cooperativeUpgradeForm.phone}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, phone: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Region</label>
+              <select
+                value={cooperativeUpgradeForm.region}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, region: e.target.value, district: '' })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                <option value="">Select Region</option>
+                {malawiRegions.map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">District</label>
+              <select
+                value={cooperativeUpgradeForm.district}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, district: e.target.value })}
+                disabled={!cooperativeUpgradeForm.region}
+                className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!cooperativeUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <option value="">Select District</option>
+                {cooperativeUpgradeForm.region && malawiDistrictsByRegion[cooperativeUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
+                  <option key={district} value={district}>{district}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">EPA / Area</label>
+              <input
+                type="text"
+                placeholder="EPA / area"
+                value={cooperativeUpgradeForm.area}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, area: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Number of Members</label>
+              <input
+                type="text"
+                placeholder="Number of members"
+                value={cooperativeUpgradeForm.memberCount}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, memberCount: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Main Commodities</label>
+              <input
+                type="text"
+                placeholder="Main commodities handled"
+                value={cooperativeUpgradeForm.mainCommodities}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, mainCommodities: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Registration Number</label>
+              <input
+                type="text"
+                placeholder="Registration number"
+                value={cooperativeUpgradeForm.registrationNumber}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, registrationNumber: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="col-span-full space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Description</label>
+              <textarea
+                placeholder="Short cooperative description"
+                rows={4}
+                value={cooperativeUpgradeForm.description}
+                onChange={(e) => setCooperativeUpgradeForm({ ...cooperativeUpgradeForm, description: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary min-h-[100px]"
+              />
+            </div>
           </div>
         )}
 
         {selectedRole === 'ngo' && (
-          <div className="space-y-4">
-            <input
-              type="text"
-              placeholder="Organisation name"
-              value={ngoUpgradeForm.organizationName}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, organizationName: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Contact person"
-              value={ngoUpgradeForm.contactPerson}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, contactPerson: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Phone number"
-              value={ngoUpgradeForm.phone}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, phone: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="District"
-              value={ngoUpgradeForm.district}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, district: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <input
-              type="text"
-              placeholder="Exact address"
-              value={ngoUpgradeForm.address}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, address: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
-            <select
-              value={ngoUpgradeForm.organizationType}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, organizationType: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            >
-              <option value="">Select organisation type</option>
-              <option value="local">Local NGO</option>
-              <option value="international">International NGO</option>
-              <option value="community">Community Based Organisation (CBO)</option>
-              <option value="trust">Trust</option>
-              <option value="other">Other</option>
-            </select>
-            <textarea
-              placeholder="Short organisation description"
-              rows={4}
-              value={ngoUpgradeForm.description}
-              onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, description: e.target.value })}
-              className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Organisation Name</label>
+              <input
+                type="text"
+                placeholder="Organisation name"
+                value={ngoUpgradeForm.organizationName}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, organizationName: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Contact Person</label>
+              <input
+                type="text"
+                placeholder="Contact person"
+                value={ngoUpgradeForm.contactPerson}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, contactPerson: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Phone Number</label>
+              <input
+                type="text"
+                placeholder="Phone number"
+                value={ngoUpgradeForm.phone}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, phone: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Region</label>
+              <select
+                value={ngoUpgradeForm.region}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, region: e.target.value, district: '' })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
+              >
+                <option value="">Select Region</option>
+                {malawiRegions.map(region => (
+                  <option key={region} value={region}>{region}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">District</label>
+              <select
+                value={ngoUpgradeForm.district}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, district: e.target.value })}
+                disabled={!ngoUpgradeForm.region}
+                className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!ngoUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
+              >
+                <option value="">Select District</option>
+                {ngoUpgradeForm.region && malawiDistrictsByRegion[ngoUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
+                  <option key={district} value={district}>{district}</option>
+                ))}
+              </select>
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Exact Address</label>
+              <input
+                type="text"
+                placeholder="Exact address"
+                value={ngoUpgradeForm.address}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, address: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Organisation Type</label>
+              <select
+                value={ngoUpgradeForm.organizationType}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, organizationType: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="">Select organisation type</option>
+                <option value="local">Local NGO</option>
+                <option value="international">International NGO</option>
+                <option value="community">Community Based Organisation (CBO)</option>
+                <option value="trust">Trust</option>
+                <option value="other">Other</option>
+              </select>
+            </div>
+            <div className="col-span-full space-y-2">
+              <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Description</label>
+              <textarea
+                placeholder="Short organisation description"
+                rows={4}
+                value={ngoUpgradeForm.description}
+                onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, description: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary min-h-[100px]"
+              />
+            </div>
           </div>
         )}
       </div>
