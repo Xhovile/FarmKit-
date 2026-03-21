@@ -203,15 +203,6 @@ export default function App() {
   const [marketListings, setMarketListings] = useState<MarketListing[]>([]);
   const [user, setUser] = useState<User | null>(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
-  const [isEditingProfile, setIsEditingProfile] = useState(false);
-  const [profileFormData, setProfileFormData] = useState({
-    name: '',
-    region: '',
-    district: '',
-    location: '',
-    phone: '',
-    bio: ''
-  });
   const [showTour, setShowTour] = useState(false);
   const [tourStep, setTourStep] = useState(0);
   const [communityTab, setCommunityTab] = useState<'experts' | 'organizations' | 'support' | 'stories'>('experts');
@@ -244,14 +235,6 @@ export default function App() {
             const normalizedUser = normalizeUserData(firebaseUser, rawData);
 
             setUser(normalizedUser);
-            setProfileFormData({
-              name: normalizedUser.name,
-              region: normalizedUser.region || '',
-              district: normalizedUser.district || '',
-              location: normalizedUser.location,
-              phone: normalizedUser.phone,
-              bio: normalizedUser.bio,
-            });
 
             const needsNormalization =
               rawData.primaryRole !== normalizedUser.primaryRole ||
@@ -308,15 +291,6 @@ export default function App() {
             setUser({
               uid: firebaseUser.uid,
               ...initialData,
-            });
-
-            setProfileFormData({
-              name: initialData.name,
-              region: initialData.region,
-              district: initialData.district,
-              location: initialData.location,
-              phone: initialData.phone,
-              bio: initialData.bio,
             });
           }
         } catch (error) {
@@ -965,10 +939,6 @@ export default function App() {
               setLang={setLang}
               user={user} 
               setUser={setUser} 
-              isEditingProfile={isEditingProfile} 
-              setIsEditingProfile={setIsEditingProfile} 
-              profileFormData={profileFormData} 
-              setProfileFormData={setProfileFormData} 
               setIsAuthModalOpen={setIsAuthModalOpen} 
               setShowTour={setShowTour} 
             />

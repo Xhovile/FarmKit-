@@ -8,6 +8,7 @@ interface PrimaryRoleModalProps {
   selectedPrimaryRole: UserType['primaryRole'];
   setSelectedPrimaryRole: (role: UserType['primaryRole']) => void;
   handleSwitchPrimaryRole: () => Promise<void>;
+  isSubmittingRoleSwitch: boolean;
   roleLabelMap: Record<UserType['primaryRole'], string>;
 }
 
@@ -16,6 +17,7 @@ const PrimaryRoleModal: React.FC<PrimaryRoleModalProps> = ({
   selectedPrimaryRole,
   setSelectedPrimaryRole,
   handleSwitchPrimaryRole,
+  isSubmittingRoleSwitch,
   roleLabelMap,
 }) => {
   return (
@@ -54,10 +56,15 @@ const PrimaryRoleModal: React.FC<PrimaryRoleModalProps> = ({
 
       <button 
         onClick={handleSwitchPrimaryRole}
-        disabled={selectedPrimaryRole === user.primaryRole}
-        className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50"
+        disabled={selectedPrimaryRole === user.primaryRole || isSubmittingRoleSwitch}
+        className="w-full py-4 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
       >
-        Confirm Switch
+        {isSubmittingRoleSwitch ? (
+          <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+        ) : (
+          <Save className="w-5 h-5" />
+        )}
+        {isSubmittingRoleSwitch ? 'Switching...' : 'Confirm Switch'}
       </button>
     </div>
   );
