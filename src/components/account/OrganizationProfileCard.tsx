@@ -1,5 +1,5 @@
 import React from 'react';
-import { Building2, MapPin, Phone, User, Briefcase, FileText, Globe, Users, HandHelping } from 'lucide-react';
+import { Building2, MapPin, Phone, User, Briefcase, FileText, Users, HandHelping, ShieldCheck } from 'lucide-react';
 import { User as UserType } from '../../types';
 
 interface OrganizationProfileCardProps {
@@ -15,8 +15,8 @@ const OrganizationProfileCard: React.FC<OrganizationProfileCardProps> = ({
 }) => {
   if (!user.organizationProfile) return null;
 
-  const orgType = user.roles.find(r => ['business', 'cooperative', 'ngo'].includes(r));
-  const orgLabel = orgType ? organizationTypeLabelMap[orgType as keyof typeof organizationTypeLabelMap] : 'Organization';
+  const orgType = user.organizationProfile.type;
+  const orgLabel = organizationTypeLabelMap[orgType] || 'Organization';
 
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-8 border border-blue-100 dark:border-blue-900/30">
@@ -32,11 +32,16 @@ const OrganizationProfileCard: React.FC<OrganizationProfileCardProps> = ({
             )}
           </div>
           <div>
-            <h3 className="text-xl font-bold">{orgLabel} Profile</h3>
+            <div className="flex items-center gap-2">
+              <h3 className="text-xl font-bold">{orgLabel} Profile</h3>
+              {user.organizationProfile.verified && (
+                <ShieldCheck className="w-4 h-4 text-emerald-500" />
+              )}
+            </div>
             <p className="text-sm text-gray-500">{user.organizationProfile.organizationName}</p>
           </div>
         </div>
-        <button 
+        <button
           onClick={openEditOrganization}
           className="px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold rounded-xl hover:bg-blue-100 transition-all text-sm"
         >
@@ -50,21 +55,23 @@ const OrganizationProfileCard: React.FC<OrganizationProfileCardProps> = ({
             <MapPin className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Location</p>
-              <p className="text-gray-700 dark:text-gray-300">{user.organizationProfile.district}, {user.organizationProfile.region}</p>
+              <p className="text-gray-700 dark:text-gray-300">
+                {[user.organizationProfile.district, user.organizationProfile.region].filter(Boolean).join(', ') || 'Not set'}
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <User className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Contact Person</p>
-              <p className="text-gray-700 dark:text-gray-300">{user.organizationProfile.contactPerson}</p>
+              <p className="text-gray-700 dark:text-gray-300">{user.organizationProfile.contactPerson || 'Not set'}</p>
             </div>
           </div>
           <div className="flex items-start gap-3">
             <Phone className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Phone</p>
-              <p className="text-gray-700 dark:text-gray-300">{user.organizationProfile.phone}</p>
+              <p className="text-gray-700 dark:text-gray-300">{user.organizationProfile.phone || 'Not set'}</p>
             </div>
           </div>
         </div>
@@ -73,8 +80,10 @@ const OrganizationProfileCard: React.FC<OrganizationProfileCardProps> = ({
           <div className="flex items-start gap-3">
             <Briefcase className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
-              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Business Type</p>
-              <p className="text-gray-700 dark:text-gray-300 capitalize">{user.organizationProfile.businessType || user.organizationProfile.type}</p>
+              <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Type</p>
+              <p className="text-gray-700 dark:text-gray-300 capitalize">
+                {orgLabel}
+              </p>
             </div>
           </div>
           <div className="flex items-start gap-3">
@@ -88,7 +97,9 @@ const OrganizationProfileCard: React.FC<OrganizationProfileCardProps> = ({
             <FileText className="w-5 h-5 text-blue-500 mt-0.5" />
             <div>
               <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Description</p>
-              <p className="text-gray-700 dark:text-gray-300 line-clamp-2">{user.organizationProfile.description}</p>
+              <p className="text-gray-700 dark:text-gray-300 line-clamp-2">
+                {user.organizationProfile.description || 'No description yet'}
+              </p>
             </div>
           </div>
         </div>

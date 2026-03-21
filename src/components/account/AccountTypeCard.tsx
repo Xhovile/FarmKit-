@@ -40,6 +40,11 @@ const AccountTypeCard: React.FC<AccountTypeCardProps> = ({
             >
               <div className="flex items-center gap-2">
                 <span>{roleLabelMap[role]}</span>
+                {user.primaryRole === role && (
+                  <span className="text-[10px] font-bold text-primary uppercase">
+                    Main
+                  </span>
+                )}
               </div>
             </span>
           ))}
