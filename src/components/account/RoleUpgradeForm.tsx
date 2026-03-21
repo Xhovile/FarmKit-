@@ -191,7 +191,7 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
               >
                 <option value="">Select Region</option>
-                {malawiRegions.map(region => (
+                {malawiRegions.map((region) => (
                   <option key={region} value={region}>{region}</option>
                 ))}
               </select>
@@ -205,9 +205,10 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!businessUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <option value="">Select District</option>
-                {businessUpgradeForm.region && malawiDistrictsByRegion[businessUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
+                {businessUpgradeForm.region &&
+                  malawiDistrictsByRegion[businessUpgradeForm.region as keyof typeof malawiDistrictsByRegion]?.map((district) => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
               </select>
             </div>
             <div className="space-y-2">
@@ -303,7 +304,7 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
               >
                 <option value="">Select Region</option>
-                {malawiRegions.map(region => (
+                {malawiRegions.map((region) => (
                   <option key={region} value={region}>{region}</option>
                 ))}
               </select>
@@ -317,9 +318,10 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!cooperativeUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <option value="">Select District</option>
-                {cooperativeUpgradeForm.region && malawiDistrictsByRegion[cooperativeUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
+                {cooperativeUpgradeForm.region &&
+                  malawiDistrictsByRegion[cooperativeUpgradeForm.region as keyof typeof malawiDistrictsByRegion]?.map((district) => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
               </select>
             </div>
             <div className="space-y-2">
@@ -415,7 +417,7 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
               >
                 <option value="">Select Region</option>
-                {malawiRegions.map(region => (
+                {malawiRegions.map((region) => (
                   <option key={region} value={region}>{region}</option>
                 ))}
               </select>
@@ -429,9 +431,10 @@ const RoleUpgradeModal: React.FC<RoleUpgradeModalProps> = ({
                 className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!ngoUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
               >
                 <option value="">Select District</option>
-                {ngoUpgradeForm.region && malawiDistrictsByRegion[ngoUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
-                  <option key={district} value={district}>{district}</option>
-                ))}
+                {ngoUpgradeForm.region &&
+                  malawiDistrictsByRegion[ngoUpgradeForm.region as keyof typeof malawiDistrictsByRegion]?.map((district) => (
+                    <option key={district} value={district}>{district}</option>
+                  ))}
               </select>
             </div>
             <div className="space-y-2">
