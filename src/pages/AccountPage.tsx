@@ -20,6 +20,7 @@ import { auth, db } from '../lib/firebase';
 import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
 import { User as UserType } from '../types';
+import { malawiRegions, malawiDistrictsByRegion } from '../data/constants';
 
 interface AccountPageProps {
   t: (key: string) => string;
@@ -106,12 +107,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   } as const;
 
   const [isRoleModalOpen, setIsRoleModalOpen] = React.useState(false);
+  const [isSubmittingProfile, setIsSubmittingProfile] = React.useState(false);
+  const [isSubmittingSellerProfile, setIsSubmittingSellerProfile] = React.useState(false);
+  const [isSubmittingOrganizationProfile, setIsSubmittingOrganizationProfile] = React.useState(false);
   const [selectedRole, setSelectedRole] = React.useState<'seller' | 'business' | 'cooperative' | 'ngo' | null>(null);
   
   const [sellerUpgradeForm, setSellerUpgradeForm] = React.useState({
     businessName: '',
     fullName: user.name || '',
     phone: user.phone || '',
+    region: '',
     district: '',
     area: '',
     category: '',
@@ -149,10 +154,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     contactPerson: user.name || '',
     phone: user.phone || '',
     district: '',
-    focusArea: '',
-    servicesOffered: '',
-    registrationNumber: '',
-    websiteOrSocial: '',
+    address: '',
+    organizationType: '',
     description: '',
   });
 
@@ -161,6 +164,46 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   const [isEditingSellerProfile, setIsEditingSellerProfile] = React.useState(false);
   const [isEditingOrganizationProfile, setIsEditingOrganizationProfile] = React.useState(false);
 
+  React.useEffect(() => {
+    if (isEditingSellerProfile && user.sellerProfile) {
+      setSellerEditForm({
+        businessName: user.sellerProfile.businessName || '',
+        fullName: user.sellerProfile.fullName || '',
+        phone: user.sellerProfile.phone || '',
+        region: user.sellerProfile.region || '',
+        district: user.sellerProfile.district || '',
+        area: user.sellerProfile.area || '',
+        category: user.sellerProfile.category || '',
+        deliveryMethod: user.sellerProfile.deliveryMethod || 'pickup',
+        experienceYears: user.sellerProfile.experienceYears || '',
+        description: user.sellerProfile.description || '',
+      });
+    }
+  }, [isEditingSellerProfile, user.sellerProfile]);
+
+  React.useEffect(() => {
+    if (isEditingOrganizationProfile && user.organizationProfile) {
+      setOrganizationEditForm({
+        organizationName: user.organizationProfile.organizationName || '',
+        contactPerson: user.organizationProfile.contactPerson || '',
+        phone: user.organizationProfile.phone || '',
+        region: user.organizationProfile.region || '',
+        district: user.organizationProfile.district || '',
+        address: user.organizationProfile.address || '',
+        businessType: user.organizationProfile.businessType || '',
+        productsOrServices: user.organizationProfile.productsOrServices || '',
+        registrationNumber: user.organizationProfile.registrationNumber || '',
+        area: user.organizationProfile.area || '',
+        memberCount: user.organizationProfile.memberCount || '',
+        mainCommodities: user.organizationProfile.mainCommodities || '',
+        focusArea: user.organizationProfile.focusArea || '',
+        servicesOffered: user.organizationProfile.servicesOffered || '',
+        websiteOrSocial: user.organizationProfile.websiteOrSocial || '',
+        description: user.organizationProfile.description || '',
+      });
+    }
+  }, [isEditingOrganizationProfile, user.organizationProfile]);
+
   const [isSwitchingPrimaryRole, setIsSwitchingPrimaryRole] = React.useState(false);
   const [selectedPrimaryRole, setSelectedPrimaryRole] = React.useState<UserType['primaryRole']>(user.primaryRole);
 
@@ -168,6 +211,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     businessName: user.sellerProfile?.businessName || '',
     fullName: user.sellerProfile?.fullName || '',
     phone: user.sellerProfile?.phone || '',
+    region: user.sellerProfile?.region || '',
     district: user.sellerProfile?.district || '',
     area: user.sellerProfile?.area || '',
     category: user.sellerProfile?.category || '',
@@ -180,6 +224,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     organizationName: user.organizationProfile?.organizationName || '',
     contactPerson: user.organizationProfile?.contactPerson || '',
     phone: user.organizationProfile?.phone || '',
+    region: user.organizationProfile?.region || '',
     district: user.organizationProfile?.district || '',
     address: user.organizationProfile?.address || '',
     businessType: user.organizationProfile?.businessType || '',
@@ -193,6 +238,46 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     websiteOrSocial: user.organizationProfile?.websiteOrSocial || '',
     description: user.organizationProfile?.description || '',
   });
+
+  const handleProfileUpdate = async () => {
+    if (!user) return;
+
+    if (!profileFormData.name.trim()) {
+      toast.error('Name is required.');
+      return;
+    }
+
+    if (!profileFormData.region || !profileFormData.district) {
+      toast.error('Region and District are required.');
+      return;
+    }
+
+    if (!profileFormData.phone.trim() || !/^\+?[0-9]{10,15}$/.test(profileFormData.phone.trim())) {
+      toast.error('Please enter a valid phone number (10-15 digits).');
+      return;
+    }
+
+    setIsSubmittingProfile(true);
+    try {
+      const updatedData = {
+        name: profileFormData.name.trim(),
+        region: profileFormData.region,
+        district: profileFormData.district,
+        location: profileFormData.location.trim(),
+        phone: profileFormData.phone.trim(),
+        bio: profileFormData.bio.trim()
+      };
+
+      await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
+      setUser({ ...user, ...updatedData });
+      setIsEditingProfile(false);
+      toast.success(t('account.profileUpdated'));
+    } catch (error: any) {
+      toast.error(error.message || 'Failed to update profile.');
+    } finally {
+      setIsSubmittingProfile(false);
+    }
+  };
 
   const handleRoleUpgrade = async () => {
     if (!user || !selectedRole) return;
@@ -210,6 +295,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         !sellerUpgradeForm.businessName.trim() ||
         !sellerUpgradeForm.fullName.trim() ||
         !sellerUpgradeForm.phone.trim() ||
+        !sellerUpgradeForm.region.trim() ||
         !sellerUpgradeForm.district.trim() ||
         !sellerUpgradeForm.area.trim() ||
         !sellerUpgradeForm.category.trim() ||
@@ -220,10 +306,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         return;
       }
 
+      if (!/^\+?[0-9]{10,15}$/.test(sellerUpgradeForm.phone.trim())) {
+        toast.error('Please enter a valid phone number (10-15 digits).');
+        return;
+      }
+
       updatePayload.sellerProfile = {
         type: 'individual_seller',
         businessName: sellerUpgradeForm.businessName.trim(),
         category: sellerUpgradeForm.category.trim(),
+        region: sellerUpgradeForm.region.trim(),
         district: sellerUpgradeForm.district.trim(),
         deliveryMethod: sellerUpgradeForm.deliveryMethod,
         verified: false,
@@ -250,18 +342,23 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         return;
       }
 
+      if (!/^\+?[0-9]{10,15}$/.test(businessUpgradeForm.phone.trim())) {
+        toast.error('Please enter a valid phone number (10-15 digits).');
+        return;
+      }
+
       updatePayload.organizationProfile = {
         type: 'business',
         organizationName: businessUpgradeForm.organizationName.trim(),
         contactPerson: businessUpgradeForm.contactPerson.trim(),
-        district: businessUpgradeForm.district.trim(),
-        description: businessUpgradeForm.description.trim(),
-        verified: false,
         phone: businessUpgradeForm.phone.trim(),
+        district: businessUpgradeForm.district.trim(),
         address: businessUpgradeForm.address.trim(),
         businessType: businessUpgradeForm.businessType.trim(),
         productsOrServices: businessUpgradeForm.productsOrServices.trim(),
         registrationNumber: businessUpgradeForm.registrationNumber.trim(),
+        description: businessUpgradeForm.description.trim(),
+        verified: false,
       };
     }
 
@@ -280,18 +377,23 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         return;
       }
 
+      if (!/^\+?[0-9]{10,15}$/.test(cooperativeUpgradeForm.phone.trim())) {
+        toast.error('Please enter a valid phone number (10-15 digits).');
+        return;
+      }
+
       updatePayload.organizationProfile = {
         type: 'cooperative',
         organizationName: cooperativeUpgradeForm.organizationName.trim(),
         contactPerson: cooperativeUpgradeForm.contactPerson.trim(),
-        district: cooperativeUpgradeForm.district.trim(),
-        description: cooperativeUpgradeForm.description.trim(),
-        verified: false,
         phone: cooperativeUpgradeForm.phone.trim(),
+        district: cooperativeUpgradeForm.district.trim(),
         area: cooperativeUpgradeForm.area.trim(),
         memberCount: cooperativeUpgradeForm.memberCount.trim(),
         mainCommodities: cooperativeUpgradeForm.mainCommodities.trim(),
         registrationNumber: cooperativeUpgradeForm.registrationNumber.trim(),
+        description: cooperativeUpgradeForm.description.trim(),
+        verified: false,
       };
     }
 
@@ -301,11 +403,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         !ngoUpgradeForm.contactPerson.trim() ||
         !ngoUpgradeForm.phone.trim() ||
         !ngoUpgradeForm.district.trim() ||
-        !ngoUpgradeForm.focusArea.trim() ||
-        !ngoUpgradeForm.servicesOffered.trim() ||
+        !ngoUpgradeForm.address.trim() ||
+        !ngoUpgradeForm.organizationType.trim() ||
         !ngoUpgradeForm.description.trim()
       ) {
         toast.error('Please complete all NGO upgrade fields.');
+        return;
+      }
+
+      if (!/^\+?[0-9]{10,15}$/.test(ngoUpgradeForm.phone.trim())) {
+        toast.error('Please enter a valid phone number (10-15 digits).');
         return;
       }
 
@@ -313,14 +420,12 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         type: 'ngo',
         organizationName: ngoUpgradeForm.organizationName.trim(),
         contactPerson: ngoUpgradeForm.contactPerson.trim(),
+        phone: ngoUpgradeForm.phone.trim(),
         district: ngoUpgradeForm.district.trim(),
+        address: ngoUpgradeForm.address.trim(),
+        organizationType: ngoUpgradeForm.organizationType.trim(),
         description: ngoUpgradeForm.description.trim(),
         verified: false,
-        phone: ngoUpgradeForm.phone.trim(),
-        focusArea: ngoUpgradeForm.focusArea.trim(),
-        servicesOffered: ngoUpgradeForm.servicesOffered.trim(),
-        registrationNumber: ngoUpgradeForm.registrationNumber.trim(),
-        websiteOrSocial: ngoUpgradeForm.websiteOrSocial.trim(),
       };
     }
 
@@ -345,6 +450,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         businessName: '',
         fullName: user.name || '',
         phone: user.phone || '',
+        region: '',
         district: '',
         area: '',
         category: '',
@@ -382,10 +488,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         contactPerson: user.name || '',
         phone: user.phone || '',
         district: '',
-        focusArea: '',
-        servicesOffered: '',
-        registrationNumber: '',
-        websiteOrSocial: '',
+        address: '',
+        organizationType: '',
         description: '',
       });
     } catch (error: any) {
@@ -402,6 +506,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       !sellerEditForm.businessName.trim() ||
       !sellerEditForm.fullName.trim() ||
       !sellerEditForm.phone.trim() ||
+      !sellerEditForm.region.trim() ||
       !sellerEditForm.district.trim() ||
       !sellerEditForm.area.trim() ||
       !sellerEditForm.category.trim() ||
@@ -412,12 +517,19 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       return;
     }
 
+    if (!/^\+?[0-9]{10,15}$/.test(sellerEditForm.phone.trim())) {
+      toast.error('Please enter a valid phone number (10-15 digits).');
+      return;
+    }
+
+    setIsSubmittingSellerProfile(true);
     try {
       const updatedSellerProfile = {
         ...user.sellerProfile,
         businessName: sellerEditForm.businessName.trim(),
         fullName: sellerEditForm.fullName.trim(),
         phone: sellerEditForm.phone.trim(),
+        region: sellerEditForm.region.trim(),
         district: sellerEditForm.district.trim(),
         area: sellerEditForm.area.trim(),
         category: sellerEditForm.category.trim(),
@@ -439,6 +551,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       setIsEditingSellerProfile(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update seller profile.');
+    } finally {
+      setIsSubmittingSellerProfile(false);
     }
   };
 
@@ -452,10 +566,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       !organizationEditForm.organizationName.trim() ||
       !organizationEditForm.contactPerson.trim() ||
       !organizationEditForm.phone.trim() ||
+      !organizationEditForm.region.trim() ||
       !organizationEditForm.district.trim() ||
       !organizationEditForm.description.trim()
     ) {
       toast.error('Please complete all core profile fields.');
+      return;
+    }
+
+    if (!/^\+?[0-9]{10,15}$/.test(organizationEditForm.phone.trim())) {
+      toast.error('Please enter a valid phone number (10-15 digits).');
       return;
     }
 
@@ -477,12 +597,14 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       }
     }
 
+    setIsSubmittingOrganizationProfile(true);
     try {
       const updatedOrganizationProfile = {
         ...user.organizationProfile,
         organizationName: organizationEditForm.organizationName.trim(),
         contactPerson: organizationEditForm.contactPerson.trim(),
         phone: organizationEditForm.phone.trim(),
+        region: organizationEditForm.region.trim(),
         district: organizationEditForm.district.trim(),
         address: organizationEditForm.address.trim(),
         businessType: organizationEditForm.businessType.trim(),
@@ -510,6 +632,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       setIsEditingOrganizationProfile(false);
     } catch (error: any) {
       toast.error(error.message || 'Failed to update organisation profile.');
+    } finally {
+      setIsSubmittingOrganizationProfile(false);
     }
   };
 
@@ -603,11 +727,37 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                   />
                 </div>
                 <div>
-                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">{t('common.location')}</label>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Region</label>
+                  <select 
+                    value={profileFormData.region}
+                    onChange={e => setProfileFormData({...profileFormData, region: e.target.value, district: ''})}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none appearance-none"
+                  >
+                    <option value="">Select Region</option>
+                    {malawiRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">District</label>
+                  <select 
+                    value={profileFormData.district}
+                    onChange={e => setProfileFormData({...profileFormData, district: e.target.value})}
+                    disabled={!profileFormData.region}
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none appearance-none disabled:opacity-50"
+                  >
+                    <option value="">Select District</option>
+                    {profileFormData.region && malawiDistrictsByRegion[profileFormData.region as keyof typeof malawiDistrictsByRegion]?.map(d => (
+                      <option key={d} value={d}>{d}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-gray-400 uppercase tracking-wider mb-1">Area / Market</label>
                   <input 
                     type="text" 
                     value={profileFormData.location}
                     onChange={e => setProfileFormData({...profileFormData, location: e.target.value})}
+                    placeholder="e.g. Area 25, Limbe Market"
                     className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-100 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-primary outline-none"
                   />
                 </div>
@@ -638,27 +788,16 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                   {t('common.cancel')}
                 </button>
                 <button 
-                  onClick={async () => {
-                    if (user) {
-                      const updatedData = {
-                        name: profileFormData.name,
-                        location: profileFormData.location,
-                        phone: profileFormData.phone,
-                        bio: profileFormData.bio
-                      };
-                      try {
-                        await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
-                        setUser({ ...user, ...updatedData });
-                        setIsEditingProfile(false);
-                        toast.success(t('account.profileUpdated'));
-                      } catch (error: any) {
-                        toast.error(error.message);
-                      }
-                    }
-                  }}
-                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2"
+                  onClick={handleProfileUpdate}
+                  disabled={isSubmittingProfile}
+                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Save className="w-5 h-5" /> {t('common.save')}
+                  {isSubmittingProfile ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save className="w-5 h-5" />
+                  )}
+                  {isSubmittingProfile ? 'Saving...' : t('common.save')}
                 </button>
               </div>
             </motion.div>
@@ -667,7 +806,9 @@ export const AccountPage: React.FC<AccountPageProps> = ({
               <div>
                 <h2 className="text-3xl font-bold mb-1">{user?.name}</h2>
                 <p className="text-gray-500 flex items-center gap-1.5">
-                  <MapPin className="w-4 h-4 text-primary" /> {user?.location}
+                  <MapPin className="w-4 h-4 text-primary" /> 
+                  {user?.region && user?.district ? `${user.district}, ${user.region}` : user?.location}
+                  {user?.region && user?.district && user?.location && ` (${user.location})`}
                 </p>
               </div>
 
@@ -752,6 +893,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                             businessName: user.sellerProfile?.businessName || '',
                             fullName: user.sellerProfile?.fullName || '',
                             phone: user.sellerProfile?.phone || '',
+                            region: user.sellerProfile?.region || '',
                             district: user.sellerProfile?.district || '',
                             area: user.sellerProfile?.area || '',
                             category: user.sellerProfile?.category || '',
@@ -782,6 +924,11 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Phone</p>
                       <p className="font-semibold">{user.sellerProfile.phone || '—'}</p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Region</p>
+                      <p className="font-semibold">{user.sellerProfile.region || '—'}</p>
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
@@ -842,6 +989,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                             organizationName: user.organizationProfile?.organizationName || '',
                             contactPerson: user.organizationProfile?.contactPerson || '',
                             phone: user.organizationProfile?.phone || '',
+                            region: user.organizationProfile?.region || '',
                             district: user.organizationProfile?.district || '',
                             address: user.organizationProfile?.address || '',
                             businessType: user.organizationProfile?.businessType || '',
@@ -885,6 +1033,11 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
                       <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Phone</p>
                       <p className="font-semibold">{user.organizationProfile.phone || '—'}</p>
+                    </div>
+
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
+                      <p className="text-xs font-bold uppercase tracking-wider text-gray-400 mb-1">Region</p>
+                      <p className="font-semibold">{user.organizationProfile.region || '—'}</p>
                     </div>
 
                     <div className="bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4">
@@ -966,610 +1119,228 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 </button>
               </div>
 
-              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-3 gap-4">
-                <button 
+              <div className="pt-4 border-t border-gray-100 dark:border-gray-700 grid grid-cols-3 gap-3">
+                <button
                   onClick={() => setShowTour(true)}
-                  className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
+                  className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all gap-2"
                 >
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
-                    <HelpCircle className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">{t('account.helpTour')}</span>
+                  <HelpCircle className="w-5 h-5 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('account.help')}</span>
                 </button>
+
                 <button
                   onClick={() => setLang(lang === 'en' ? 'ny' : 'en')}
-                  className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
+                  className="flex flex-col items-center justify-center p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl hover:bg-gray-100 dark:hover:bg-gray-700 transition-all gap-2"
                 >
-                  <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
-                    <Languages className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-gray-500">
-                    Language ({lang.toUpperCase()})
-                  </span>
+                  <Languages className="w-5 h-5 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{lang === 'en' ? 'Chichewa' : 'English'}</span>
                 </button>
-                <button 
-                  onClick={() => {
-                    auth.signOut();
-                    toast.success(t('account.loggedOut'));
+
+                <button
+                  onClick={async () => {
+                    try {
+                      await auth.signOut();
+                      setUser(null);
+                      toast.success(t('account.loggedOut'));
+                    } catch (error: any) {
+                      toast.error(error.message);
+                    }
                   }}
-                  className="flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group flex"
+                  className="flex flex-col items-center justify-center p-4 bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 rounded-2xl hover:bg-red-100 dark:hover:bg-red-900/30 transition-all gap-2"
                 >
-                  <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center transition-all">
-                    <LogOut className="w-6 h-6" />
-                  </div>
-                  <span className="text-xs font-bold text-rose-500">{t('common.logout')}</span>
+                  <LogOut className="w-5 h-5" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider">{t('account.logout')}</span>
                 </button>
               </div>
             </div>
           )}
         </div>
-      </div>
 
-      {isSwitchingPrimaryRole && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsSwitchingPrimaryRole(false)}
-          />
-          <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-5">
-            <div className="flex items-center justify-between">
-              <div>
-                <h3 className="text-2xl font-bold">Switch Primary Role</h3>
-                <p className="text-sm text-gray-500">Choose which role should be your main account identity.</p>
-              </div>
-              <button
-                onClick={() => setIsSwitchingPrimaryRole(false)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="space-y-3">
-              {user.roles.map((role) => (
-                <button
-                  key={role}
-                  onClick={() => setSelectedPrimaryRole(role)}
-                  className={`w-full text-left px-4 py-4 rounded-2xl border transition-all ${
-                    selectedPrimaryRole === role
-                      ? 'border-emerald-500 bg-emerald-50 dark:bg-emerald-900/20'
-                      : 'border-gray-200 dark:border-gray-700 hover:border-emerald-400'
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold">{roleLabelMap[role]}</span>
-                    {selectedPrimaryRole === role && (
-                      <span className="text-xs font-bold text-emerald-600">Selected</span>
-                    )}
-                  </div>
-                </button>
-              ))}
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setIsSwitchingPrimaryRole(false)}
-                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handlePrimaryRoleSwitch}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
-              >
-                Save Role
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isEditingSellerProfile && user.sellerProfile && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsEditingSellerProfile(false)}
-          />
-          <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold">Edit Seller Profile</h3>
-              <button
-                onClick={() => setIsEditingSellerProfile(false)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Business Name</label>
-                <input
-                  type="text"
-                  placeholder="Business name"
-                  value={sellerEditForm.businessName}
-                  onChange={(e) => setSellerEditForm({ ...sellerEditForm, businessName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Seller Full Name</label>
-                <input
-                  type="text"
-                  placeholder="Full name"
-                  value={sellerEditForm.fullName}
-                  onChange={(e) => setSellerEditForm({ ...sellerEditForm, fullName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Phone Number</label>
-                <input
-                  type="text"
-                  placeholder="Phone number"
-                  value={sellerEditForm.phone}
-                  onChange={(e) => setSellerEditForm({ ...sellerEditForm, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">District</label>
-                  <input
-                    type="text"
-                    placeholder="District"
-                    value={sellerEditForm.district}
-                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, district: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                  />
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Area</label>
-                  <input
-                    type="text"
-                    placeholder="Area"
-                    value={sellerEditForm.area}
-                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, area: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Category</label>
-                <input
-                  type="text"
-                  placeholder="Category"
-                  value={sellerEditForm.category}
-                  onChange={(e) => setSellerEditForm({ ...sellerEditForm, category: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Delivery</label>
-                  <select
-                    value={sellerEditForm.deliveryMethod}
-                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, deliveryMethod: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                  >
-                    <option value="pickup">Pickup</option>
-                    <option value="delivery">Delivery</option>
-                    <option value="both">Both</option>
-                  </select>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-500 uppercase ml-1">Experience (Yrs)</label>
-                  <input
-                    type="text"
-                    placeholder="Years"
-                    value={sellerEditForm.experienceYears}
-                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, experienceYears: e.target.value })}
-                    className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Description</label>
-                <textarea
-                  placeholder="Short business description"
-                  rows={3}
-                  value={sellerEditForm.description}
-                  onChange={(e) => setSellerEditForm({ ...sellerEditForm, description: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setIsEditingSellerProfile(false)}
-                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleSellerProfileUpdate}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isEditingOrganizationProfile && user.organizationProfile && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => setIsEditingOrganizationProfile(false)}
-          />
-          <div className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-2xl font-bold">Edit Organisation Profile</h3>
-              <button
-                onClick={() => setIsEditingOrganizationProfile(false)}
-                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
-              >
-                <X className="w-5 h-5" />
-              </button>
-            </div>
-
-            <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4">
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Organisation Name</label>
-                <input
-                  type="text"
-                  placeholder="Organisation name"
-                  value={organizationEditForm.organizationName}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, organizationName: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Contact Person</label>
-                <input
-                  type="text"
-                  placeholder="Contact person"
-                  value={organizationEditForm.contactPerson}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, contactPerson: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Phone Number</label>
-                <input
-                  type="text"
-                  placeholder="Phone number"
-                  value={organizationEditForm.phone}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, phone: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">District</label>
-                <input
-                  type="text"
-                  placeholder="District"
-                  value={organizationEditForm.district}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, district: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              {user.organizationProfile.type === 'business' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Exact Address</label>
-                    <input
-                      type="text"
-                      placeholder="Address"
-                      value={organizationEditForm.address}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, address: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Business Type</label>
-                    <input
-                      type="text"
-                      placeholder="Business type"
-                      value={organizationEditForm.businessType}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, businessType: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Products/Services</label>
-                    <input
-                      type="text"
-                      placeholder="Products or services"
-                      value={organizationEditForm.productsOrServices}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, productsOrServices: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              {user.organizationProfile.type === 'cooperative' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">EPA / Area</label>
-                    <input
-                      type="text"
-                      placeholder="Area"
-                      value={organizationEditForm.area}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, area: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Member Count</label>
-                    <input
-                      type="text"
-                      placeholder="Members"
-                      value={organizationEditForm.memberCount}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, memberCount: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Main Commodities</label>
-                    <input
-                      type="text"
-                      placeholder="Commodities"
-                      value={organizationEditForm.mainCommodities}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, mainCommodities: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              {user.organizationProfile.type === 'ngo' && (
-                <>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Focus Area</label>
-                    <input
-                      type="text"
-                      placeholder="Focus area"
-                      value={organizationEditForm.focusArea}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, focusArea: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Services Offered</label>
-                    <input
-                      type="text"
-                      placeholder="Services"
-                      value={organizationEditForm.servicesOffered}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, servicesOffered: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                  <div className="space-y-1">
-                    <label className="text-xs font-bold text-gray-500 uppercase ml-1">Website/Social</label>
-                    <input
-                      type="text"
-                      placeholder="Link"
-                      value={organizationEditForm.websiteOrSocial}
-                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, websiteOrSocial: e.target.value })}
-                      className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                    />
-                  </div>
-                </>
-              )}
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Registration Number</label>
-                <input
-                  type="text"
-                  placeholder="Reg number"
-                  value={organizationEditForm.registrationNumber}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, registrationNumber: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-500 uppercase ml-1">Description</label>
-                <textarea
-                  placeholder="Description"
-                  rows={3}
-                  value={organizationEditForm.description}
-                  onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, description: e.target.value })}
-                  className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                />
-              </div>
-            </div>
-
-            <div className="flex gap-3 pt-2">
-              <button
-                onClick={() => setIsEditingOrganizationProfile(false)}
-                className="flex-1 py-3 rounded-xl bg-gray-100 dark:bg-gray-700 font-bold"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleOrganizationProfileUpdate}
-                className="flex-1 py-3 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-700"
-              >
-                Save Changes
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {isRoleModalOpen && (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
-          <div
-            className="absolute inset-0 bg-black/60 backdrop-blur-sm"
-            onClick={() => {
-              setIsRoleModalOpen(false);
-              setSelectedRole(null);
-            }}
-          />
-          <div className="relative w-full max-w-lg max-h-[90vh] bg-white dark:bg-gray-800 rounded-3xl shadow-2xl overflow-hidden flex flex-col">
-            <div className="p-6 md:p-8 overflow-y-auto overscroll-contain space-y-6">
-              <div className="flex items-center justify-between">
+        {/* Role Upgrade Modal */}
+        {isRoleModalOpen && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-white dark:bg-gray-800 w-full max-w-2xl max-h-[90vh] rounded-3xl overflow-hidden shadow-2xl flex flex-col"
+            >
+              <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
                 <div>
-                  <h3 className="text-2xl font-bold">Upgrade Account</h3>
-                  <p className="text-sm text-gray-500">Choose how you want to use FarmKit.</p>
+                  <h3 className="text-xl font-bold">Upgrade Account</h3>
+                  <p className="text-sm text-gray-500">Access more features by adding a new role.</p>
                 </div>
                 <button
                   onClick={() => {
                     setIsRoleModalOpen(false);
                     setSelectedRole(null);
                   }}
-                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                 >
-                  <X className="w-5 h-5" />
+                  <X className="w-6 h-6" />
                 </button>
               </div>
 
-              {!selectedRole ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <button
-                    onClick={() => !user.roles.includes('seller') && setSelectedRole('seller')}
-                    disabled={user.roles.includes('seller')}
-                    className={`p-5 rounded-2xl border text-left ${
-                      user.roles.includes('seller')
-                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                    }`}
-                  >
-                    <Store className="w-7 h-7 mb-3 text-emerald-600" />
-                    <h4 className="font-bold">Individual Seller</h4>
-                    <p className="text-sm text-gray-500">Sell products as an individual farmer or trader.</p>
-                  </button>
+              <div className="flex-1 overflow-y-auto p-6">
+                {!selectedRole ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <button
+                      onClick={() => setSelectedRole('seller')}
+                      className="p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all text-left group"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-primary/10 text-primary flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Store className="w-6 h-6" />
+                      </div>
+                      <h4 className="font-bold text-lg mb-1">Individual Seller</h4>
+                      <p className="text-sm text-gray-500">Sell your products directly to buyers.</p>
+                    </button>
 
-                  <button
-                    onClick={() => !user.roles.includes('business') && setSelectedRole('business')}
-                    disabled={user.roles.includes('business')}
-                    className={`p-5 rounded-2xl border text-left ${
-                      user.roles.includes('business')
-                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                    }`}
-                  >
-                    <Building2 className="w-7 h-7 mb-3 text-emerald-600" />
-                    <h4 className="font-bold">Business</h4>
-                    <p className="text-sm text-gray-500">Register a company or commercial entity.</p>
-                  </button>
+                    <button
+                      onClick={() => setSelectedRole('business')}
+                      className="p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all text-left group"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-blue-100 text-blue-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Building2 className="w-6 h-6" />
+                      </div>
+                      <h4 className="font-bold text-lg mb-1">Business</h4>
+                      <p className="text-sm text-gray-500">Register your company or shop.</p>
+                    </button>
 
-                  <button
-                    onClick={() => !user.roles.includes('cooperative') && setSelectedRole('cooperative')}
-                    disabled={user.roles.includes('cooperative')}
-                    className={`p-5 rounded-2xl border text-left ${
-                      user.roles.includes('cooperative')
-                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                    }`}
-                  >
-                    <Users className="w-7 h-7 mb-3 text-emerald-600" />
-                    <h4 className="font-bold">Cooperative</h4>
-                    <p className="text-sm text-gray-500">Register a farmer group or cooperative.</p>
-                  </button>
+                    <button
+                      onClick={() => setSelectedRole('cooperative')}
+                      className="p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all text-left group"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-emerald-100 text-emerald-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <Users className="w-6 h-6" />
+                      </div>
+                      <h4 className="font-bold text-lg mb-1">Cooperative</h4>
+                      <p className="text-sm text-gray-500">Manage a group of farmers or producers.</p>
+                    </button>
 
-                  <button
-                    onClick={() => !user.roles.includes('ngo') && setSelectedRole('ngo')}
-                    disabled={user.roles.includes('ngo')}
-                    className={`p-5 rounded-2xl border text-left ${
-                      user.roles.includes('ngo')
-                        ? 'border-gray-200 dark:border-gray-700 opacity-50 cursor-not-allowed'
-                        : 'border-gray-200 dark:border-gray-700 hover:border-emerald-500'
-                    }`}
-                  >
-                    <HandHelping className="w-7 h-7 mb-3 text-emerald-600" />
-                    <h4 className="font-bold">NGO</h4>
-                    <p className="text-sm text-gray-500">Register a development or support organisation.</p>
-                  </button>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {selectedRole === 'seller' && (
-                    <>
-                      <input
-                        type="text"
-                        placeholder="Business or stall name"
-                        value={sellerUpgradeForm.businessName}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, businessName: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Seller full name"
-                        value={sellerUpgradeForm.fullName}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, fullName: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Phone number"
-                        value={sellerUpgradeForm.phone}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, phone: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="District"
-                        value={sellerUpgradeForm.district}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, district: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Area / market"
-                        value={sellerUpgradeForm.area}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, area: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Product category"
-                        value={sellerUpgradeForm.category}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, category: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <select
-                        value={sellerUpgradeForm.deliveryMethod}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, deliveryMethod: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      >
-                        <option value="pickup">Pickup</option>
-                        <option value="delivery">Delivery</option>
-                        <option value="both">Both</option>
-                      </select>
-                      <input
-                        type="text"
-                        placeholder="Years of experience"
-                        value={sellerUpgradeForm.experienceYears}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, experienceYears: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <textarea
-                        placeholder="Short business description"
-                        rows={4}
-                        value={sellerUpgradeForm.description}
-                        onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, description: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                    </>
-                  )}
+                    <button
+                      onClick={() => setSelectedRole('ngo')}
+                      className="p-6 rounded-2xl border-2 border-gray-100 dark:border-gray-700 hover:border-primary dark:hover:border-primary transition-all text-left group"
+                    >
+                      <div className="w-12 h-12 rounded-xl bg-purple-100 text-purple-600 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+                        <HandHelping className="w-6 h-6" />
+                      </div>
+                      <h4 className="font-bold text-lg mb-1">NGO</h4>
+                      <p className="text-sm text-gray-500">Provide services and support to the community.</p>
+                    </button>
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {selectedRole === 'seller' && (
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Business Name</label>
+                          <input
+                            type="text"
+                            value={sellerUpgradeForm.businessName}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, businessName: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                            placeholder="e.g. Isaac's Fresh Produce"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Full Name</label>
+                          <input
+                            type="text"
+                            value={sellerUpgradeForm.fullName}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, fullName: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Phone</label>
+                          <input
+                            type="tel"
+                            value={sellerUpgradeForm.phone}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, phone: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Region</label>
+                          <select
+                            value={sellerUpgradeForm.region}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, region: e.target.value, district: '' })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none"
+                          >
+                            <option value="">Select Region</option>
+                            {malawiRegions.map(region => (
+                              <option key={region} value={region}>{region}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">District</label>
+                          <select
+                            value={sellerUpgradeForm.district}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, district: e.target.value })}
+                            disabled={!sellerUpgradeForm.region}
+                            className={`w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary appearance-none ${!sellerUpgradeForm.region ? 'opacity-50 cursor-not-allowed' : ''}`}
+                          >
+                            <option value="">Select District</option>
+                            {sellerUpgradeForm.region && malawiDistrictsByRegion[sellerUpgradeForm.region as keyof typeof malawiDistrictsByRegion].map(district => (
+                              <option key={district} value={district}>{district}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Area</label>
+                          <input
+                            type="text"
+                            value={sellerUpgradeForm.area}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, area: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                            placeholder="e.g. Area 25"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Category</label>
+                          <input
+                            type="text"
+                            value={sellerUpgradeForm.category}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, category: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                            placeholder="e.g. Vegetables"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Experience (Years)</label>
+                          <input
+                            type="number"
+                            value={sellerUpgradeForm.experienceYears}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, experienceYears: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Delivery Method</label>
+                          <select
+                            value={sellerUpgradeForm.deliveryMethod}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, deliveryMethod: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary"
+                          >
+                            <option value="pickup">Pickup Only</option>
+                            <option value="delivery">Delivery Available</option>
+                            <option value="both">Both</option>
+                          </select>
+                        </div>
+                        <div className="col-span-full space-y-2">
+                          <label className="text-xs font-bold uppercase tracking-wider text-gray-400">Description</label>
+                          <textarea
+                            value={sellerUpgradeForm.description}
+                            onChange={(e) => setSellerUpgradeForm({ ...sellerUpgradeForm, description: e.target.value })}
+                            className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-primary min-h-[100px]"
+                            placeholder="Tell us more about your business..."
+                          />
+                        </div>
+                      </div>
+                    )}
 
-                  {selectedRole === 'business' && (
+                    {/* Business Upgrade Form */}
+                    {selectedRole === 'business' && (
                     <>
                       <input
                         type="text"
@@ -1637,7 +1408,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     </>
                   )}
 
-                  {selectedRole === 'cooperative' && (
+                    {/* Cooperative Upgrade Form */}
+                    {selectedRole === 'cooperative' && (
                     <>
                       <input
                         type="text"
@@ -1705,7 +1477,8 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     </>
                   )}
 
-                  {selectedRole === 'ngo' && (
+                    {/* NGO Upgrade Form */}
+                    {selectedRole === 'ngo' && (
                     <>
                       <input
                         type="text"
@@ -1730,39 +1503,30 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                       />
                       <input
                         type="text"
-                        placeholder="District / region"
+                        placeholder="District"
                         value={ngoUpgradeForm.district}
                         onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, district: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
                       />
                       <input
                         type="text"
-                        placeholder="Focus area"
-                        value={ngoUpgradeForm.focusArea}
-                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, focusArea: e.target.value })}
+                        placeholder="Exact address"
+                        value={ngoUpgradeForm.address}
+                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, address: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
                       />
-                      <input
-                        type="text"
-                        placeholder="Services offered"
-                        value={ngoUpgradeForm.servicesOffered}
-                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, servicesOffered: e.target.value })}
+                      <select
+                        value={ngoUpgradeForm.organizationType}
+                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, organizationType: e.target.value })}
                         className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Registration number"
-                        value={ngoUpgradeForm.registrationNumber}
-                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, registrationNumber: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
-                      <input
-                        type="text"
-                        placeholder="Website or social link"
-                        value={ngoUpgradeForm.websiteOrSocial}
-                        onChange={(e) => setNgoUpgradeForm({ ...ngoUpgradeForm, websiteOrSocial: e.target.value })}
-                        className="w-full px-4 py-3 rounded-xl bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 outline-none"
-                      />
+                      >
+                        <option value="">Select organisation type</option>
+                        <option value="local">Local NGO</option>
+                        <option value="international">International NGO</option>
+                        <option value="community">Community Based Organisation (CBO)</option>
+                        <option value="trust">Trust</option>
+                        <option value="other">Other</option>
+                      </select>
                       <textarea
                         placeholder="Short organisation description"
                         rows={4}
@@ -1791,9 +1555,456 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                 </div>
               )}
             </div>
-          </div>
+          </motion.div>
         </div>
       )}
+
+        {/* Role Switch Modal */}
+        {isSwitchingPrimaryRole && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl"
+            >
+              <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex items-center justify-between">
+                <h3 className="text-xl font-bold">Switch Primary Role</h3>
+                <button
+                  onClick={() => setIsSwitchingPrimaryRole(false)}
+                  className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
+                >
+                  <X className="w-6 h-6" />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                <p className="text-sm text-gray-500 mb-4">
+                  Select which role you want to use as your primary identity on the platform.
+                </p>
+                {user?.roles.map((role) => (
+                  <button
+                    key={role}
+                    onClick={() => setSelectedPrimaryRole(role as any)}
+                    className={`w-full p-4 rounded-2xl border-2 transition-all flex items-center justify-between ${
+                      selectedPrimaryRole === role
+                        ? 'border-primary bg-primary/5'
+                        : 'border-gray-100 dark:border-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        role === 'buyer' ? 'bg-blue-100 text-blue-600' :
+                        role === 'seller' ? 'bg-primary/10 text-primary' :
+                        'bg-purple-100 text-purple-600'
+                      }`}>
+                        {role === 'buyer' ? <User className="w-5 h-5" /> :
+                         role === 'seller' ? <Store className="w-5 h-5" /> :
+                         <Building2 className="w-5 h-5" />}
+                      </div>
+                      <span className="font-bold capitalize">{role}</span>
+                    </div>
+                    {selectedPrimaryRole === role && (
+                      <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center">
+                        <Save className="w-3 h-3" />
+                      </div>
+                    )}
+                  </button>
+                ))}
+              </div>
+
+              <div className="p-6 border-t border-gray-100 dark:border-gray-700 flex gap-3">
+                <button
+                  onClick={() => setIsSwitchingPrimaryRole(false)}
+                  className="flex-1 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 font-bold rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePrimaryRoleSwitch}
+                  className="flex-1 py-3 bg-primary text-white font-bold rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all"
+                >
+                  Switch Role
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Seller Edit Modal */}
+        {isEditingSellerProfile && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsEditingSellerProfile(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">Edit Seller Profile</h3>
+                <button 
+                  onClick={() => setIsEditingSellerProfile(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Business Name</label>
+                  <input
+                    type="text"
+                    placeholder="Business name"
+                    value={sellerEditForm.businessName}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, businessName: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Full Name</label>
+                  <input
+                    type="text"
+                    placeholder="Full name"
+                    value={sellerEditForm.fullName}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, fullName: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="Phone number"
+                    value={sellerEditForm.phone}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, phone: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Region</label>
+                    <select
+                      value={sellerEditForm.region}
+                      onChange={(e) => setSellerEditForm({ ...sellerEditForm, region: e.target.value, district: '' })}
+                      className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none appearance-none"
+                    >
+                      <option value="">Select Region</option>
+                      {malawiRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">District</label>
+                    <select
+                      value={sellerEditForm.district}
+                      onChange={(e) => setSellerEditForm({ ...sellerEditForm, district: e.target.value })}
+                      disabled={!sellerEditForm.region}
+                      className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none appearance-none disabled:opacity-50"
+                    >
+                      <option value="">Select District</option>
+                      {sellerEditForm.region && malawiDistrictsByRegion[sellerEditForm.region as keyof typeof malawiDistrictsByRegion]?.map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Area</label>
+                  <input
+                    type="text"
+                    placeholder="Area/Location"
+                    value={sellerEditForm.area}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, area: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Category</label>
+                  <select
+                    value={sellerEditForm.category}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, category: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  >
+                    <option value="Farmer">Farmer</option>
+                    <option value="Trader">Trader</option>
+                    <option value="Processor">Processor</option>
+                    <option value="Input Supplier">Input Supplier</option>
+                    <option value="Logistics">Logistics</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Experience (Years)</label>
+                  <input
+                    type="number"
+                    placeholder="Years of experience"
+                    value={sellerEditForm.experienceYears}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, experienceYears: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Delivery Method</label>
+                  <select
+                    value={sellerEditForm.deliveryMethod}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, deliveryMethod: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  >
+                    <option value="pickup">Pickup Only</option>
+                    <option value="delivery">Delivery Available</option>
+                    <option value="both">Both</option>
+                  </select>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
+                  <textarea
+                    placeholder="Tell us about your business..."
+                    value={sellerEditForm.description}
+                    onChange={(e) => setSellerEditForm({ ...sellerEditForm, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={handleSellerProfileUpdate}
+                  disabled={isSubmittingSellerProfile}
+                  className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmittingSellerProfile ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save className="w-5 h-5" />
+                  )}
+                  {isSubmittingSellerProfile ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+
+        {/* Organization Edit Modal */}
+        {isEditingOrganizationProfile && (
+          <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
+            <div 
+              className="absolute inset-0 bg-black/60 backdrop-blur-sm"
+              onClick={() => setIsEditingOrganizationProfile(false)}
+            />
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95, y: 20 }}
+              animate={{ opacity: 1, scale: 1, y: 0 }}
+              className="relative w-full max-w-lg bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 md:p-8 space-y-4"
+            >
+              <div className="flex items-center justify-between">
+                <h3 className="text-2xl font-bold">Edit Organisation Profile</h3>
+                <button 
+                  onClick={() => setIsEditingOrganizationProfile(false)}
+                  className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <div className="max-h-[60vh] overflow-y-auto pr-2 space-y-4 custom-scrollbar">
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Organisation Name</label>
+                  <input
+                    type="text"
+                    placeholder="Organisation name"
+                    value={organizationEditForm.organizationName}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, organizationName: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Contact Person</label>
+                  <input
+                    type="text"
+                    placeholder="Contact person"
+                    value={organizationEditForm.contactPerson}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, contactPerson: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Phone Number</label>
+                  <input
+                    type="text"
+                    placeholder="Phone number"
+                    value={organizationEditForm.phone}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, phone: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Registration Number</label>
+                  <input
+                    type="text"
+                    placeholder="Registration number"
+                    value={organizationEditForm.registrationNumber}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, registrationNumber: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                {user?.organizationProfile?.type === 'business' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Business Type</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Retail, Wholesale"
+                        value={organizationEditForm.businessType}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, businessType: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Products/Services</label>
+                      <input
+                        type="text"
+                        placeholder="Products or services"
+                        value={organizationEditForm.productsOrServices}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, productsOrServices: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {user?.organizationProfile?.type === 'cooperative' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Member Count</label>
+                      <input
+                        type="number"
+                        placeholder="Number of members"
+                        value={organizationEditForm.memberCount}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, memberCount: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Main Commodities</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Maize, Tobacco"
+                        value={organizationEditForm.mainCommodities}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, mainCommodities: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                {user?.organizationProfile?.type === 'ngo' && (
+                  <>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Focus Area</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Food Security"
+                        value={organizationEditForm.focusArea}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, focusArea: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Services Offered</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. Training, Inputs"
+                        value={organizationEditForm.servicesOffered}
+                        onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, servicesOffered: e.target.value })}
+                        className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
+                    </div>
+                  </>
+                )}
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Region</label>
+                    <select
+                      value={organizationEditForm.region}
+                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, region: e.target.value, district: '' })}
+                      className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none appearance-none"
+                    >
+                      <option value="">Select Region</option>
+                      {malawiRegions.map(r => <option key={r} value={r}>{r}</option>)}
+                    </select>
+                  </div>
+                  <div className="space-y-2">
+                    <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">District</label>
+                    <select
+                      value={organizationEditForm.district}
+                      onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, district: e.target.value })}
+                      disabled={!organizationEditForm.region}
+                      className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none appearance-none disabled:opacity-50"
+                    >
+                      <option value="">Select District</option>
+                      {organizationEditForm.region && malawiDistrictsByRegion[organizationEditForm.region as keyof typeof malawiDistrictsByRegion]?.map(d => (
+                        <option key={d} value={d}>{d}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Area</label>
+                  <input
+                    type="text"
+                    placeholder="Area/Location"
+                    value={organizationEditForm.area}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, area: e.target.value })}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-1">Description</label>
+                  <textarea
+                    placeholder="Tell us about your organisation..."
+                    value={organizationEditForm.description}
+                    onChange={(e) => setOrganizationEditForm({ ...organizationEditForm, description: e.target.value })}
+                    rows={3}
+                    className="w-full px-5 py-4 rounded-2xl bg-gray-50 dark:bg-gray-700 border-none focus:ring-2 focus:ring-indigo-600 outline-none resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <button
+                  onClick={handleOrganizationProfileUpdate}
+                  disabled={isSubmittingOrganizationProfile}
+                  className="w-full py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-500/30 hover:scale-[1.02] active:scale-[0.98] transition-all flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmittingOrganizationProfile ? (
+                    <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                  ) : (
+                    <Save className="w-5 h-5" />
+                  )}
+                  {isSubmittingOrganizationProfile ? 'Saving...' : 'Save Changes'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </div>
     </motion.div>
   );
 };

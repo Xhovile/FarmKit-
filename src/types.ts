@@ -76,6 +76,7 @@ export interface SellerProfile {
   type: 'individual_seller';
   businessName: string;
   category: string;
+  region?: string;
   district: string;
   deliveryMethod: string;
   verified: boolean;
@@ -90,6 +91,7 @@ export interface OrganizationProfile {
   type: 'business' | 'cooperative' | 'ngo';
   organizationName: string;
   contactPerson: string;
+  region?: string;
   district: string;
   description: string;
   verified: boolean;
@@ -111,6 +113,8 @@ export interface User {
   name: string;
   email: string;
   phone: string;
+  region?: string;
+  district?: string;
   location: string;
   bio: string;
   avatar: string;

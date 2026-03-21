@@ -160,6 +160,8 @@ const normalizeUserData = (firebaseUser: any, data: any) => {
     name: data?.name || firebaseUser.displayName || 'Farmer',
     email: data?.email || firebaseUser.email || '',
     phone: data?.phone || '',
+    region: data?.region || '',
+    district: data?.district || '',
     location: data?.location || '',
     bio: data?.bio || '',
     avatar: data?.avatar || firebaseUser.photoURL || '',
@@ -204,6 +206,8 @@ export default function App() {
   const [isEditingProfile, setIsEditingProfile] = useState(false);
   const [profileFormData, setProfileFormData] = useState({
     name: '',
+    region: '',
+    district: '',
     location: '',
     phone: '',
     bio: ''
@@ -242,6 +246,8 @@ export default function App() {
             setUser(normalizedUser);
             setProfileFormData({
               name: normalizedUser.name,
+              region: normalizedUser.region || '',
+              district: normalizedUser.district || '',
               location: normalizedUser.location,
               phone: normalizedUser.phone,
               bio: normalizedUser.bio,
@@ -262,6 +268,8 @@ export default function App() {
                   name: normalizedUser.name,
                   email: normalizedUser.email,
                   phone: normalizedUser.phone,
+                  region: normalizedUser.region || '',
+                  district: normalizedUser.district || '',
                   location: normalizedUser.location,
                   bio: normalizedUser.bio,
                   avatar: normalizedUser.avatar,
@@ -281,6 +289,8 @@ export default function App() {
               name: firebaseUser.displayName || 'Farmer',
               email: firebaseUser.email || '',
               phone: '',
+              region: '',
+              district: '',
               location: '',
               bio: '',
               avatar: firebaseUser.photoURL || '',
@@ -302,6 +312,8 @@ export default function App() {
 
             setProfileFormData({
               name: initialData.name,
+              region: initialData.region,
+              district: initialData.district,
               location: initialData.location,
               phone: initialData.phone,
               bio: initialData.bio,

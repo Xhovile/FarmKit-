@@ -588,16 +588,16 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
             <label className="block text-xs font-black text-gray-400 uppercase tracking-widest">Location Details</label>
             <div className="grid grid-cols-2 gap-3">
             <div className="relative" ref={regionDropdownRef}>
-              <button
-                type="button"
-                onClick={() => setIsRegionOpen((prev) => !prev)}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-left flex items-center justify-between focus:ring-2 focus:ring-primary outline-none text-sm font-medium"
-              >
-                <span className={formData.region ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
-                  {formData.region || 'Region'}
-                </span>
-                <ChevronsUpDown className="w-4 h-4 text-gray-400" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => setIsRegionOpen((prev) => !prev)}
+                  className="w-full px-5 py-4 bg-white dark:bg-gray-700 rounded-2xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
+                >
+                  <span className={formData.region ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
+                    {formData.region || 'Region'}
+                  </span>
+                  <ChevronsUpDown className="w-4 h-4 text-gray-400" />
+                </button>
 
               {isRegionOpen && (
                 <div className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
@@ -635,20 +635,20 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
             </div>
 
             <div className="relative" ref={districtDropdownRef}>
-              <button
-                type="button"
-                onClick={() => {
-                  if (!formData.region) return;
-                  setIsDistrictOpen((prev) => !prev);
-                }}
-                disabled={!formData.region}
-                className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-left flex items-center justify-between focus:ring-2 focus:ring-primary outline-none text-sm font-medium disabled:opacity-50"
-              >
-                <span className={formData.district ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
-                  {formData.district || 'District'}
-                </span>
-                <ChevronsUpDown className="w-4 h-4 text-gray-400" />
-              </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (!formData.region) return;
+                    setIsDistrictOpen((prev) => !prev);
+                  }}
+                  disabled={!formData.region}
+                  className="w-full px-5 py-4 bg-white dark:bg-gray-700 rounded-2xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium disabled:opacity-50"
+                >
+                  <span className={formData.district ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
+                    {formData.district || 'District'}
+                  </span>
+                  <ChevronsUpDown className="w-4 h-4 text-gray-400" />
+                </button>
 
               {isDistrictOpen && formData.region && (
                 <div className="absolute z-30 mt-2 w-full max-h-64 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
@@ -688,7 +688,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               value={formData.area}
               onChange={e => setFormData({...formData, area: e.target.value})}
               placeholder="Area / Village / Trading Center"
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-primary outline-none text-sm font-medium"
+              className="w-full px-5 py-4 bg-white dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
             />
           </div>
 
@@ -722,7 +722,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
                 !formData.district ||
                 (formData.unit === 'custom' && !(formData as any).customUnit?.trim())
               }
-              className="flex-[2] py-4 bg-primary text-white font-black rounded-2xl shadow-lg shadow-primary/20 hover:bg-primary/90 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+              className="flex-[2] py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-500/20 hover:bg-indigo-700 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
             >
               {t('common.next')} <ChevronRight className="w-5 h-5" />
             </button>
@@ -749,18 +749,18 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
                     <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
                       {field.label}
                     </label>
-                    <input
-                      type="text"
-                      value={(formData as any)[field.key]}
-                      onChange={(e) =>
-                        setFormData({
-                          ...formData,
-                          [field.key]: e.target.value,
-                        })
-                      }
-                      placeholder={field.placeholder}
-                      className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none"
-                    />
+                      <input
+                        type="text"
+                        value={(formData as any)[field.key]}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            [field.key]: e.target.value,
+                          })
+                        }
+                        placeholder={field.placeholder}
+                        className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none"
+                      />
                   </div>
                 ))}
               </div>
@@ -774,7 +774,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
               onChange={e => setFormData({...formData, description: e.target.value})}
               rows={3}
               placeholder={t('forms.descriptionPlaceholder')}
-              className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none resize-none"
+              className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none resize-none"
             />
           </div>
 
@@ -1237,7 +1237,7 @@ export const AddRequestForm: React.FC<FormProps & {
                 <button
                   type="button"
                   onClick={() => setIsRegionOpen((prev) => !prev)}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
+                  className="w-full px-5 py-4 bg-white dark:bg-gray-700 rounded-2xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
                 >
                   <span className={formData.region ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
                     {formData.region || 'Region'}
@@ -1287,7 +1287,7 @@ export const AddRequestForm: React.FC<FormProps & {
                     setIsDistrictOpen((prev) => !prev);
                   }}
                   disabled={!formData.region}
-                  className="w-full px-4 py-3 bg-white dark:bg-gray-700 rounded-xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium disabled:opacity-50"
+                  className="w-full px-5 py-4 bg-white dark:bg-gray-700 rounded-2xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium disabled:opacity-50"
                 >
                   <span className={formData.district ? 'text-gray-900 dark:text-white' : 'text-gray-400'}>
                     {formData.district || 'District'}
@@ -1333,7 +1333,7 @@ export const AddRequestForm: React.FC<FormProps & {
               value={formData.area}
               onChange={e => setFormData({...formData, area: e.target.value})}
               placeholder="Area / Village / Trading Center"
-              className="w-full px-4 py-3 bg-white dark:bg-gray-700 border-none rounded-xl focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
+              className="w-full px-5 py-4 bg-white dark:bg-gray-700 border-none rounded-2xl focus:ring-2 focus:ring-indigo-600 outline-none text-sm font-medium"
             />
           </div>
 
