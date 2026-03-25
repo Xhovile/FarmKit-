@@ -23,6 +23,7 @@ import PrimaryRoleForm from '../components/account/PrimaryRoleForm';
 import EditSellerProfileForm from '../components/account/EditSellerProfileForm';
 import EditOrganizationProfileForm from '../components/account/EditOrganizationProfileForm';
 import MyBuyerRequestsSection from '../components/account/MyBuyerRequestsSection';
+import SavedItemsSection from '../components/account/SavedItemsSection';
 
 import RoleDashboardSection from '../components/account/RoleDashboardSection';
 
@@ -207,6 +208,13 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           setIsAddProductModalOpen={setIsAddProductModalOpen}
           setFormStep={setFormStep}
           onUpdateBuyerRequestStatus={onUpdateBuyerRequestStatus}
+        />
+      )}
+
+      {user.primaryRole === 'buyer' && (
+        <SavedItemsSection
+          user={user}
+          setSelectedItem={setSelectedItem}
         />
       )}
 

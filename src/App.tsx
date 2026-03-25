@@ -818,6 +818,11 @@ export default function App() {
       } else {
         await setDoc(saveRef, {
           listingId: listing.id,
+          title: listing.title,
+          price: listing.price,
+          location: listing.location,
+          imageUrl: listing.imageUrl || (listing.imageUrls && listing.imageUrls[0]) || null,
+          sellerId: listing.sellerId,
           savedAt: serverTimestamp(),
         });
         await updateDoc(doc(db, 'market_listings', listing.id), {
