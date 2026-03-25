@@ -10,8 +10,8 @@ import {
   reauthenticateWithCredential,
   EmailAuthProvider
 } from 'firebase/auth';
-import { auth, db } from '../lib/firebase';
-import { doc, setDoc, deleteDoc } from 'firebase/firestore';
+import { auth } from '../lib/firebase';
+import { api } from '../lib/api';
 import { motion, AnimatePresence } from 'motion/react';
 import { X, Mail, Lock, User, LogOut, Trash2, AlertCircle, CheckCircle2, ShieldAlert } from 'lucide-react';
 import toast from 'react-hot-toast';
@@ -96,8 +96,8 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
         // Update profile with name
         await updateProfile(user, { displayName: name });
 
-        // Create Firestore document
-        await setDoc(doc(db, 'users', user.uid), {
+        // Create user profile in PostgreSQL
+        await api.post('/api/users', {
           name,
           email: user.email || email,
           phone: '',
@@ -107,10 +107,9 @@ export default function AuthModal({ isOpen, onClose, t, lang = 'en' }: AuthModal
           primaryRole: 'buyer',
           roles: ['buyer'],
           status: 'basic',
-          sellerProfile: null,
-          organizationProfile: null,
           emailVerified: user.emailVerified,
-          createdAt: new Date().toISOString()
+          sellerProfile: null,
+          organizationProfile: null
         });
 
         // Send verification email

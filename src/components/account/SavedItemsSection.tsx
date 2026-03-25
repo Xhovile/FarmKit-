@@ -3,8 +3,7 @@ import { User, MarketListing } from '../../types';
 import { useSavedListings } from '../../hooks/useSavedListings';
 import SavedListingCard from './SavedListingCard';
 import { Bookmark } from 'lucide-react';
-import { doc, deleteDoc, getDoc } from 'firebase/firestore';
-import { db } from '../../lib/firebase';
+import { api } from '../../lib/api';
 import toast from 'react-hot-toast';
 
 interface Props {
@@ -22,9 +21,9 @@ const SavedItemsSection: React.FC<Props> = ({ user, setSelectedItem }) => {
     setIsOpening(item.id);
     try {
       // Fetch the full listing from market_listings to ensure all details are present
-      const listingDoc = await getDoc(doc(db, 'market_listings', item.id));
-      if (listingDoc.exists()) {
-        setSelectedItem({ id: listingDoc.id, ...listingDoc.data() });
+      const listing = await api.get(`/api/market-listings/${item.id}`);
+      if (listing) {
+        setSelectedItem(listing);
       } else {
         // Fallback to the saved metadata if the original listing is gone
         setSelectedItem(item);
@@ -42,7 +41,7 @@ const SavedItemsSection: React.FC<Props> = ({ user, setSelectedItem }) => {
     if (!user?.uid || !item.id) return;
 
     try {
-      await deleteDoc(doc(db, 'users', user.uid, 'saved_listings', item.id));
+      await api.delete(`/api/saved-listings/${item.id}`);
     } catch (err) {
       console.error('Remove saved failed:', err);
     }

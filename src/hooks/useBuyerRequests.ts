@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react';
-import { collection, onSnapshot, query, where } from 'firebase/firestore';
-import { db } from '../lib/firebase';
 import { BuyerRequest, User } from '../types';
+import { api } from '../lib/api';
 
 export const useBuyerRequests = (user: User | null) => {
   const [requests, setRequests] = useState<BuyerRequest[]>([]);
@@ -14,17 +13,13 @@ export const useBuyerRequests = (user: User | null) => {
       return;
     }
 
-    const requestsQuery = query(
-      collection(db, 'buyer_requests'),
-      where('buyerId', '==', user.uid)
-    );
-
-    const unsubscribe = onSnapshot(
-      requestsQuery,
-      (snapshot) => {
-        const items = snapshot.docs.map((docSnap) => ({
-          id: docSnap.id,
-          ...docSnap.data(),
+    const fetchRequests = async () => {
+      try {
+        const data = await api.get('/api/buyer-requests');
+        const items = (data as any[]).map(item => ({
+          ...item,
+          createdAt: item.created_at ? { seconds: Math.floor(new Date(item.created_at).getTime() / 1000) } : null,
+          updatedAt: item.updated_at ? { seconds: Math.floor(new Date(item.updated_at).getTime() / 1000) } : null,
         })) as BuyerRequest[];
 
         items.sort((a, b) => {
@@ -34,15 +29,17 @@ export const useBuyerRequests = (user: User | null) => {
         });
 
         setRequests(items);
-        setLoading(false);
-      },
-      (error) => {
+      } catch (error) {
         console.error('Error loading buyer requests:', error);
+      } finally {
         setLoading(false);
       }
-    );
+    };
 
-    return () => unsubscribe();
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 30000); // Poll every 30s
+
+    return () => clearInterval(interval);
   }, [user?.uid]);
 
   return { requests, loading };

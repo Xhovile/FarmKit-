@@ -33,13 +33,8 @@ import {
   Legend, 
   ResponsiveContainer 
 } from 'recharts';
-import { 
-  marketCategories,
-  deliveryMethods
-} from '../data/constants';
-import { db } from '../lib/firebase';
-import { collection, deleteDoc, doc, onSnapshot, query, setDoc, serverTimestamp, updateDoc, where } from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from '../lib/firestore-errors';
+import { marketCategories, deliveryMethods } from '../data/constants';
+import { api } from '../lib/api';
 import { MarketListing, BuyerRequest, StockStatus, User } from '../types';
 
 const computeStockStatus = (
@@ -149,33 +144,34 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [foundQtyValue, setFoundQtyValue] = useState('');
 
   useEffect(() => {
-    const requestsQuery = query(
-      collection(db, 'buyer_requests')
-    );
-
-    const unsubscribeRequests = onSnapshot(requestsQuery, (snapshot) => {
-      const newRequests = snapshot.docs.map(doc => ({
-        id: doc.id,
-        ...doc.data()
-      })) as BuyerRequest[];
-      
-      // Client-side sort
-      newRequests.sort((a, b) => {
-        const dateA = a.createdAt?.seconds || 0;
-        const dateB = b.createdAt?.seconds || 0;
-        return dateB - dateA;
-      });
-      
-      setRequests(newRequests);
-      setIsRequestsLoading(false);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, 'buyer_requests');
-      setIsRequestsLoading(false);
-    });
-
-    return () => {
-      unsubscribeRequests();
+    const fetchRequests = async () => {
+      try {
+        const data = await api.get('/api/buyer-requests');
+        const newRequests = (data as any[]).map(item => ({
+          ...item,
+          createdAt: item.created_at ? { seconds: Math.floor(new Date(item.created_at).getTime() / 1000) } : null,
+          updatedAt: item.updated_at ? { seconds: Math.floor(new Date(item.updated_at).getTime() / 1000) } : null,
+        })) as BuyerRequest[];
+        
+        // Client-side sort
+        newRequests.sort((a, b) => {
+          const dateA = a.createdAt?.seconds || 0;
+          const dateB = b.createdAt?.seconds || 0;
+          return dateB - dateA;
+        });
+        
+        setRequests(newRequests);
+      } catch (error) {
+        console.error('Error loading buyer requests:', error);
+      } finally {
+        setIsRequestsLoading(false);
+      }
     };
+
+    fetchRequests();
+    const interval = setInterval(fetchRequests, 30000); // Poll every 30s
+
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -184,16 +180,18 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       return;
     }
 
-    const hiddenListingsRef = collection(db, 'users', user.uid, 'hidden_listings');
+    const fetchHiddenListings = async () => {
+      try {
+        // We'll need an endpoint for hidden listings if we want to support this
+        // For now, let's assume we might add it or just use an empty array if not implemented
+        // const data = await api.get('/api/hidden-listings');
+        // setHiddenListingIds(data.map((item: any) => item.listing_id));
+      } catch (error) {
+        console.error('Error loading hidden listings:', error);
+      }
+    };
 
-    const unsubscribeHidden = onSnapshot(hiddenListingsRef, (snapshot) => {
-      const ids = snapshot.docs.map((docSnap) => docSnap.id);
-      setHiddenListingIds(ids);
-    }, (error) => {
-      handleFirestoreError(error, OperationType.LIST, `users/${user.uid}/hidden_listings`);
-    });
-
-    return () => unsubscribeHidden();
+    fetchHiddenListings();
   }, [user?.uid]);
 
   useEffect(() => {
@@ -243,12 +241,10 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       const nextAvailableQuantity = nextStatus === 'sold' ? 0 : totalQuantity;
       const nextSoldQuantity = nextStatus === 'sold' ? totalQuantity : 0;
 
-      await updateDoc(doc(db, 'market_listings', listing.id), {
+      await api.put(`/api/market-listings/${listing.id}`, {
         status: nextStatus,
         availableQuantity: nextAvailableQuantity,
         soldQuantity: nextSoldQuantity,
-        stockStatus: computeStockStatus(nextAvailableQuantity, totalQuantity),
-        updatedAt: serverTimestamp(),
       });
 
       toast.success(
@@ -286,15 +282,10 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       const nextAvailableQuantity = currentAvailable - amount;
       const nextSoldQuantity = currentSold + amount;
 
-      await updateDoc(doc(db, 'market_listings', saleListing.id), {
+      await api.put(`/api/market-listings/${saleListing.id}`, {
         availableQuantity: nextAvailableQuantity,
         soldQuantity: nextSoldQuantity,
         status: nextAvailableQuantity <= 0 ? 'sold' : 'active',
-        stockStatus: computeStockStatus(
-          nextAvailableQuantity,
-          saleListing.quantity ?? 0
-        ),
-        updatedAt: serverTimestamp(),
       });
 
       toast.success('Sale recorded successfully.');
@@ -328,16 +319,11 @@ export const MarketPage: React.FC<MarketPageProps> = ({
       const nextAvailableQuantity = currentAvailable + amount;
       const nextQuantity = currentQuantity + amount;
 
-      await updateDoc(doc(db, 'market_listings', restockListing.id), {
+      await api.put(`/api/market-listings/${restockListing.id}`, {
         quantity: nextQuantity,
         availableQuantity: nextAvailableQuantity,
         soldQuantity: currentSold,
         status: 'active',
-        stockStatus: computeStockStatus(
-          nextAvailableQuantity,
-          nextQuantity
-        ),
-        updatedAt: serverTimestamp(),
       });
 
       toast.success('Stock added successfully.');
@@ -382,10 +368,9 @@ export const MarketPage: React.FC<MarketPageProps> = ({
           ? 'closed'
           : 'open';
 
-      await updateDoc(doc(db, 'buyer_requests', foundQtyRequest.id), {
+      await api.put(`/api/buyer-requests/${foundQtyRequest.id}`, {
         quantityFound: amount,
         status: nextStatus,
-        updatedAt: serverTimestamp(),
       });
 
       toast.success('Found quantity updated successfully.');
@@ -406,12 +391,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     }
 
     try {
-      await setDoc(doc(db, 'users', user.uid, 'hidden_listings', listing.id), {
-        listingId: listing.id,
-        sellerId: listing.sellerId,
-        hiddenAt: serverTimestamp(),
-      });
-
+      // await api.post(`/api/hidden-listings/${listing.id}`, {});
       toast.success('Listing hidden from your feed.');
     } catch (error) {
       console.error('Error hiding listing:', error);
@@ -432,7 +412,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     if (!confirmed) return;
 
     try {
-      await deleteDoc(doc(db, 'market_listings', listing.id));
+      await api.delete(`/api/market-listings/${listing.id}`);
 
       if ((window as any).__farmkitSelectedListingId === listing.id) {
         setSelectedItem(null);

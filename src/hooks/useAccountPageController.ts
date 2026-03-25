@@ -1,7 +1,6 @@
 import React from 'react';
-import { doc, setDoc, updateDoc } from 'firebase/firestore';
 import { toast } from 'react-hot-toast';
-import { db } from '../lib/firebase';
+import { api } from '../lib/api';
 import { 
   User as UserType, 
   SellerUpgradeForm, 
@@ -254,8 +253,8 @@ export const useAccountPageController = ({
         bio: profileFormData.bio.trim()
       };
 
-      await setDoc(doc(db, 'users', user.uid), updatedData, { merge: true });
-      setUser({ ...user, ...updatedData });
+      const result = await api.put('/api/users/me', updatedData);
+      setUser(result as UserType);
       setIsAccountModalOpen(false);
       setAccountView('hub');
       toast.success(t('account.profileUpdated'));
@@ -426,15 +425,8 @@ export const useAccountPageController = ({
     setIsSubmittingRole(true);
 
     try {
-      await updateDoc(doc(db, 'users', user.uid), updatePayload);
-
-      setUser({
-        ...user,
-        roles: nextRoles,
-        primaryRole: nextPrimaryRole,
-        sellerProfile: updatePayload.sellerProfile ?? user.sellerProfile,
-        organizationProfile: updatePayload.organizationProfile ?? user.organizationProfile,
-      });
+      const result = await api.put('/api/users/me', updatePayload);
+      setUser(result as UserType);
 
       toast.success('Account upgraded successfully.');
       setIsAccountModalOpen(false);
@@ -537,14 +529,11 @@ export const useAccountPageController = ({
         description: sellerEditForm.description.trim(),
       };
 
-      await updateDoc(doc(db, 'users', user.uid), {
+      const result = await api.put('/api/users/me', {
         sellerProfile: updatedSellerProfile,
       });
 
-      setUser({
-        ...user,
-        sellerProfile: updatedSellerProfile,
-      });
+      setUser(result as UserType);
 
       toast.success('Seller profile updated.');
       setIsAccountModalOpen(false);
@@ -621,14 +610,11 @@ export const useAccountPageController = ({
         description: organizationEditForm.description.trim(),
       };
 
-      await updateDoc(doc(db, 'users', user.uid), {
+      const result = await api.put('/api/users/me', {
         organizationProfile: updatedOrganizationProfile,
       });
 
-      setUser({
-        ...user,
-        organizationProfile: updatedOrganizationProfile,
-      });
+      setUser(result as UserType);
 
       toast.success('Organisation profile updated.');
       setIsAccountModalOpen(false);
@@ -651,14 +637,11 @@ export const useAccountPageController = ({
 
     try {
       setIsSubmittingRoleSwitch(true);
-      await updateDoc(doc(db, 'users', user.uid), {
+      const result = await api.put('/api/users/me', {
         primaryRole: selectedPrimaryRole,
       });
 
-      setUser({
-        ...user,
-        primaryRole: selectedPrimaryRole,
-      });
+      setUser(result as UserType);
 
       toast.success('Primary role updated.');
       setIsAccountModalOpen(false);

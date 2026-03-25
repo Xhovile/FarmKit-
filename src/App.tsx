@@ -3,25 +3,11 @@ import {
   Wifi
 } from 'lucide-react';
 import { AnimatePresence, motion } from 'motion/react';
-import { auth, db } from './lib/firebase';
+import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import AuthModal from './components/AuthModal';
 import { Toaster } from 'react-hot-toast';
-import {
-  addDoc,
-  collection,
-  deleteDoc,
-  doc,
-  getDoc,
-  increment,
-  onSnapshot,
-  orderBy,
-  query,
-  serverTimestamp,
-  setDoc,
-  updateDoc,
-} from 'firebase/firestore';
-import { handleFirestoreError, OperationType } from './lib/firestore-errors';
+import { api } from './lib/api';
 import { BuyerRequest, MarketListing, StockStatus, User } from './types';
 import toast from 'react-hot-toast';
 
@@ -227,74 +213,37 @@ export default function App() {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
         try {
-          const userRef = doc(db, 'users', firebaseUser.uid);
-          const userDoc = await getDoc(userRef);
-
-          if (userDoc.exists()) {
-            const rawData = userDoc.data();
-            const normalizedUser = normalizeUserData(firebaseUser, rawData);
-
-            setUser(normalizedUser);
-
-            const needsNormalization =
-              rawData.primaryRole !== normalizedUser.primaryRole ||
-              JSON.stringify(rawData.roles || []) !== JSON.stringify(normalizedUser.roles) ||
-              rawData.status !== normalizedUser.status ||
-              rawData.email !== normalizedUser.email ||
-              rawData.emailVerified !== normalizedUser.emailVerified ||
-              rawData.avatar !== normalizedUser.avatar;
-
-            if (needsNormalization) {
-              await setDoc(
-                userRef,
-                {
-                  name: normalizedUser.name,
-                  email: normalizedUser.email,
-                  phone: normalizedUser.phone,
-                  region: normalizedUser.region || '',
-                  district: normalizedUser.district || '',
-                  location: normalizedUser.location,
-                  bio: normalizedUser.bio,
-                  avatar: normalizedUser.avatar,
-                  primaryRole: normalizedUser.primaryRole,
-                  roles: normalizedUser.roles,
-                  status: normalizedUser.status,
-                  sellerProfile: normalizedUser.sellerProfile,
-                  organizationProfile: normalizedUser.organizationProfile,
-                  createdAt: normalizedUser.createdAt,
-                  emailVerified: normalizedUser.emailVerified,
-                },
-                { merge: true }
-              );
+          // Fetch user from PostgreSQL via API
+          let userData: User;
+          try {
+            userData = await api.get('/api/users/me');
+          } catch (error: any) {
+            if (error.message.includes('404') || error.message.includes('User not found')) {
+              // Create new user if not exists
+              const initialData = {
+                name: firebaseUser.displayName || 'Farmer',
+                email: firebaseUser.email || '',
+                phone: '',
+                region: '',
+                district: '',
+                location: '',
+                bio: '',
+                avatar: firebaseUser.photoURL || '',
+                primaryRole: 'buyer',
+                roles: ['buyer'],
+                status: 'basic',
+                sellerProfile: null,
+                organizationProfile: null,
+                emailVerified: firebaseUser.emailVerified,
+              };
+              userData = await api.post('/api/users', initialData);
+            } else {
+              throw error;
             }
-          } else {
-            const initialData = {
-              name: firebaseUser.displayName || 'Farmer',
-              email: firebaseUser.email || '',
-              phone: '',
-              region: '',
-              district: '',
-              location: '',
-              bio: '',
-              avatar: firebaseUser.photoURL || '',
-              primaryRole: 'buyer' as const,
-              roles: ['buyer'] as import('./types').UserRole[],
-              status: 'basic' as const,
-              sellerProfile: null,
-              organizationProfile: null,
-              emailVerified: firebaseUser.emailVerified,
-              createdAt: new Date().toISOString(),
-            };
-
-            await setDoc(userRef, initialData);
-
-            setUser({
-              uid: firebaseUser.uid,
-              ...initialData,
-            });
           }
+          setUser(userData);
         } catch (error) {
-          handleFirestoreError(error, OperationType.GET, `users/${firebaseUser.uid}`);
+          console.error('Auth sync error:', error);
         }
       } else {
         setUser(null);
@@ -336,30 +285,34 @@ export default function App() {
   }, [activeTab]);
 
   useEffect(() => {
-    const listingsQuery = query(
-      collection(db, 'market_listings'),
-      orderBy('createdAt', 'desc')
-    );
-
-    const unsubscribeListings = onSnapshot(
-      listingsQuery,
-      (snapshot) => {
-        const listings: MarketListing[] = snapshot.docs.map((docSnap) => {
-          const data = docSnap.data() as Omit<MarketListing, 'id'>;
-          return {
-            id: docSnap.id,
-            ...data,
-          };
-        });
-
-        setMarketListings(listings);
-      },
-      (error) => {
-        handleFirestoreError(error, OperationType.LIST, 'market_listings');
+    const fetchListings = async () => {
+      try {
+        const listings = await api.get('/api/market-listings');
+        // Map snake_case from DB to camelCase for frontend if necessary
+        // The current server returns what it gets, but the schema has snake_case
+        const mappedListings = listings.map((l: any) => ({
+          ...l,
+          availableQuantity: Number(l.available_quantity),
+          soldQuantity: Number(l.sold_quantity),
+          deliveryMethod: l.delivery_method,
+          businessName: l.business_name,
+          sellerId: l.seller_id,
+          sellerName: l.seller_name,
+          sellerStatus: l.seller_status,
+          imageUrl: l.image_url,
+          imageUrls: l.image_urls,
+          createdAt: l.created_at,
+          updatedAt: l.updated_at,
+        }));
+        setMarketListings(mappedListings);
+      } catch (error) {
+        console.error('Error fetching listings:', error);
       }
-    );
+    };
 
-    return () => unsubscribeListings();
+    fetchListings();
+    const interval = setInterval(fetchListings, 30000); // Poll every 30s as a simple replacement for onSnapshot
+    return () => clearInterval(interval);
   }, []);
 
   useEffect(() => {
@@ -368,20 +321,16 @@ export default function App() {
       return;
     }
 
-    const savedListingsRef = collection(db, 'users', user.uid, 'saved_listings');
-
-    const unsubscribeSaved = onSnapshot(
-      savedListingsRef,
-      (snapshot) => {
-        const ids = snapshot.docs.map((docSnap) => docSnap.id);
-        setSavedListingIds(ids);
-      },
-      (error) => {
-        handleFirestoreError(error, OperationType.LIST, `users/${user.uid}/saved_listings`);
+    const fetchSavedIds = async () => {
+      try {
+        const saved = await api.get('/api/saved-listings');
+        setSavedListingIds(saved.map((s: any) => s.id));
+      } catch (error) {
+        console.error('Error fetching saved listings:', error);
       }
-    );
+    };
 
-    return () => unsubscribeSaved();
+    fetchSavedIds();
   }, [user?.uid]);
 
   useEffect(() => {
@@ -574,7 +523,7 @@ export default function App() {
         throw new Error('All image uploads failed. Listing was not published.');
       }
 
-      await addDoc(collection(db, 'market_listings'), {
+      await api.post('/api/market-listings', {
         title: cleanedTitle,
         category: cleanedCategory,
         price,
@@ -583,50 +532,15 @@ export default function App() {
         availableQuantity: data.availableQuantity ?? quantity,
         soldQuantity: data.soldQuantity ?? 0,
         location: cleanedLocation,
-        locationData: data.locationData,
         deliveryMethod: data.deliveryMethod,
         description: cleanedDescription,
         businessName: cleanedBusinessName || user.name || 'Seller',
         phone: cleanedPhone,
-        sellerId: user.uid,
         sellerName: user.name || 'Seller',
         sellerStatus: user.status,
-        sellerType: data.sellerType || 'farmer',
         verified: user.status === 'verified',
         imageUrl: imageUrls[0] || null,
         imageUrls,
-        stockStatus: data.stockStatus || computeStockStatus(
-          data.availableQuantity ?? quantity,
-          quantity
-        ),
-        condition,
-        brand,
-        model,
-        capacity,
-        fuelType,
-
-        seedType,
-        variety,
-        packSize,
-        season,
-        germinationRate,
-
-        breed,
-        age,
-        sex,
-        healthStatus,
-        vaccinationStatus,
-
-        inputType,
-        usage,
-        expiryDate,
-
-        viewsCount: 0,
-        sharesCount: 0,
-        savesCount: 0,
-        status: 'active',
-        createdAt: serverTimestamp(),
-        updatedAt: serverTimestamp(),
       });
 
       toast.success('Listing created successfully!');
@@ -719,7 +633,7 @@ export default function App() {
         }
       }
 
-      await updateDoc(doc(db, 'market_listings', listingId), {
+      await api.put(`/api/market-listings/${listingId}`, {
         title: cleanedTitle,
         category: cleanedCategory,
         price,
@@ -727,41 +641,14 @@ export default function App() {
         quantity,
         availableQuantity: nextAvailableQuantity,
         soldQuantity: previousSoldQuantity,
-        stockStatus: computeStockStatus(nextAvailableQuantity, quantity),
         location: cleanedLocation,
-        locationData: data.locationData,
         deliveryMethod: data.deliveryMethod,
         description: cleanedDescription,
         businessName: cleanedBusinessName || user.name || 'Seller',
         phone: cleanedPhone,
-        sellerStatus: user.status,
-        sellerType: data.sellerType || 'farmer',
         imageUrl: imageUrls[0] || null,
         imageUrls,
-
-        condition,
-        brand,
-        model,
-        capacity,
-        fuelType,
-
-        seedType,
-        variety,
-        packSize,
-        season,
-        germinationRate,
-
-        breed,
-        age,
-        sex,
-        healthStatus,
-        vaccinationStatus,
-
-        inputType,
-        usage,
-        expiryDate,
-
-        updatedAt: serverTimestamp(),
+        status: data.stockStatus === 'out_of_stock' ? 'sold' : 'active',
       });
 
       toast.success('Listing updated successfully!');
@@ -774,10 +661,7 @@ export default function App() {
     if (!listingId) return;
 
     try {
-      await updateDoc(doc(db, 'market_listings', listingId), {
-        viewsCount: increment(1),
-        updatedAt: serverTimestamp(),
-      });
+      await api.post(`/api/market-listings/${listingId}/increment-views`, {});
     } catch (error) {
       console.error('Error incrementing views:', error);
     }
@@ -787,10 +671,7 @@ export default function App() {
     if (!listingId) return;
 
     try {
-      await updateDoc(doc(db, 'market_listings', listingId), {
-        sharesCount: increment(1),
-        updatedAt: serverTimestamp(),
-      });
+      await api.post(`/api/market-listings/${listingId}/increment-shares`, {});
     } catch (error) {
       console.error('Error incrementing shares:', error);
     }
@@ -804,31 +685,16 @@ export default function App() {
 
     if (!listing.id) return;
 
-    const saveRef = doc(db, 'users', user.uid, 'saved_listings', listing.id);
     const isSaved = savedListingIds.includes(listing.id);
 
     try {
       if (isSaved) {
-        await deleteDoc(saveRef);
-        await updateDoc(doc(db, 'market_listings', listing.id), {
-          savesCount: increment(-1),
-          updatedAt: serverTimestamp(),
-        });
+        await api.delete(`/api/saved-listings/${listing.id}`);
+        setSavedListingIds(prev => prev.filter(id => id !== listing.id));
         toast.success('Removed from saved.');
       } else {
-        await setDoc(saveRef, {
-          listingId: listing.id,
-          title: listing.title,
-          price: listing.price,
-          location: listing.location,
-          imageUrl: listing.imageUrl || (listing.imageUrls && listing.imageUrls[0]) || null,
-          sellerId: listing.sellerId,
-          savedAt: serverTimestamp(),
-        });
-        await updateDoc(doc(db, 'market_listings', listing.id), {
-          savesCount: increment(1),
-          updatedAt: serverTimestamp(),
-        });
+        await api.post(`/api/saved-listings/${listing.id}`, {});
+        setSavedListingIds(prev => [...prev, listing.id!]);
         toast.success('Saved listing.');
       }
     } catch (error) {
@@ -849,9 +715,8 @@ export default function App() {
     }
 
     try {
-      await updateDoc(doc(db, 'buyer_requests', request.id), {
+      await api.put(`/api/buyer-requests/${request.id}`, {
         status: nextStatus,
-        updatedAt: serverTimestamp(),
       });
 
       toast.success(
@@ -1096,45 +961,29 @@ export default function App() {
                         referenceImageUrl = await uploadImageToCloudinary(data.imageFile);
                       }
 
-                      const requestData: Partial<BuyerRequest> = {
+                      const requestData = {
                         commodity: data.commodity,
                         category: data.category || 'other',
-
                         quantity: Number(data.quantity),
                         unit: data.unit,
-
                         priceRange: data.priceRange,
-
                         location: data.location,
-                        locationData: data.locationData,
-
                         neededBy: data.neededBy || '',
                         urgency: data.urgency || 'normal',
-
                         buyerType: data.buyerType || 'individual',
-
                         deliveryPreference: data.deliveryPreference || 'pickup',
                         contactMethod: data.contactMethod || 'whatsapp',
-
                         description: data.description || '',
-
                         referenceImageUrl: referenceImageUrl,
-
-                        buyerId: user.uid,
                         buyerName: user.name,
                         phone: data.phone || user.phone,
-
-                        updatedAt: serverTimestamp(),
                       };
 
                       if (editingRequest?.id) {
-                        await updateDoc(doc(db, 'buyer_requests', editingRequest.id), requestData);
+                        await api.put(`/api/buyer-requests/${editingRequest.id}`, requestData);
                         toast.success('Request updated successfully!');
                       } else {
-                        (requestData as any).quantityFound = 0;
-                        (requestData as any).status = 'open';
-                        (requestData as any).createdAt = serverTimestamp();
-                        await addDoc(collection(db, 'buyer_requests'), requestData as any);
+                        await api.post('/api/buyer-requests', requestData);
                         toast.success(t('market.requestPosted') || 'Request posted successfully!');
                       }
 
