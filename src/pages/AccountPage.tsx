@@ -9,7 +9,7 @@ import {
   HandHelping,
   Save
 } from 'lucide-react';
-import { User as UserType } from '../types';
+import { User as UserType, BuyerRequest } from '../types';
 import { malawiRegions, malawiDistrictsByRegion } from '../data/constants';
 import { useAccountPageController, AccountView } from '../hooks/useAccountPageController';
 import AccountHeader from '../components/account/AccountHeader';
@@ -37,10 +37,13 @@ interface AccountPageProps {
   setActiveTab: (tab: 'info' | 'market' | 'experts' | 'account') => void;
   setSelectedItem: (item: any) => void;
   setEditingListing: (listing: any) => void;
-  setEditingRequest: (request: any) => void;
+  setEditingRequest: (request: BuyerRequest | null) => void;
   setIsAddProductModalOpen: (open: boolean) => void;
   setFormStep: (step: number) => void;
-  onUpdateBuyerRequestStatus: (request: any, nextStatus: 'open' | 'matched' | 'closed') => Promise<void> | void;
+  onUpdateBuyerRequestStatus: (
+    request: BuyerRequest,
+    nextStatus: 'open' | 'matched' | 'closed'
+  ) => Promise<void> | void;
 }
 
 export const AccountPage: React.FC<AccountPageProps> = ({
@@ -194,16 +197,18 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         openUpgradeRole={openUpgradeRole}
       />
 
-      <MyBuyerRequestsSection
-        user={user}
-        setActiveTab={setActiveTab}
-        setSelectedItem={setSelectedItem}
-        setEditingListing={setEditingListing}
-        setEditingRequest={setEditingRequest}
-        setIsAddProductModalOpen={setIsAddProductModalOpen}
-        setFormStep={setFormStep}
-        onUpdateBuyerRequestStatus={onUpdateBuyerRequestStatus}
-      />
+      {user.primaryRole === 'buyer' && (
+        <MyBuyerRequestsSection
+          user={user}
+          setActiveTab={setActiveTab}
+          setSelectedItem={setSelectedItem}
+          setEditingListing={setEditingListing}
+          setEditingRequest={setEditingRequest}
+          setIsAddProductModalOpen={setIsAddProductModalOpen}
+          setFormStep={setFormStep}
+          onUpdateBuyerRequestStatus={onUpdateBuyerRequestStatus}
+        />
+      )}
 
       {user.primaryRole === 'seller' && user.sellerProfile && (
         <SellerProfileCard
