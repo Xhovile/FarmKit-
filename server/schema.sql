@@ -1,3 +1,6 @@
+-- Ensure required extension for UUID generation exists
+CREATE EXTENSION IF NOT EXISTS pgcrypto;
+
 -- Users table
 CREATE TABLE IF NOT EXISTS users (
     uid TEXT PRIMARY KEY,
