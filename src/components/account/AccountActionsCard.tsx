@@ -1,5 +1,12 @@
 import React from 'react';
-import { Settings, UserCircle, Languages, HelpCircle, LogOut, Store } from 'lucide-react';
+import {
+  Settings,
+  UserCircle,
+  Languages,
+  HelpCircle,
+  LogOut,
+  Store,
+} from 'lucide-react';
 import { User as UserType } from '../../types';
 import { auth } from '../../lib/firebase';
 import { toast } from 'react-hot-toast';
@@ -40,49 +47,61 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-8 border border-gray-100 dark:border-gray-700">
       <h3 className="text-xl font-bold mb-6">Account Actions</h3>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <button 
+
+      <div className="pt-2 border-t border-gray-100 dark:border-gray-700 grid grid-cols-2 md:grid-cols-4 gap-4">
+        <button
           onClick={openSwitchRole}
-          className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
+          className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
         >
-          <div className="w-12 h-12 bg-primary/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-            <UserCircle className="w-6 h-6 text-primary" />
+          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+            <UserCircle className="w-6 h-6" />
           </div>
-          <div className="text-left">
-            <p className="font-bold">Switch Primary Role</p>
-            <p className="text-xs text-gray-500">Change your default view</p>
-          </div>
+          <span className="text-xs font-bold text-gray-500 text-center">
+            Switch Role
+          </span>
         </button>
 
-        <button 
+        <button
           onClick={openUpgradeRole}
-          className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
+          className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
         >
-          <div className="w-12 h-12 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Store className="w-6 h-6 text-amber-600 dark:text-amber-400" />
+          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+            <Store className="w-6 h-6" />
           </div>
-          <div className="text-left">
-            <p className="font-bold">{canSell ? 'Add Another Role' : 'Become a Seller or Organisation'}</p>
-            <p className="text-xs text-gray-500">{canSell ? 'Expand your account capabilities' : 'Upgrade your account'}</p>
-          </div>
+          <span className="text-xs font-bold text-gray-500 text-center">
+            {canSell ? 'Add Another Role' : 'Become Seller / Organisation'}
+          </span>
         </button>
 
-        <button 
+        <button
           onClick={() => setLang(lang === 'en' ? 'ny' : 'en')}
-          className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
+          className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
         >
-          <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-            <Languages className="w-6 h-6 text-indigo-600 dark:text-indigo-400" />
+          <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 group-hover:bg-primary/10 group-hover:text-primary rounded-full flex items-center justify-center transition-all">
+            <Languages className="w-6 h-6" />
           </div>
-          <div className="text-left">
-            <p className="font-bold">{lang === 'en' ? 'Switch to Chichewa' : 'Switch to English'}</p>
-            <p className="text-xs text-gray-500">Change app language</p>
-          </div>
+          <span className="text-xs font-bold text-gray-500 text-center">
+            {lang === 'en' ? 'Switch to Chichewa' : 'Switch to English'}
+          </span>
         </button>
 
-        <button 
+        <button
+          onClick={handleLogout}
+          className="flex flex-col items-center gap-2 p-4 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-2xl transition-all group"
+        >
+          <div className="w-12 h-12 bg-rose-100 dark:bg-rose-900/30 text-rose-600 rounded-full flex items-center justify-center transition-all">
+            <LogOut className="w-6 h-6" />
+          </div>
+          <span className="text-xs font-bold text-rose-500 text-center">
+            {t('common.logout')}
+          </span>
+        </button>
+      </div>
+
+      <div className="mt-4">
+        <button
           onClick={() => setShowTour(true)}
-          className="flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
+          className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
         >
           <div className="w-12 h-12 bg-emerald-100 dark:bg-emerald-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <HelpCircle className="w-6 h-6 text-emerald-600 dark:text-emerald-400" />
@@ -92,22 +111,9 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
             <p className="text-xs text-gray-500">Learn how to use FarmKit</p>
           </div>
         </button>
-
-        <button 
-          onClick={handleLogout}
-          className="flex items-center gap-4 p-4 bg-red-50 dark:bg-red-900/10 rounded-2xl border border-red-100 dark:border-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/20 transition-all group md:col-span-2"
-        >
-          <div className="w-12 h-12 bg-red-100 dark:bg-red-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-            <LogOut className="w-6 h-6 text-red-600 dark:text-red-400" />
-          </div>
-          <div className="text-left">
-            <p className="font-bold text-red-600 dark:text-red-400">Logout</p>
-            <p className="text-xs text-red-500/60">Sign out of your account</p>
-          </div>
-        </button>
       </div>
     </div>
   );
 };
 
-export default AccountActionsCard;
+export default AccountActionsCard; 
