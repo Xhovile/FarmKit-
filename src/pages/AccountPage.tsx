@@ -183,7 +183,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
       )}
 
       <AccountActionsCard
-        user={user}
         t={t}
         openSwitchRole={openSwitchRole}
         openUpgradeRole={openUpgradeRole}
