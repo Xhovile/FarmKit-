@@ -382,7 +382,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
                     <div className="w-12 h-12 bg-blue-100 dark:bg-blue-900/30 rounded-xl flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
                       <Building2 className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                     </div>
-                    <h4 className="font-bold mb-1">Agro-Business</h4>
+                    <h4 className="font-bold mb-1">Agri-Business</h4>
                     <p className="text-xs text-gray-500">Registered company or shop</p>
                   </button>
 
