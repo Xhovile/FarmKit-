@@ -12,7 +12,7 @@ interface MyBuyerRequestsSectionProps {
   setEditingRequest: (request: BuyerRequest | null) => void;
   setIsAddProductModalOpen: (open: boolean) => void;
   setFormStep: (step: number) => void;
-  onUpdateRequestStatus: (
+  onUpdateBuyerRequestStatus: (
     request: BuyerRequest,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => Promise<void> | void;
@@ -26,7 +26,7 @@ const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
   setEditingRequest,
   setIsAddProductModalOpen,
   setFormStep,
-  onUpdateRequestStatus,
+  onUpdateBuyerRequestStatus,
 }) => {
   const { requests, loading } = useBuyerRequests(user);
   const [tab, setTab] = useState<'open' | 'matched' | 'closed'>('open');
@@ -52,7 +52,7 @@ const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
 
   const handleToggleStatus = async (request: BuyerRequest) => {
     const nextStatus = request.status === 'closed' ? 'open' : 'closed';
-    await onUpdateRequestStatus(request, nextStatus);
+    await onUpdateBuyerRequestStatus(request, nextStatus);
   };
 
   const counts = {

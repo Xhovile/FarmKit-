@@ -94,7 +94,7 @@ interface MarketPageProps {
   incrementListingViews: (listingId?: string) => Promise<void> | void;
   toggleSavedListing: (listing: MarketListing) => Promise<void> | void;
   incrementListingShares: (listingId?: string) => Promise<void> | void;
-  onUpdateRequestStatus: (
+  onUpdateBuyerRequestStatus: (
     request: BuyerRequest,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => Promise<void> | void;
@@ -117,7 +117,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   incrementListingViews,
   toggleSavedListing,
   incrementListingShares,
-  onUpdateRequestStatus,
+  onUpdateBuyerRequestStatus,
   savedListingIds
 }) => {
   const [marketTab, setMarketTab] = useState<'supply' | 'demand' | 'insights'>('supply');
@@ -871,7 +871,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                         t={t}
                         currentUserId={user?.uid}
                         onOpenDetails={handleOpenRequestDetails}
-                        onUpdateStatus={onUpdateRequestStatus}
+                        onUpdateStatus={onUpdateBuyerRequestStatus}
                         onUpdateFoundQuantity={(request) => {
                           setFoundQtyRequest(request);
                           setFoundQtyValue(String(request.quantityFound ?? 0));

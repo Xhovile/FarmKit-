@@ -955,7 +955,7 @@ export default function App() {
               incrementListingShares={incrementListingShares}
               toggleSavedListing={toggleSavedListing}
               savedListingIds={savedListingIds}
-              onUpdateRequestStatus={handleUpdateBuyerRequestStatus}
+              onUpdateBuyerRequestStatus={handleUpdateBuyerRequestStatus}
             />
           )}
 
@@ -989,7 +989,7 @@ export default function App() {
               setEditingRequest={setEditingRequest}
               setIsAddProductModalOpen={setIsAddProductModalOpen}
               setFormStep={setFormStep}
-              onUpdateRequestStatus={handleUpdateBuyerRequestStatus}
+              onUpdateBuyerRequestStatus={handleUpdateBuyerRequestStatus}
             />
           )}
         </AnimatePresence>

@@ -40,7 +40,7 @@ interface AccountPageProps {
   setEditingRequest: (request: any) => void;
   setIsAddProductModalOpen: (open: boolean) => void;
   setFormStep: (step: number) => void;
-  onUpdateRequestStatus: (request: any, nextStatus: 'open' | 'matched' | 'closed') => Promise<void> | void;
+  onUpdateBuyerRequestStatus: (request: any, nextStatus: 'open' | 'matched' | 'closed') => Promise<void> | void;
 }
 
 export const AccountPage: React.FC<AccountPageProps> = ({
@@ -57,7 +57,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   setEditingRequest,
   setIsAddProductModalOpen,
   setFormStep,
-  onUpdateRequestStatus,
+  onUpdateBuyerRequestStatus,
 }) => {
   const {
     accountView,
@@ -202,7 +202,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         setEditingRequest={setEditingRequest}
         setIsAddProductModalOpen={setIsAddProductModalOpen}
         setFormStep={setFormStep}
-        onUpdateRequestStatus={onUpdateRequestStatus}
+        onUpdateBuyerRequestStatus={onUpdateBuyerRequestStatus}
       />
 
       {user.primaryRole === 'seller' && user.sellerProfile && (
