@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import {
   UserCircle,
   X,
+  ArrowLeft,
   Store,
   Building2,
   Users,
@@ -169,35 +170,44 @@ export const AccountPage: React.FC<AccountPageProps> = ({
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
         exit={{ opacity: 0, x: -20 }}
-        className="space-y-6"
+        className="space-y-6 pb-20"
       >
-        <button 
-          onClick={() => setAccountView('hub')}
-          className="flex items-center gap-2 text-gray-500 hover:text-primary font-bold transition-colors mb-4"
-        >
-          <X className="w-5 h-5" />
-          Back to Account Hub
-        </button>
+        <div className="sticky top-0 z-30 -mx-4 px-4 py-4 bg-gray-50/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-100 dark:border-gray-800 mb-6">
+          <button 
+            onClick={() => {
+              setAccountView('hub');
+              window.scrollTo(0, 0);
+            }}
+            className="flex items-center gap-2 text-gray-600 dark:text-gray-300 hover:text-primary font-bold transition-all group"
+          >
+            <div className="p-2 rounded-full bg-white dark:bg-gray-800 shadow-sm group-hover:bg-primary group-hover:text-white transition-all">
+              <ArrowLeft className="w-5 h-5" />
+            </div>
+            <span>Back to Account Hub</span>
+          </button>
+        </div>
         
-        <MyListingsSection
-          user={user}
-          onAddListing={() => {
-            setEditingListing(null);
-            setEditingRequest(null);
-            setFormStep(0);
-            setIsAddProductModalOpen(true);
-          }}
-          onEditListing={(listing) => {
-            setEditingListing(listing);
-            setEditingRequest(null);
-            setFormStep(0);
-            setIsAddProductModalOpen(true);
-          }}
-          onViewDetails={(listing) => {
-            setSelectedItem(listing);
-            setActiveTab('market');
-          }}
-        />
+        <div className="px-1">
+          <MyListingsSection
+            user={user}
+            onAddListing={() => {
+              setEditingListing(null);
+              setEditingRequest(null);
+              setFormStep(0);
+              setIsAddProductModalOpen(true);
+            }}
+            onEditListing={(listing) => {
+              setEditingListing(listing);
+              setEditingRequest(null);
+              setFormStep(0);
+              setIsAddProductModalOpen(true);
+            }}
+            onViewDetails={(listing) => {
+              setSelectedItem(listing);
+              setActiveTab('market');
+            }}
+          />
+        </div>
       </motion.div>
     );
   }

@@ -10,7 +10,8 @@ import {
   Clock, 
   AlertCircle,
   X,
-  RefreshCw
+  RefreshCw,
+  ArrowUp
 } from 'lucide-react';
 import { User, MarketListing } from '../../types';
 import { useUserListings } from '../../hooks/useUserListings';
@@ -51,6 +52,20 @@ const MyListingsSection: React.FC<MyListingsSectionProps> = ({
       hidden: listings.filter(l => l.status === 'hidden').length,
     };
   }, [listings]);
+
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  React.useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 500);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const scrollToTop = () => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
 
   const handleRestock = async (id: string, quantity: number, price: number) => {
     try {
@@ -216,6 +231,22 @@ const MyListingsSection: React.FC<MyListingsSectionProps> = ({
           )}
         </AnimatePresence>
       </div>
+
+      {/* Back to Top Button */}
+      <AnimatePresence>
+        {showBackToTop && (
+          <motion.button
+            initial={{ opacity: 0, scale: 0.8, y: 20 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.8, y: 20 }}
+            onClick={scrollToTop}
+            className="fixed bottom-24 right-6 z-40 p-4 bg-primary text-white rounded-full shadow-xl shadow-primary/30 hover:bg-primary/90 transition-all"
+            title="Back to Top"
+          >
+            <ArrowUp className="w-6 h-6" />
+          </motion.button>
+        )}
+      </AnimatePresence>
     </div>
   );
 };
