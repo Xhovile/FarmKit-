@@ -213,12 +213,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   }
 
   return (
-    <motion.div 
-      key="account-auth"
-      initial={{ opacity: 0, scale: 0.95 }}
-      animate={{ opacity: 1, scale: 1 }}
-      className="space-y-6"
-    >
+    <div className="space-y-6">
       <AccountHeader 
         user={user} 
         isEditingProfile={isEditingProfile} 
@@ -531,6 +526,6 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           </div>
         </div>
       )}
-    </motion.div>
+    </div>
   );
 };

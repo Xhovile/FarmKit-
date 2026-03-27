@@ -148,6 +148,8 @@ export const ny = {
     deliveryMethod: "Mayendedwe",
     inStock: "Zilipo",
     lowStock: "Zatsala Pang'ono",
+    noListings: "Zinthu zogulitsa palibe",
+    beFirstToSell: "Khalani oyamba kulembetsa zinthu zanu kuti mugulitse kwa ogula m'dziko lonse la Malawi.",
   },
   home: {
     activeAlerts: "Machenjezo",

@@ -148,6 +148,8 @@ export const en = {
     deliveryMethod: "Delivery Method",
     inStock: "In Stock",
     lowStock: "Low Stock",
+    noListings: "Supply is not available",
+    beFirstToSell: "Be the first to list your products and reach buyers across Malawi.",
   },
   home: {
     activeAlerts: "Active Alerts",

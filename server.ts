@@ -34,23 +34,40 @@ const upload = multer({ dest: 'uploads/' });
 const toCamelCase = (obj: any): any => {
   if (Array.isArray(obj)) return obj.map(toCamelCase);
   if (obj !== null && typeof obj === 'object') {
-    return Object.keys(obj).reduce((acc: any, key) => {
-      const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
-      acc[camelKey] = toCamelCase(obj[key]);
-      return acc;
-    }, {});
+    // Handle Firestore Timestamp
+    if (typeof obj.toDate === 'function') {
+      return obj.toDate().toISOString();
+    }
+    // Handle Date
+    if (obj instanceof Date) {
+      return obj.toISOString();
+    }
+    // Handle plain object
+    if (obj.constructor === Object) {
+      return Object.keys(obj).reduce((acc: any, key) => {
+        const camelKey = key.replace(/_([a-z])/g, (g) => g[1].toUpperCase());
+        acc[camelKey] = toCamelCase(obj[key]);
+        return acc;
+      }, {});
+    }
   }
   return obj;
 };
 
 async function startServer() {
+  console.log('Starting server...');
   const app = express();
   const PORT = 3000;
 
   app.use(express.json({ limit: "1mb" }));
 
-  // Initialize Firestore collections (optional, but good for structure)
-  console.log('Firestore initialized');
+  try {
+    // Initialize Firestore collections (optional, but good for structure)
+    const db = adminDb();
+    console.log('Firestore admin SDK initialized');
+  } catch (err) {
+    console.error('Failed to initialize Firestore admin SDK:', err);
+  }
 
   // API routes
   app.get("/api/health", async (req, res) => {
@@ -114,6 +131,7 @@ async function startServer() {
 
   // --- Market Listing Routes ---
   app.get('/api/market-listings', async (req, res) => {
+    console.log('GET /api/market-listings hit');
     try {
       const snapshot = await adminDb().collection('market_listings')
         .where('status', '==', 'active')
@@ -266,23 +284,6 @@ async function startServer() {
   });
 
   // --- Buyer Request Routes ---
-  app.delete('/api/market-listings/:id', authMiddleware, async (req: AuthRequest, res) => {
-    const sellerId = req.user?.uid;
-
-    try {
-      const docRef = adminDb().collection('market_listings').doc(req.params.id);
-      const doc = await docRef.get();
-      
-      if (!doc.exists) return res.status(404).json({ error: 'Listing not found' });
-      if (doc.data()?.sellerId !== sellerId) return res.status(403).json({ error: 'Unauthorized' });
-
-      await docRef.delete();
-      res.json({ success: true });
-    } catch (error: any) {
-      res.status(500).json({ error: error.message });
-    }
-  });
-
   app.get('/api/buyer-requests', async (req, res) => {
     try {
       const snapshot = await adminDb().collection('buyer_requests')
