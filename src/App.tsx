@@ -288,23 +288,8 @@ export default function App() {
     const fetchListings = async () => {
       try {
         const listings = await api.get('/api/market-listings');
-        // Map snake_case from DB to camelCase for frontend if necessary
-        // The current server returns what it gets, but the schema has snake_case
-        const mappedListings = listings.map((l: any) => ({
-          ...l,
-          availableQuantity: Number(l.available_quantity),
-          soldQuantity: Number(l.sold_quantity),
-          deliveryMethod: l.delivery_method,
-          businessName: l.business_name,
-          sellerId: l.seller_id,
-          sellerName: l.seller_name,
-          sellerStatus: l.seller_status,
-          imageUrl: l.image_url,
-          imageUrls: l.image_urls,
-          createdAt: l.created_at,
-          updatedAt: l.updated_at,
-        }));
-        setMarketListings(mappedListings);
+        // The server already returns camelCase via toCamelCase helper
+        setMarketListings(listings);
       } catch (error) {
         console.error('Error fetching listings:', error);
       }

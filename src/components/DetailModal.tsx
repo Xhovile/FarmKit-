@@ -191,6 +191,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
         return new Date(selectedItem.createdAt.seconds * 1000).toLocaleDateString();
       }
 
+      const date = new Date(selectedItem.createdAt);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString();
+      }
+
       return 'Recently added';
     } catch {
       return 'Recently added';
@@ -203,6 +208,11 @@ export const DetailModal: React.FC<DetailModalProps> = ({
     try {
       if (selectedItem.updatedAt?.seconds) {
         return new Date(selectedItem.updatedAt.seconds * 1000).toLocaleDateString();
+      }
+
+      const date = new Date(selectedItem.updatedAt);
+      if (!isNaN(date.getTime())) {
+        return date.toLocaleDateString();
       }
 
       return 'Not updated yet';

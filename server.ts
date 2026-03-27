@@ -10,8 +10,9 @@ import express from "express";
 import { createServer as createViteServer } from "vite";
 import path from "path";
 import { fileURLToPath } from "url";
-import { adminAuth } from './server/firebaseAdmin';
-import * as db from './server/db';
+import { adminAuth, adminDb } from './server/firebaseAdmin';
+import admin from 'firebase-admin';
+// import * as db from './server/db';
 import { authenticate as authMiddleware, AuthRequest } from './server/authMiddleware';
 import { v2 as cloudinary } from 'cloudinary';
 import multer from 'multer';
@@ -48,18 +49,14 @@ async function startServer() {
 
   app.use(express.json({ limit: "1mb" }));
 
-  // Initialize PostgreSQL database
-  try {
-    await db.initDb();
-    console.log('PostgreSQL database initialized');
-  } catch (error) {
-    console.error('Failed to initialize PostgreSQL database:', error);
-  }
+  // Initialize Firestore collections (optional, but good for structure)
+  console.log('Firestore initialized');
 
   // API routes
   app.get("/api/health", async (req, res) => {
     try {
-      await db.query('SELECT 1');
+      // Simple check for Firestore
+      await adminDb.collection('health').doc('check').get();
       res.json({ status: "ok", database: "connected" });
     } catch (error: any) {
       res.status(503).json({ status: "error", database: "disconnected", error: error.message });
@@ -69,11 +66,11 @@ async function startServer() {
   // --- User Routes ---
   app.get('/api/users/me', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      const result = await db.query('SELECT * FROM users WHERE uid = $1', [req.user?.uid]);
-      if (result.rows.length === 0) {
+      const userDoc = await adminDb.collection('users').doc(req.user?.uid!).get();
+      if (!userDoc.exists) {
         return res.status(404).json({ error: 'User not found' });
       }
-      res.json(toCamelCase(result.rows[0]));
+      res.json(toCamelCase(userDoc.data()));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -84,26 +81,29 @@ async function startServer() {
     const uid = req.user?.uid;
 
     try {
-      const result = await db.query(
-        `INSERT INTO users (uid, name, email, phone, location, bio, avatar, primary_role, roles, status, email_verified, seller_profile, organization_profile)
-         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13)
-         ON CONFLICT (uid) DO UPDATE SET
-           name = EXCLUDED.name,
-           phone = EXCLUDED.phone,
-           location = EXCLUDED.location,
-           bio = EXCLUDED.bio,
-           avatar = EXCLUDED.avatar,
-           primary_role = EXCLUDED.primary_role,
-           roles = EXCLUDED.roles,
-           status = EXCLUDED.status,
-           email_verified = EXCLUDED.email_verified,
-           seller_profile = EXCLUDED.seller_profile,
-           organization_profile = EXCLUDED.organization_profile,
-           updated_at = CURRENT_TIMESTAMP
-         RETURNING *`,
-        [uid, name, email, phone, location, bio, avatar, primaryRole, roles, status, emailVerified, JSON.stringify(sellerProfile), JSON.stringify(organizationProfile)]
-      );
-      res.json(toCamelCase(result.rows[0]));
+      const userRef = adminDb.collection('users').doc(uid!);
+      const userData = {
+        uid, name, email, phone, location, bio, avatar, primaryRole, roles, status, emailVerified, sellerProfile, organizationProfile,
+        updatedAt: new Date().toISOString()
+      };
+      
+      await userRef.set(userData, { merge: true });
+      const updatedDoc = await userRef.get();
+      res.json(toCamelCase(updatedDoc.data()));
+    } catch (error: any) {
+      res.status(500).json({ error: error.message });
+    }
+  });
+
+  app.put('/api/users/me', authMiddleware, async (req: AuthRequest, res) => {
+    const uid = req.user?.uid;
+    const updates = req.body;
+    
+    try {
+      const userRef = adminDb.collection('users').doc(uid!);
+      await userRef.set({ ...updates, updatedAt: new Date().toISOString() }, { merge: true });
+      const updatedDoc = await userRef.get();
+      res.json(toCamelCase(updatedDoc.data()));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -112,12 +112,23 @@ async function startServer() {
   // --- Market Listing Routes ---
   app.get('/api/market-listings', async (req, res) => {
     try {
-      const result = await db.query('SELECT * FROM market_listings WHERE status = \'active\' ORDER BY created_at DESC');
-      const rows = result.rows.map(row => {
-        const { specs, ...rest } = row;
-        return toCamelCase({ ...rest, ...specs });
+      const snapshot = await adminDb.collection('market_listings')
+        .where('status', '==', 'active')
+        .get();
+      
+      const listings = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Sort in-memory to avoid composite index requirement
+      listings.sort((a: any, b: any) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
       });
-      res.json(rows);
+
+      res.json(toCamelCase(listings));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -125,79 +136,52 @@ async function startServer() {
 
   app.get('/api/market-listings/:id', async (req, res) => {
     try {
-      const result = await db.query('SELECT * FROM market_listings WHERE id = $1', [req.params.id]);
-      if (result.rows.length === 0) {
+      const doc = await adminDb.collection('market_listings').doc(req.params.id).get();
+      if (!doc.exists) {
         return res.status(404).json({ error: 'Listing not found' });
       }
-      const { specs, ...rest } = result.rows[0];
-      res.json(toCamelCase({ ...rest, ...specs }));
+      res.json(toCamelCase({ id: doc.id, ...doc.data() }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
   app.post('/api/market-listings', authMiddleware, async (req: AuthRequest, res) => {
-    const {
-      title, category, price, unit, quantity, availableQuantity, soldQuantity,
-      location, deliveryMethod, description, businessName, phone,
-      sellerName, sellerStatus, verified, imageUrl, imageUrls,
-      ...specs
-    } = req.body;
+    const data = req.body;
     const sellerId = req.user?.uid;
 
     try {
-      const result = await db.query(
-        `INSERT INTO market_listings (
-          title, category, price, unit, quantity, available_quantity, sold_quantity,
-          location, delivery_method, description, business_name, phone,
-          seller_id, seller_name, seller_status, verified, image_url, image_urls, specs
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16, $17, $18, $19)
-        RETURNING *`,
-        [
-          title, category, price, unit, quantity, availableQuantity, soldQuantity,
-          location, deliveryMethod, description, businessName, phone,
-          sellerId, sellerName, sellerStatus, verified, imageUrl, imageUrls, JSON.stringify(specs)
-        ]
-      );
-      const { specs: resSpecs, ...rest } = result.rows[0];
-      res.json(toCamelCase({ ...rest, ...resSpecs }));
+      const listingData = {
+        ...data,
+        sellerId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        viewsCount: 0,
+        sharesCount: 0
+      };
+      
+      const docRef = await adminDb.collection('market_listings').add(listingData);
+      const newDoc = await docRef.get();
+      res.json(toCamelCase({ id: newDoc.id, ...newDoc.data() }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
   app.put('/api/market-listings/:id', authMiddleware, async (req: AuthRequest, res) => {
-    const {
-      title, category, price, unit, quantity, availableQuantity, soldQuantity,
-      location, deliveryMethod, description, businessName, phone,
-      imageUrl, imageUrls, status,
-      ...specs
-    } = req.body;
+    const updates = req.body;
     const sellerId = req.user?.uid;
 
     try {
-      // Check ownership
-      const check = await db.query('SELECT seller_id FROM market_listings WHERE id = $1', [req.params.id]);
-      if (check.rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
-      if (check.rows[0].seller_id !== sellerId) return res.status(403).json({ error: 'Unauthorized' });
+      const docRef = adminDb.collection('market_listings').doc(req.params.id);
+      const doc = await docRef.get();
+      
+      if (!doc.exists) return res.status(404).json({ error: 'Listing not found' });
+      if (doc.data()?.sellerId !== sellerId) return res.status(403).json({ error: 'Unauthorized' });
 
-      const result = await db.query(
-        `UPDATE market_listings SET
-          title = $1, category = $2, price = $3, unit = $4, quantity = $5,
-          available_quantity = $6, sold_quantity = $7, location = $8,
-          delivery_method = $9, description = $10, business_name = $11,
-          phone = $12, image_url = $13, image_urls = $14, status = $15,
-          specs = $16,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $17 RETURNING *`,
-        [
-          title, category, price, unit, quantity, availableQuantity, soldQuantity,
-          location, deliveryMethod, description, businessName, phone,
-          imageUrl, imageUrls, status || 'active', JSON.stringify(specs), req.params.id
-        ]
-      );
-      const { specs: resSpecs, ...rest } = result.rows[0];
-      res.json(toCamelCase({ ...rest, ...resSpecs }));
+      await docRef.set({ ...updates, updatedAt: new Date().toISOString() }, { merge: true });
+      const updatedDoc = await docRef.get();
+      res.json(toCamelCase({ id: updatedDoc.id, ...updatedDoc.data() }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -206,8 +190,13 @@ async function startServer() {
   app.delete('/api/market-listings/:id', authMiddleware, async (req: AuthRequest, res) => {
     const sellerId = req.user?.uid;
     try {
-      const result = await db.query('DELETE FROM market_listings WHERE id = $1 AND seller_id = $2 RETURNING *', [req.params.id, sellerId]);
-      if (result.rows.length === 0) return res.status(404).json({ error: 'Listing not found or unauthorized' });
+      const docRef = adminDb.collection('market_listings').doc(req.params.id);
+      const doc = await docRef.get();
+      
+      if (!doc.exists) return res.status(404).json({ error: 'Listing not found' });
+      if (doc.data()?.sellerId !== sellerId) return res.status(403).json({ error: 'Unauthorized' });
+
+      await docRef.delete();
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -217,70 +206,62 @@ async function startServer() {
   // --- Buyer Request Routes ---
   app.get('/api/buyer-requests', async (req, res) => {
     try {
-      const result = await db.query('SELECT * FROM buyer_requests WHERE status = \'open\' ORDER BY created_at DESC');
-      res.json(toCamelCase(result.rows));
+      const snapshot = await adminDb.collection('buyer_requests')
+        .where('status', '==', 'open')
+        .get();
+      
+      const requests = snapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+
+      // Sort in-memory to avoid composite index requirement
+      requests.sort((a: any, b: any) => {
+        const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+        const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
+        return dateB - dateA;
+      });
+
+      res.json(toCamelCase(requests));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
   app.post('/api/buyer-requests', authMiddleware, async (req: AuthRequest, res) => {
-    const {
-      commodity, category, quantity, unit, priceRange, location, urgency,
-      neededBy, buyerType, deliveryPreference, contactMethod, description,
-      referenceImageUrl, buyerName, phone
-    } = req.body;
+    const data = req.body;
     const buyerId = req.user?.uid;
 
     try {
-      const result = await db.query(
-        `INSERT INTO buyer_requests (
-          commodity, category, quantity, unit, price_range, location, urgency,
-          needed_by, buyer_type, delivery_preference, contact_method, description,
-          reference_image_url, buyer_id, buyer_name, phone
-        ) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12, $13, $14, $15, $16)
-        RETURNING *`,
-        [
-          commodity, category, quantity, unit, priceRange, location, urgency,
-          neededBy, buyerType, deliveryPreference, contactMethod, description,
-          referenceImageUrl, buyerId, buyerName, phone
-        ]
-      );
-      res.json(toCamelCase(result.rows[0]));
+      const requestData = {
+        ...data,
+        buyerId,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      
+      const docRef = await adminDb.collection('buyer_requests').add(requestData);
+      const newDoc = await docRef.get();
+      res.json(toCamelCase({ id: newDoc.id, ...newDoc.data() }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
   });
 
   app.put('/api/buyer-requests/:id', authMiddleware, async (req: AuthRequest, res) => {
-    const {
-      commodity, category, quantity, unit, priceRange, location, urgency,
-      neededBy, buyerType, deliveryPreference, contactMethod, description,
-      referenceImageUrl, buyerName, phone, status
-    } = req.body;
+    const updates = req.body;
     const buyerId = req.user?.uid;
 
     try {
-      // Check ownership
-      const check = await db.query('SELECT buyer_id FROM buyer_requests WHERE id = $1', [req.params.id]);
-      if (check.rows.length === 0) return res.status(404).json({ error: 'Request not found' });
-      if (check.rows[0].buyer_id !== buyerId) return res.status(403).json({ error: 'Unauthorized' });
+      const docRef = adminDb.collection('buyer_requests').doc(req.params.id);
+      const doc = await docRef.get();
+      
+      if (!doc.exists) return res.status(404).json({ error: 'Request not found' });
+      if (doc.data()?.buyerId !== buyerId) return res.status(403).json({ error: 'Unauthorized' });
 
-      const result = await db.query(
-        `UPDATE buyer_requests SET
-          commodity = $1, category = $2, quantity = $3, unit = $4, price_range = $5,
-          location = $6, urgency = $7, needed_by = $8, buyer_type = $9,
-          delivery_preference = $10, contact_method = $11, description = $12,
-          reference_image_url = $13, buyer_name = $14, phone = $15, status = $16,
-          updated_at = CURRENT_TIMESTAMP
-        WHERE id = $17 RETURNING *`,
-        [
-          commodity, category, quantity, unit, priceRange, location, urgency,
-          neededBy, buyerType, deliveryPreference, contactMethod, description,
-          referenceImageUrl, buyerName, phone, status || 'open', req.params.id
-        ]
-      );
-      res.json(toCamelCase(result.rows[0]));
+      await docRef.set({ ...updates, updatedAt: new Date().toISOString() }, { merge: true });
+      const updatedDoc = await docRef.get();
+      res.json(toCamelCase({ id: updatedDoc.id, ...updatedDoc.data() }));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -289,17 +270,21 @@ async function startServer() {
   // --- Saved Listings Routes ---
   app.get('/api/saved-listings', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      const result = await db.query(
-        `SELECT ml.* FROM market_listings ml
-         JOIN saved_listings sl ON ml.id = sl.listing_id
-         WHERE sl.user_id = $1`,
-        [req.user?.uid]
-      );
-      const rows = result.rows.map(row => {
-        const { specs, ...rest } = row;
-        return toCamelCase({ ...rest, ...specs });
-      });
-      res.json(rows);
+      const uid = req.user?.uid;
+      const savedSnapshot = await adminDb.collection('users').doc(uid!).collection('saved_listings').get();
+      const listingIds = savedSnapshot.docs.map(doc => doc.data().listingId);
+      
+      if (listingIds.length === 0) return res.json([]);
+
+      const listingsSnapshot = await adminDb.collection('market_listings')
+        .where('__name__', 'in', listingIds)
+        .get();
+      
+      const listings = listingsSnapshot.docs.map(doc => ({
+        id: doc.id,
+        ...doc.data()
+      }));
+      res.json(toCamelCase(listings));
     } catch (error: any) {
       res.status(500).json({ error: error.message });
     }
@@ -307,10 +292,11 @@ async function startServer() {
 
   app.post('/api/saved-listings/:id', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      await db.query(
-        'INSERT INTO saved_listings (user_id, listing_id) VALUES ($1, $2) ON CONFLICT DO NOTHING',
-        [req.user?.uid, req.params.id]
-      );
+      const uid = req.user?.uid;
+      await adminDb.collection('users').doc(uid!).collection('saved_listings').doc(req.params.id).set({
+        listingId: req.params.id,
+        savedAt: new Date().toISOString()
+      });
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -319,10 +305,8 @@ async function startServer() {
 
   app.delete('/api/saved-listings/:id', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      await db.query(
-        'DELETE FROM saved_listings WHERE user_id = $1 AND listing_id = $2',
-        [req.user?.uid, req.params.id]
-      );
+      const uid = req.user?.uid;
+      await adminDb.collection('users').doc(uid!).collection('saved_listings').doc(req.params.id).delete();
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -331,10 +315,11 @@ async function startServer() {
 
   app.post('/api/market-listings/:id/increment-views', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      await db.query(
-        'UPDATE market_listings SET views_count = views_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-        [req.params.id]
-      );
+      const docRef = adminDb.collection('market_listings').doc(req.params.id);
+      await docRef.update({
+        viewsCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: new Date().toISOString()
+      });
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -343,10 +328,11 @@ async function startServer() {
 
   app.post('/api/market-listings/:id/increment-shares', authMiddleware, async (req: AuthRequest, res) => {
     try {
-      await db.query(
-        'UPDATE market_listings SET shares_count = shares_count + 1, updated_at = CURRENT_TIMESTAMP WHERE id = $1',
-        [req.params.id]
-      );
+      const docRef = adminDb.collection('market_listings').doc(req.params.id);
+      await docRef.update({
+        sharesCount: admin.firestore.FieldValue.increment(1),
+        updatedAt: new Date().toISOString()
+      });
       res.json({ success: true });
     } catch (error: any) {
       res.status(500).json({ error: error.message });
@@ -358,26 +344,21 @@ async function startServer() {
     try {
       const uid = req.user.uid;
       
-      const listingsResult = await db.query(
-        'SELECT status, available_quantity, quantity FROM market_listings WHERE seller_id = $1',
-        [uid]
-      );
+      const listingsSnapshot = await adminDb.collection('market_listings')
+        .where('sellerId', '==', uid)
+        .get();
       
-      const requestsResult = await db.query(
-        'SELECT status FROM buyer_requests WHERE buyer_id = $1',
-        [uid]
-      );
+      const requestsSnapshot = await adminDb.collection('buyer_requests')
+        .where('buyerId', '==', uid)
+        .get();
       
-      const savedResult = await db.query(
-        'SELECT COUNT(*) FROM saved_listings WHERE user_id = $1',
-        [uid]
-      );
+      const savedSnapshot = await adminDb.collection('users').doc(uid).collection('saved_listings').get();
 
-      const listings = listingsResult.rows;
-      const requests = requestsResult.rows;
+      const listings = listingsSnapshot.docs.map(d => d.data());
+      const requests = requestsSnapshot.docs.map(d => d.data());
 
       const stats = {
-        savedCount: parseInt(savedResult.rows[0].count),
+        savedCount: savedSnapshot.size,
         totalRequests: requests.length,
         openRequests: requests.filter(r => r.status === 'open').length,
         matchedRequests: requests.filter(r => r.status === 'matched').length,
@@ -387,7 +368,7 @@ async function startServer() {
         soldListings: listings.filter(l => l.status === 'sold').length,
         hiddenListings: listings.filter(l => l.status === 'hidden').length,
         lowStockListings: listings.filter(l => {
-          const available = l.available_quantity ?? l.quantity ?? 0;
+          const available = l.availableQuantity ?? l.quantity ?? 0;
           const total = l.quantity ?? 0;
           return available > 0 && total > 0 && available <= total * 0.2;
         }).length,
@@ -442,8 +423,11 @@ async function startServer() {
     try {
       const uid = req.user.uid;
 
-      // Delete from PostgreSQL
-      await db.query('DELETE FROM users WHERE uid = $1', [uid]);
+      // Delete from Firestore
+      await adminDb.collection('users').doc(uid).delete();
+      
+      // Note: In a real app, you might want to delete their listings too, 
+      // but for now we just delete the user profile.
 
       // Then delete auth user
       await adminAuth.deleteUser(uid);

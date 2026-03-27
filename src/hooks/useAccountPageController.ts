@@ -654,7 +654,7 @@ export const useAccountPageController = ({
     }
   };
 
-  const canSell = user?.roles.some(r => ['seller', 'business', 'cooperative', 'ngo'].includes(r)) || false;
+  const canSell = user?.roles?.some(r => ['seller', 'business', 'cooperative', 'ngo'].includes(r)) || false;
 
   const openEditPersonal = () => {
     setAccountView('editPersonal');

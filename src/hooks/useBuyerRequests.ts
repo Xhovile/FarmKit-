@@ -16,15 +16,11 @@ export const useBuyerRequests = (user: User | null) => {
     const fetchRequests = async () => {
       try {
         const data = await api.get('/api/buyer-requests');
-        const items = (data as any[]).map(item => ({
-          ...item,
-          createdAt: item.created_at ? { seconds: Math.floor(new Date(item.created_at).getTime() / 1000) } : null,
-          updatedAt: item.updated_at ? { seconds: Math.floor(new Date(item.updated_at).getTime() / 1000) } : null,
-        })) as BuyerRequest[];
+        const items = data as BuyerRequest[];
 
         items.sort((a, b) => {
-          const dateA = a.createdAt?.seconds || 0;
-          const dateB = b.createdAt?.seconds || 0;
+          const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
+          const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
 
