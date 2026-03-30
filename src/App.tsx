@@ -15,7 +15,7 @@ import { auth } from './lib/firebase';
 import { onAuthStateChanged } from 'firebase/auth';
 import { Toaster } from 'react-hot-toast';
 import { api } from './lib/api';
-import { BuyerRequest, MarketListing, StockStatus, User } from './types';
+import { MarketDemand, MarketListing, StockStatus, User } from './types';
 import toast from 'react-hot-toast';
 
 // New Imports
@@ -92,16 +92,16 @@ type ListingFormData = {
 };
 
 const normalizeRoles = (roles: unknown): import('./types').UserRole[] => {
-  const validRoles = new Set(['buyer', 'seller', 'business', 'cooperative', 'ngo']);
+  const validRoles = new Set(['seller', 'business', 'cooperative', 'ngo']);
 
-  if (!Array.isArray(roles)) return ['buyer'];
+  if (!Array.isArray(roles)) return [];
 
   const cleaned = roles.filter(
     (role): role is import('./types').UserRole =>
       typeof role === 'string' && validRoles.has(role)
   );
 
-  return cleaned.length > 0 ? cleaned : ['buyer'];
+  return cleaned;
 };
 
 const deriveStatus = (data: any): import('./types').AccountStatus => {
@@ -114,9 +114,8 @@ const deriveStatus = (data: any): import('./types').AccountStatus => {
   return 'basic';
 };
 
-const derivePrimaryRole = (data: any, roles: import('./types').UserRole[]): import('./types').UserRole => {
+const derivePrimaryRole = (data: any, roles: import('./types').UserRole[]): import('./types').UserRole | undefined => {
   if (
-    data?.primaryRole === 'buyer' ||
     data?.primaryRole === 'seller' ||
     data?.primaryRole === 'business' ||
     data?.primaryRole === 'cooperative' ||
@@ -130,7 +129,7 @@ const derivePrimaryRole = (data: any, roles: import('./types').UserRole[]): impo
   if (roles.includes('cooperative')) return 'cooperative';
   if (roles.includes('ngo')) return 'ngo';
 
-  return 'buyer';
+  return undefined;
 };
 
 const normalizeUserData = (firebaseUser: any, data: any) => {
@@ -221,8 +220,8 @@ export default function App() {
                 location: '',
                 bio: '',
                 avatar: firebaseUser.photoURL || '',
-                primaryRole: 'buyer',
-                roles: ['buyer'],
+                primaryRole: undefined,
+                roles: [],
                 status: 'basic',
                 sellerProfile: null,
                 organizationProfile: null,
@@ -676,32 +675,32 @@ export default function App() {
     }
   };
 
-  const handleUpdateBuyerRequestStatus = async (
-    request: BuyerRequest,
+  const handleUpdateMarketDemandStatus = async (
+    request: MarketDemand,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => {
     if (!request.id) return;
 
-    if (user?.uid !== request.buyerId) {
-      toast.error('Only the request owner can change its status.');
+    if (user?.uid !== request.userId) {
+      toast.error('Only the demand owner can change its status.');
       return;
     }
 
     try {
-      await api.put(`/api/buyer-requests/${request.id}`, {
+      await api.put(`/api/market-demands/${request.id}`, {
         status: nextStatus,
       });
 
       toast.success(
         nextStatus === 'matched'
-          ? 'Request marked as matched.'
+          ? 'Demand marked as matched.'
           : nextStatus === 'closed'
-          ? 'Request closed.'
-          : 'Request reopened.'
+          ? 'Demand closed.'
+          : 'Demand reopened.'
       );
     } catch (error) {
-      console.error('Error updating request status:', error);
-      toast.error('Failed to update request status.');
+      console.error('Error updating demand status:', error);
+      toast.error('Failed to update demand status.');
     } 
   };
 
@@ -750,12 +749,12 @@ export default function App() {
                 marketListings={marketListings}
                 setActiveTab={() => {}}
                 setEditingListing={(item) => navigate('/add-product', { state: { editingListing: item } })}
-                setEditingRequest={(item) => navigate('/add-product', { state: { editingRequest: item } })}
+                setEditingDemand={(item) => navigate('/add-product', { state: { editingDemand: item } })}
                 incrementListingViews={incrementListingViews}
                 incrementListingShares={incrementListingShares}
                 toggleSavedListing={toggleSavedListing}
                 savedListingIds={savedListingIds}
-                onUpdateBuyerRequestStatus={handleUpdateBuyerRequestStatus}
+                onUpdateMarketDemandStatus={handleUpdateMarketDemandStatus}
               />
             } />
 
@@ -781,7 +780,7 @@ export default function App() {
                 setUser={setUser} 
                 setShowTour={() => navigate('/welcome')} 
                 setActiveTab={() => {}}
-                onUpdateBuyerRequestStatus={handleUpdateBuyerRequestStatus}
+                onUpdateMarketDemandStatus={handleUpdateMarketDemandStatus}
               />
             } />
 

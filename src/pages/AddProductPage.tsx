@@ -1,7 +1,7 @@
 import React, { useEffect } from 'react';
 import { motion } from 'motion/react';
-import { AddListingForm, AddRequestForm } from '../components/MarketplaceForms';
-import { MarketListing, BuyerRequest, User } from '../types';
+import { AddListingForm, AddDemandForm } from '../components/MarketplaceForms';
+import { MarketListing, MarketDemand, User } from '../types';
 import { toast } from 'react-hot-toast';
 import { api } from '../lib/api';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -33,13 +33,13 @@ const AddProductPage: React.FC<AddProductPageProps> = ({
   const [formStep, setFormStep] = React.useState(1);
   const state = location.state as { 
     editingListing?: MarketListing; 
-    editingRequest?: BuyerRequest;
-    isRequest?: boolean;
+    editingDemand?: MarketDemand;
+    isDemand?: boolean;
   } | null;
 
   const editingListing = state?.editingListing || null;
-  const editingRequest = state?.editingRequest || null;
-  const isRequest = state?.isRequest || !!editingRequest;
+  const editingDemand = state?.editingDemand || null;
+  const isDemand = state?.isDemand || !!editingDemand;
 
   useEffect(() => {
     if (!user) {
@@ -76,26 +76,26 @@ const AddProductPage: React.FC<AddProductPageProps> = ({
           className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden"
         >
           <div className="p-8 md:p-10">
-            {isRequest ? (
-              <AddRequestForm 
+            {isDemand ? (
+              <AddDemandForm 
                 t={t} 
                 user={user} 
                 step={formStep} 
                 setStep={setFormStep} 
-                initialData={editingRequest}
-                isEditMode={!!editingRequest}
+                initialData={editingDemand}
+                isEditMode={!!editingDemand}
                 onClose={handleClose} 
                 onSubmit={async (data) => {
                   setLoading(true);
                   try {
                     let referenceImageUrl =
-                      data.removeExistingImage ? null : (editingRequest?.referenceImageUrl || null);
+                      data.removeExistingImage ? null : (editingDemand?.referenceImageUrl || null);
 
                     if (data.imageFile) {
                       referenceImageUrl = await uploadImageToCloudinary(data.imageFile);
                     }
 
-                    const requestData = {
+                    const demandData = {
                       commodity: data.commodity,
                       category: data.category || 'other',
                       quantity: Number(data.quantity),
@@ -104,26 +104,26 @@ const AddProductPage: React.FC<AddProductPageProps> = ({
                       location: data.location,
                       neededBy: data.neededBy || '',
                       urgency: data.urgency || 'normal',
-                      buyerType: data.buyerType || 'individual',
+                      requesterType: data.requesterType || 'individual',
                       deliveryPreference: data.deliveryPreference || 'pickup',
                       contactMethod: data.contactMethod || 'whatsapp',
                       description: data.description || '',
                       referenceImageUrl: referenceImageUrl,
-                      buyerName: user.name,
+                      userName: user.name,
                       phone: data.phone || user.phone,
                     };
 
-                    if (editingRequest?.id) {
-                      await api.put(`/api/buyer-requests/${editingRequest.id}`, requestData);
-                      toast.success('Request updated successfully!');
+                    if (editingDemand?.id) {
+                      await api.put(`/api/market-demands/${editingDemand.id}`, demandData);
+                      toast.success('Demand updated successfully!');
                     } else {
-                      await api.post('/api/buyer-requests', requestData);
-                      toast.success(t('market.requestPosted') || 'Request posted successfully!');
+                      await api.post('/api/market-demands', demandData);
+                      toast.success(t('market.demandPosted') || 'Demand posted successfully!');
                     }
 
                     handleClose();
                   } catch (error: any) {
-                    console.error('Error saving request:', error);
+                    console.error('Error saving demand:', error);
                     toast.error(error.message || t('common.error') || 'An error occurred');
                   } finally {
                     setLoading(false);

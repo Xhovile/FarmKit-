@@ -25,7 +25,7 @@ import {
   malawiRegions, 
   malawiDistrictsByRegion 
 } from '../data/constants';
-import { StockStatus, BuyerType, User } from '../types';
+import { StockStatus, RequesterType, User } from '../types';
 
 const computeStockStatus = (
   availableQuantity: number,
@@ -859,7 +859,7 @@ export const AddListingForm: React.FC<AddListingFormProps> = ({
   );
 };
 
-export const AddRequestForm: React.FC<FormProps & { 
+export const AddDemandForm: React.FC<FormProps & { 
   step: number; 
   setStep: (s: number) => void;
   initialData?: any;
@@ -890,7 +890,7 @@ export const AddRequestForm: React.FC<FormProps & {
     neededBy: initialData?.neededBy || '',
     urgency: initialData?.urgency || 'normal' as 'normal' | 'urgent',
 
-    buyerType: initialData?.buyerType || 'individual' as BuyerType,
+    requesterType: initialData?.requesterType || 'individual' as RequesterType,
     deliveryPreference: initialData?.deliveryPreference || 'pickup' as 'pickup' | 'seller_delivery' | 'third_party',
     contactMethod: initialData?.contactMethod || 'whatsapp' as 'whatsapp' | 'phone',
     phone: initialData?.phone || user?.phone || '',
@@ -918,7 +918,7 @@ export const AddRequestForm: React.FC<FormProps & {
       locationData: initialData.locationData,
       neededBy: initialData.neededBy,
       urgency: initialData.urgency,
-      buyerType: initialData.buyerType,
+      requesterType: initialData.requesterType,
       deliveryPreference: initialData.deliveryPreference,
       contactMethod: initialData.contactMethod,
       phone: initialData.phone,
@@ -946,7 +946,7 @@ export const AddRequestForm: React.FC<FormProps & {
       location: initialData.location || user?.location || '',
       neededBy: initialData.neededBy || '',
       urgency: initialData.urgency || 'normal',
-      buyerType: initialData.buyerType || 'individual',
+      requesterType: initialData.requesterType || 'individual',
       deliveryPreference: initialData.deliveryPreference || 'pickup',
       contactMethod: initialData.contactMethod || 'whatsapp',
       phone: initialData.phone || user?.phone || '',
@@ -970,14 +970,14 @@ export const AddRequestForm: React.FC<FormProps & {
   const [isUnitOpen, setIsUnitOpen] = useState(false);
   const [isRegionOpen, setIsRegionOpen] = useState(false);
   const [isDistrictOpen, setIsDistrictOpen] = useState(false);
-  const [isBuyerTypeOpen, setIsBuyerTypeOpen] = useState(false);
+  const [isRequesterTypeOpen, setIsRequesterTypeOpen] = useState(false);
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
 
   const categoryDropdownRef = useRef<HTMLDivElement | null>(null);
   const unitDropdownRef = useRef<HTMLDivElement | null>(null);
   const regionDropdownRef = useRef<HTMLDivElement | null>(null);
   const districtDropdownRef = useRef<HTMLDivElement | null>(null);
-  const buyerTypeDropdownRef = useRef<HTMLDivElement | null>(null);
+  const requesterTypeDropdownRef = useRef<HTMLDivElement | null>(null);
   const deliveryDropdownRef = useRef<HTMLDivElement | null>(null);
   const imageInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -1001,8 +1001,8 @@ export const AddRequestForm: React.FC<FormProps & {
         setIsDistrictOpen(false);
       }
 
-      if (buyerTypeDropdownRef.current && !buyerTypeDropdownRef.current.contains(target)) {
-        setIsBuyerTypeOpen(false);
+      if (requesterTypeDropdownRef.current && !requesterTypeDropdownRef.current.contains(target)) {
+        setIsRequesterTypeOpen(false);
       }
 
       if (deliveryDropdownRef.current && !deliveryDropdownRef.current.contains(target)) {
@@ -1041,7 +1041,7 @@ export const AddRequestForm: React.FC<FormProps & {
     setIsUnitOpen(false);
     setIsRegionOpen(false);
     setIsDistrictOpen(false);
-    setIsBuyerTypeOpen(false);
+    setIsRequesterTypeOpen(false);
     setIsDeliveryOpen(false);
     setStep(step + 1);
   };
@@ -1068,7 +1068,7 @@ export const AddRequestForm: React.FC<FormProps & {
       <div className="flex justify-between items-center mb-8">
         <div>
           <h2 className="text-2xl font-black text-gray-900 dark:text-white">
-            {isEditMode ? 'Edit Request' : t('forms.postRequest')}
+            {isEditMode ? 'Edit Demand' : t('forms.postDemand')}
           </h2>
           <p className="text-sm text-gray-500">{t('common.step')} {step - 9} {t('common.of')} 3</p>
         </div>
@@ -1082,7 +1082,7 @@ export const AddRequestForm: React.FC<FormProps & {
           <div className="p-4 bg-indigo-50 dark:bg-indigo-900/20 rounded-2xl border border-indigo-100 dark:border-indigo-800 flex items-start gap-3 mb-6">
             <AlertCircle className="w-5 h-5 text-indigo-600 shrink-0 mt-0.5" />
             <p className="text-xs text-indigo-700 dark:text-indigo-400 leading-relaxed">
-              {t('forms.buyerRequestTip')}
+              {t('forms.marketDemandTip')}
             </p>
           </div>
 
@@ -1387,35 +1387,35 @@ export const AddRequestForm: React.FC<FormProps & {
       {step === 12 && (
         <div className="space-y-4 animate-in fade-in slide-in-from-right-4">
           <div className="grid grid-cols-2 gap-4">
-            <div className="relative" ref={buyerTypeDropdownRef}>
+            <div className="relative" ref={requesterTypeDropdownRef}>
               <label className="block text-xs font-black text-gray-400 uppercase tracking-widest mb-2">
-                Buyer Type
+                Requester Type
               </label>
 
               <button
                 type="button"
-                onClick={() => setIsBuyerTypeOpen((prev) => !prev)}
+                onClick={() => setIsRequesterTypeOpen((prev) => !prev)}
                 className="w-full px-5 py-4 bg-gray-50 dark:bg-gray-700 rounded-2xl text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
               >
                 <span className="text-gray-900 dark:text-white">
-                  {formData.buyerType.charAt(0).toUpperCase() + formData.buyerType.slice(1)}
+                  {formData.requesterType.charAt(0).toUpperCase() + formData.requesterType.slice(1)}
                 </span>
                 <ChevronsUpDown className="w-5 h-5 text-gray-400" />
               </button>
 
-              {isBuyerTypeOpen && (
+              {isRequesterTypeOpen && (
                 <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
                   <div className="p-2">
-                    {(['farmer', 'trader', 'processor', 'business', 'individual'] as BuyerType[]).map((type) => {
-                      const selected = formData.buyerType === type;
+                    {(['farmer', 'trader', 'processor', 'business', 'individual'] as RequesterType[]).map((type) => {
+                      const selected = formData.requesterType === type;
 
                       return (
                         <button
                           key={type}
                           type="button"
                           onClick={() => {
-                            setFormData({ ...formData, buyerType: type });
-                            setIsBuyerTypeOpen(false);
+                            setFormData({ ...formData, requesterType: type });
+                            setIsRequesterTypeOpen(false);
                           }}
                           className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
                             selected

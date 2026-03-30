@@ -1,52 +1,52 @@
-import React, { useMemo, useState } from 'react';
-import { BuyerRequest, User } from '../../types';
-import { useBuyerRequests } from '../../hooks/useBuyerRequests';
-import BuyerRequestManageCard from './BuyerRequestManageCard';
+import React, { useState, useMemo } from 'react';
+import { MarketDemand, User } from '../../types';
+import { useMarketDemands } from '../../hooks/useMarketDemands';
+import MarketDemandManageCard from './MarketDemandManageCard';
 import { ClipboardList, PlusCircle } from 'lucide-react';
 
 import { useNavigate } from 'react-router-dom';
 
-interface MyBuyerRequestsSectionProps {
+interface MyMarketDemandsSectionProps {
   user: User;
   t: (key: string) => string;
   setActiveTab: (tab: 'info' | 'market' | 'experts' | 'account') => void;
-  onUpdateBuyerRequestStatus: (
-    request: BuyerRequest,
+  onUpdateMarketDemandStatus: (
+    demand: MarketDemand,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => Promise<void> | void;
 }
 
-const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
+const MyMarketDemandsSection: React.FC<MyMarketDemandsSectionProps> = ({
   user,
   t,
   setActiveTab,
-  onUpdateBuyerRequestStatus,
+  onUpdateMarketDemandStatus,
 }) => {
   const navigate = useNavigate();
-  const { requests, loading } = useBuyerRequests(user);
+  const { demands, loading } = useMarketDemands(user);
   const [tab, setTab] = useState<'open' | 'matched' | 'closed'>('open');
 
-  const filteredRequests = useMemo(() => {
-    return requests.filter((item) => item.status === tab);
-  }, [requests, tab]);
+  const filteredDemands = useMemo(() => {
+    return demands.filter((item) => item.status === tab);
+  }, [demands, tab]);
 
-  const handleOpenDetails = (request: BuyerRequest) => {
-    navigate(`/item-detail/${request.id}`, { state: { item: request, type: 'buyer_request', from: 'account' } });
+  const handleOpenDetails = (demand: MarketDemand) => {
+    navigate(`/item-detail/${demand.id}`, { state: { item: demand, type: 'market_demand', from: 'account' } });
   };
 
-  const handleEdit = (request: BuyerRequest) => {
-    navigate('/add-product', { state: { editingRequest: request, isRequest: true, from: 'account' } });
+  const handleEdit = (demand: MarketDemand) => {
+    navigate('/add-product', { state: { editingDemand: demand, isDemand: true, from: 'account' } });
   };
 
-  const handleToggleStatus = async (request: BuyerRequest) => {
-    const nextStatus = request.status === 'closed' ? 'open' : 'closed';
-    await onUpdateBuyerRequestStatus(request, nextStatus);
+  const handleToggleStatus = async (demand: MarketDemand) => {
+    const nextStatus = demand.status === 'closed' ? 'open' : 'closed';
+    await onUpdateMarketDemandStatus(demand, nextStatus);
   };
 
   const counts = {
-    open: requests.filter((item) => item.status === 'open').length,
-    matched: requests.filter((item) => item.status === 'matched').length,
-    closed: requests.filter((item) => item.status === 'closed').length,
+    open: demands.filter((item) => item.status === 'open').length,
+    matched: demands.filter((item) => item.status === 'matched').length,
+    closed: demands.filter((item) => item.status === 'closed').length,
   };
 
   return (
@@ -55,21 +55,21 @@ const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
         <div>
           <h3 className="text-2xl font-black flex items-center gap-2">
             <ClipboardList className="w-6 h-6 text-indigo-600" />
-            {t('account.myBuyerRequests')}
+            {t('account.myMarketDemands')}
           </h3>
           <p className="text-sm text-gray-500 mt-1">
-            {t('account.manageRequestsDesc')}
+            {t('account.manageDemandsDesc')}
           </p>
         </div>
 
         <button
           onClick={() => {
-            navigate('/add-product', { state: { isRequest: true, from: 'account' } });
+            navigate('/add-product', { state: { isDemand: true, from: 'account' } });
           }}
           className="inline-flex items-center gap-2 px-5 py-3 rounded-2xl bg-indigo-600 text-white font-bold hover:bg-indigo-700"
         >
           <PlusCircle className="w-5 h-5" />
-          {t('account.postRequest')}
+          {t('account.postDemand')}
         </button>
       </div>
 
@@ -110,25 +110,25 @@ const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
 
       {loading ? (
         <div className="rounded-2xl bg-gray-50 dark:bg-gray-700/30 p-6 text-sm text-gray-500">
-          {t('account.loadingRequests')}
+          {t('account.loadingDemands')}
         </div>
-      ) : filteredRequests.length === 0 ? (
+      ) : filteredDemands.length === 0 ? (
         <div className="rounded-2xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">
           <h4 className="text-lg font-bold mb-2">
-            {t('account.noRequestsTitle').replace('{status}', t(`account.${tab}`))}
+            {t('account.noDemandsTitle').replace('{status}', t(`account.${tab}`))}
           </h4>
           <p className="text-sm text-gray-500">
-            {tab === 'open' && t('account.noOpenRequests')}
-            {tab === 'matched' && t('account.noMatchedRequests')}
-            {tab === 'closed' && t('account.noClosedRequests')}
+            {tab === 'open' && t('account.noOpenDemands')}
+            {tab === 'matched' && t('account.noMatchedDemands')}
+            {tab === 'closed' && t('account.noClosedDemands')}
           </p>
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          {filteredRequests.map((request) => (
-            <BuyerRequestManageCard
-              key={request.id}
-              request={request}
+          {filteredDemands.map((demand) => (
+            <MarketDemandManageCard
+              key={demand.id}
+              demand={demand}
               onOpenDetails={handleOpenDetails}
               onEdit={handleEdit}
               onToggleStatus={handleToggleStatus}
@@ -140,4 +140,4 @@ const MyBuyerRequestsSection: React.FC<MyBuyerRequestsSectionProps> = ({
   );
 };
 
-export default MyBuyerRequestsSection;
+export default MyMarketDemandsSection;

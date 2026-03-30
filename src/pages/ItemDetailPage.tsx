@@ -20,7 +20,7 @@ import {
   AlertTriangle
 } from 'lucide-react';
 import { useNavigate, useParams, useLocation } from 'react-router-dom';
-import { MarketListing, BuyerRequest, User } from '../types';
+import { MarketListing, MarketDemand, User } from '../types';
 
 interface ItemDetailPageProps {
   t: (key: string) => string;
@@ -133,19 +133,19 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
     if (location.state?.type) return location.state.type;
     // Fallback: infer from properties
     if (selectedItem?.price !== undefined) return 'listing';
-    if (selectedItem?.commodity !== undefined) return 'request';
+    if (selectedItem?.commodity !== undefined) return 'demand';
     return 'listing';
   }, [location.state, selectedItem]);
 
   const isMarketListing = itemType === 'listing' || itemType === 'market_listing';
-  const isBuyerRequest = itemType === 'request' || itemType === 'buyer_request' || itemType === 'buyer-request';
+  const isMarketDemand = itemType === 'demand' || itemType === 'market_demand' || itemType === 'market-demand' || itemType === 'request' || itemType === 'buyer_request' || itemType === 'buyer-request';
 
   const specs = useMemo(() => {
     if (!selectedItem) return [];
     if (isMarketListing) return renderMarketSpecs(selectedItem);
-    if (isBuyerRequest) {
+    if (isMarketDemand) {
       return [
-        ['Buyer Type', selectedItem.buyerType?.replace(/_/g, ' ') || 'Individual'],
+        ['Requester Type', selectedItem.requesterType?.replace(/_/g, ' ') || 'Individual'],
         ['Urgency', selectedItem.urgency || 'Normal'],
         ['Delivery Preference', selectedItem.deliveryPreference?.replace(/_/g, ' ') || 'Not specified'],
         ['Contact Method', selectedItem.contactMethod || 'WhatsApp'],
@@ -155,14 +155,14 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
       ];
     }
     return [];
-  }, [selectedItem, isMarketListing, isBuyerRequest]);
+  }, [selectedItem, isMarketListing, isMarketDemand]);
 
   const saved = selectedItem?.id ? savedListingIds.includes(selectedItem.id) : false;
 
   const galleryImages = useMemo(() => {
     if (!selectedItem) return [];
     if (selectedItem.imageUrls && selectedItem.imageUrls.length > 0) return selectedItem.imageUrls;
-    const single = selectedItem.image || selectedItem.imageUrl || selectedItem.icon;
+    const single = selectedItem.image || selectedItem.imageUrl || selectedItem.icon || selectedItem.referenceImageUrl;
     return single ? [single] : [];
   }, [selectedItem]);
 
@@ -173,9 +173,9 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
   const shareText = useMemo(() => {
     if (!selectedItem) return '';
     if (isMarketListing) return `Check out this listing on FarmKit: ${selectedItem.title} - MK ${selectedItem.price?.toLocaleString()} / ${selectedItem.unit}`;
-    if (isBuyerRequest) return `Buyer request on FarmKit: ${selectedItem.commodity} - ${selectedItem.quantity} ${selectedItem.unit} needed${selectedItem.priceRange ? ` (${selectedItem.priceRange})` : ''}`;
+    if (isMarketDemand) return `Market demand on FarmKit: ${selectedItem.commodity} - ${selectedItem.quantity} ${selectedItem.unit} needed${selectedItem.priceRange ? ` (${selectedItem.priceRange})` : ''}`;
     return `${selectedItem.title || selectedItem.name || selectedItem.commodity || 'FarmKit item'}`;
-  }, [isMarketListing, isBuyerRequest, selectedItem]);
+  }, [isMarketListing, isMarketDemand, selectedItem]);
 
   const createdDateLabel = useMemo(() => {
     if (!selectedItem?.createdAt) return 'Recently added';
@@ -208,13 +208,13 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
     );
   }
 
-  const isOwner = user?.uid === selectedItem?.uid;
+  const isOwner = user?.uid === (selectedItem?.uid || selectedItem?.userId || selectedItem?.sellerId);
 
   const handleEdit = () => {
     if (isMarketListing) {
       navigate('/add-product', { state: { editingListing: selectedItem, from: 'market' } });
     } else {
-      navigate('/add-product', { state: { editingRequest: selectedItem, isRequest: true, from: 'market' } });
+      navigate('/add-product', { state: { editingDemand: selectedItem, isRequest: true, from: 'market' } });
     }
   };
 
@@ -230,7 +230,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
     try {
       if (navigator.share) {
         await navigator.share({
-          title: isMarketListing ? selectedItem.title : isBuyerRequest ? selectedItem.commodity : (selectedItem.title || selectedItem.name || 'FarmKit'),
+          title: isMarketListing ? selectedItem.title : isMarketDemand ? selectedItem.commodity : (selectedItem.title || selectedItem.name || 'FarmKit'),
           text: shareText,
         });
       } else {
@@ -259,7 +259,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
         {galleryImages.length > 0 ? (
           <img
             src={galleryImages[activeImage] || galleryImages[0]}
-            alt={selectedItem.title || selectedItem.name}
+            alt={selectedItem.title || selectedItem.name || selectedItem.commodity}
             className="w-full h-full object-cover"
           />
         ) : (
@@ -417,7 +417,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
                       : MK {selectedItem.price?.toLocaleString()} / {selectedItem.unit}
                     </span>
                   )}
-                  {isBuyerRequest && (
+                  {isMarketDemand && (
                     <span className="text-gray-600 dark:text-gray-300 font-medium">
                       : {selectedItem.priceRange}
                     </span>
@@ -439,9 +439,9 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
               <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-sm">
                 <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500 mb-1.5 font-semibold">
                   <Building2 className="w-4 h-4" />
-                  {isMarketListing ? 'Seller' : 'Buyer'}
+                  {isMarketListing ? 'Seller' : 'Requester'}
                 </div>
-                <p className="font-semibold leading-snug">{selectedItem.businessName || selectedItem.buyerName}</p>
+                <p className="font-semibold leading-snug">{selectedItem.businessName || selectedItem.userName}</p>
               </div>
 
               <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-sm">
@@ -502,14 +502,14 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
               <a
                 href={isMarketListing 
                   ? `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.sellerName}, I am interested in your ${selectedItem.title} on FarmKit.`
-                  : `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.buyerName}, I saw your request for ${selectedItem.commodity} on FarmKit.`
+                  : `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.userName}, I saw your request for ${selectedItem.commodity} on FarmKit.`
                 }
                 target="_blank"
                 rel="noopener noreferrer"
                 className="py-4 bg-black text-white dark:bg-white dark:text-black rounded-2xl font-medium transition-all flex items-center justify-center gap-2 shadow-sm hover:opacity-90"
               >
                 <MessageCircle className="w-5 h-5" />
-                {isMarketListing ? 'Contact Seller' : 'Contact Buyer'}
+                {isMarketListing ? 'Contact Seller' : 'Contact Requester'}
               </a>
             </div>
           </div>
@@ -556,7 +556,7 @@ const ItemDetailPage: React.FC<ItemDetailPageProps> = ({
             <div className="max-w-[95vw] max-h-[90vh] w-full h-full flex items-center justify-center" onClick={(e) => e.stopPropagation()}>
               <img
                 src={galleryImages[activeImage] || galleryImages[0]}
-                alt={selectedItem.title || selectedItem.name}
+                alt={selectedItem.title || selectedItem.name || selectedItem.commodity}
                 className="max-w-full max-h-full object-contain rounded-2xl"
               />
             </div>

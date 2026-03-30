@@ -20,7 +20,7 @@ import {
   Filter
 } from 'lucide-react';
 import { motion } from 'motion/react';
-import { MarketListing, BuyerRequest } from '../types';
+import { MarketListing, MarketDemand } from '../types';
 import { marketCategories, malawiRegions } from '../data/constants';
 import toast from 'react-hot-toast';
 
@@ -543,41 +543,41 @@ export const ListingCard: React.FC<{
   );
 };
 
-export const BuyerRequestCard: React.FC<{
-  request: BuyerRequest;
+export const MarketDemandCard: React.FC<{
+  demand: MarketDemand;
   t: any;
   currentUserId?: string;
-  onOpenDetails?: (request: BuyerRequest) => void;
+  onOpenDetails?: (demand: MarketDemand) => void;
   onUpdateStatus?: (
-    request: BuyerRequest,
+    demand: MarketDemand,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => void;
-  onUpdateFoundQuantity?: (request: BuyerRequest) => void;
-  onEditRequest?: (request: BuyerRequest) => void;
+  onUpdateFoundQuantity?: (demand: MarketDemand) => void;
+  onEditDemand?: (demand: MarketDemand) => void;
 }> = ({
-  request,
+  demand,
   t,
   currentUserId,
   onOpenDetails,
   onUpdateStatus,
   onUpdateFoundQuantity,
-  onEditRequest,
+  onEditDemand,
 }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement | null>(null);
   const menuButtonRef = useRef<HTMLButtonElement | null>(null);
   const [menuPosition, setMenuPosition] = useState({ top: 0, left: 0, width: 224 });
 
-  const isOwner = currentUserId === request.buyerId;
+  const isOwner = currentUserId === demand.userId;
 
-  const urgencyLabel = request.urgency === 'urgent' ? 'Urgent' : 'Open request';
-  const deliveryLabel = request.deliveryPreference?.replace(/_/g, ' ') || 'Not specified';
-  const buyerTypeLabel = request.buyerType
-    ? request.buyerType.charAt(0).toUpperCase() + request.buyerType.slice(1)
-    : 'Buyer';
+  const urgencyLabel = demand.urgency === 'urgent' ? 'Urgent' : 'Open demand';
+  const deliveryLabel = demand.deliveryPreference?.replace(/_/g, ' ') || 'Not specified';
+  const requesterTypeLabel = demand.requesterType
+    ? demand.requesterType.charAt(0).toUpperCase() + demand.requesterType.slice(1)
+    : 'Requester';
 
-  const found = request.quantityFound ?? 0;
-  const remaining = Math.max((request.quantity ?? 0) - found, 0);
+  const found = demand.quantityFound ?? 0;
+  const remaining = Math.max((demand.quantity ?? 0) - found, 0);
 
   const updateMenuPosition = () => {
     if (!menuButtonRef.current) return;
@@ -643,14 +643,14 @@ export const BuyerRequestCard: React.FC<{
   return (
     <motion.div
       whileHover={{ y: -4 }}
-      onClick={() => onOpenDetails?.(request)}
+      onClick={() => onOpenDetails?.(demand)}
       className="group bg-white dark:bg-gray-900 rounded-[32px] border border-gray-200 dark:border-gray-800 overflow-hidden shadow-[0_12px_36px_rgba(0,0,0,0.10)] hover:shadow-[0_24px_70px_rgba(0,0,0,0.16)] transition-all duration-300 cursor-pointer ring-1 ring-black/[0.03] dark:ring-white/[0.04]"
     >
-      {request.referenceImageUrl ? (
+      {demand.referenceImageUrl ? (
         <div className="relative h-44 w-full overflow-hidden bg-gray-100 dark:bg-gray-800">
           <img
-            src={request.referenceImageUrl}
-            alt={request.commodity}
+            src={demand.referenceImageUrl}
+            alt={demand.commodity}
             className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
             referrerPolicy="no-referrer"
           />
@@ -680,27 +680,27 @@ export const BuyerRequestCard: React.FC<{
         <div className="flex items-start justify-between gap-3 mb-3">
           <div className="min-w-0">
             <h3 className="text-[1.04rem] font-semibold text-black dark:text-white leading-snug line-clamp-2">
-              {request.commodity}
+              {demand.commodity}
             </h3>
 
             <div className="mt-1 flex items-center gap-2 flex-wrap">
               <span className="text-[10px] px-2 py-0.5 bg-indigo-50 dark:bg-indigo-950/30 text-indigo-600 rounded-full uppercase font-bold tracking-wider">
-                {buyerTypeLabel}
+                {requesterTypeLabel}
               </span>
 
               <span
                 className={`text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider ${
-                  request.status === 'open'
+                  demand.status === 'open'
                     ? 'bg-emerald-50 text-emerald-600 dark:bg-emerald-950/30 dark:text-emerald-300'
-                    : request.status === 'matched'
+                    : demand.status === 'matched'
                     ? 'bg-amber-50 text-amber-600 dark:bg-amber-950/30 dark:text-amber-300'
                     : 'bg-gray-100 text-gray-500 dark:bg-gray-800 dark:text-gray-400'
                 }`}
               >
-                {request.status}
+                {demand.status}
               </span>
 
-              {request.urgency === 'urgent' && (
+              {demand.urgency === 'urgent' && (
                 <span className="text-[10px] px-2 py-0.5 rounded-full uppercase font-bold tracking-wider bg-rose-500 text-white">
                   Urgent
                 </span>
@@ -729,7 +729,7 @@ export const BuyerRequestCard: React.FC<{
               Quantity
             </p>
             <p className="text-sm font-semibold text-black dark:text-white">
-              {request.quantity} {request.unit}
+              {demand.quantity} {demand.unit}
             </p>
           </div>
 
@@ -738,7 +738,7 @@ export const BuyerRequestCard: React.FC<{
               Price range
             </p>
             <p className="text-sm font-semibold text-black dark:text-white">
-              {request.priceRange || 'Not specified'}
+              {demand.priceRange || 'Not specified'}
             </p>
           </div>
         </div>
@@ -746,14 +746,14 @@ export const BuyerRequestCard: React.FC<{
         <div className="space-y-2.5 mb-4">
           <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">
             <MapPin className="w-4 h-4" />
-            <span className="line-clamp-1">{request.location}</span>
+            <span className="line-clamp-1">{demand.location}</span>
           </div>
 
           {found > 0 && (
             <div className="flex items-center gap-2 text-[13px] text-gray-500 dark:text-gray-400">
               <CheckCircle2 className="w-4 h-4" />
               <span>
-                Found: {found}/{request.quantity} • Remaining: {remaining}
+                Found: {found}/{demand.quantity} • Remaining: {remaining}
               </span>
             </div>
           )}
@@ -764,7 +764,7 @@ export const BuyerRequestCard: React.FC<{
             type="button"
             onClick={(e) => {
               e.stopPropagation();
-              onOpenDetails?.(request);
+              onOpenDetails?.(demand);
             }}
             className="h-12 rounded-2xl border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-900 text-black dark:text-white text-sm font-medium hover:bg-gray-50 dark:hover:bg-gray-800 transition-all shadow-sm"
           >
@@ -772,7 +772,7 @@ export const BuyerRequestCard: React.FC<{
           </button>
 
           <a
-            href={`https://wa.me/${request.phone}?text=Hello ${request.buyerName}, I saw your request for ${request.commodity} on FarmKit.`}
+            href={`https://wa.me/${demand.phone}?text=Hello ${demand.userName}, I saw your request for ${demand.commodity} on FarmKit.`}
             target="_blank"
             rel="noopener noreferrer"
             onClick={(e) => e.stopPropagation()}
@@ -803,7 +803,7 @@ export const BuyerRequestCard: React.FC<{
               <button
                 type="button"
                 onClick={() => {
-                  onOpenDetails?.(request);
+                  onOpenDetails?.(demand);
                   setMenuOpen(false);
                 }}
                 className={menuItemClass}
@@ -814,24 +814,24 @@ export const BuyerRequestCard: React.FC<{
 
             {isOwner && (
               <>
-                <div className="my-2 border-t border-gray-100 dark:border-gray-800" />
+                <div className="my-2 border-t border-gray-100 dark:border-gray-100" />
 
                 <div className="space-y-1">
                   <button
                     type="button"
                     onClick={() => {
-                      onEditRequest?.(request);
+                      onEditDemand?.(demand);
                       setMenuOpen(false);
                     }}
                     className={menuItemClass}
                   >
-                    Edit request
+                    Edit demand
                   </button>
 
                   <button
                     type="button"
                     onClick={() => {
-                      onUpdateFoundQuantity?.(request);
+                      onUpdateFoundQuantity?.(demand);
                       setMenuOpen(false);
                     }}
                     className={menuItemClass}
@@ -839,12 +839,12 @@ export const BuyerRequestCard: React.FC<{
                     Update found quantity
                   </button>
 
-                  {request.status === 'open' && (
+                  {demand.status === 'open' && (
                     <>
                       <button
                         type="button"
                         onClick={() => {
-                          onUpdateStatus?.(request, 'matched');
+                          onUpdateStatus?.(demand, 'matched');
                           setMenuOpen(false);
                         }}
                         className={menuItemClass}
@@ -855,52 +855,52 @@ export const BuyerRequestCard: React.FC<{
                       <button
                         type="button"
                         onClick={() => {
-                          onUpdateStatus?.(request, 'closed');
+                          onUpdateStatus?.(demand, 'closed');
                           setMenuOpen(false);
                         }}
                         className={menuItemClass}
                       >
-                        Close request
+                        Close demand
                       </button>
                     </>
                   )}
 
-                  {request.status === 'matched' && (
+                  {demand.status === 'matched' && (
                     <>
                       <button
                         type="button"
                         onClick={() => {
-                          onUpdateStatus?.(request, 'open');
+                          onUpdateStatus?.(demand, 'open');
                           setMenuOpen(false);
                         }}
                         className={menuItemClass}
                       >
-                        Reopen request
+                        Reopen demand
                       </button>
 
                       <button
                         type="button"
                         onClick={() => {
-                          onUpdateStatus?.(request, 'closed');
+                          onUpdateStatus?.(demand, 'closed');
                           setMenuOpen(false);
                         }}
                         className={menuItemClass}
                       >
-                        Close request
+                        Close demand
                       </button>
                     </>
                   )}
 
-                  {request.status === 'closed' && (
+                  {demand.status === 'closed' && (
                     <button
                       type="button"
                       onClick={() => {
-                        onUpdateStatus?.(request, 'open');
+                        onUpdateStatus?.(demand, 'open');
                         setMenuOpen(false);
                       }}
                       className={menuItemClass}
                     >
-                      Reopen request
+                      Reopen demand
                     </button>
                   )}
                 </div>
@@ -1186,8 +1186,8 @@ export const DemandFilters: React.FC<{
   setDemandRegion: (value: string) => void;
   demandUrgency: string;
   setDemandUrgency: (value: string) => void;
-  demandBuyerType: string;
-  setDemandBuyerType: (value: string) => void;
+  demandRequesterType: string;
+  setDemandRequesterType: (value: string) => void;
   demandStatus: string;
   setDemandStatus: (value: string) => void;
   t: any;
@@ -1199,8 +1199,8 @@ export const DemandFilters: React.FC<{
   setDemandRegion,
   demandUrgency,
   setDemandUrgency,
-  demandBuyerType,
-  setDemandBuyerType,
+  demandRequesterType,
+  setDemandRequesterType,
   demandStatus,
   setDemandStatus,
   t
@@ -1209,12 +1209,12 @@ export const DemandFilters: React.FC<{
 
   const [isRegionOpen, setIsRegionOpen] = useState(false);
   const [isUrgencyOpen, setIsUrgencyOpen] = useState(false);
-  const [isBuyerTypeOpen, setIsBuyerTypeOpen] = useState(false);
+  const [isRequesterTypeOpen, setIsRequesterTypeOpen] = useState(false);
   const [isStatusOpen, setIsStatusOpen] = useState(false);
 
   const regionRef = useRef<HTMLDivElement | null>(null);
   const urgencyRef = useRef<HTMLDivElement | null>(null);
-  const buyerTypeRef = useRef<HTMLDivElement | null>(null);
+  const requesterTypeRef = useRef<HTMLDivElement | null>(null);
   const statusRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
@@ -1223,7 +1223,7 @@ export const DemandFilters: React.FC<{
 
       if (regionRef.current && !regionRef.current.contains(target)) setIsRegionOpen(false);
       if (urgencyRef.current && !urgencyRef.current.contains(target)) setIsUrgencyOpen(false);
-      if (buyerTypeRef.current && !buyerTypeRef.current.contains(target)) setIsBuyerTypeOpen(false);
+      if (requesterTypeRef.current && !requesterTypeRef.current.contains(target)) setIsRequesterTypeOpen(false);
       if (statusRef.current && !statusRef.current.contains(target)) setIsStatusOpen(false);
     };
 
@@ -1369,40 +1369,40 @@ export const DemandFilters: React.FC<{
             )}
           </div>
 
-          <div className="relative" ref={buyerTypeRef}>
+          <div className="relative" ref={requesterTypeRef}>
             <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3">
-              Buyer type
+              Requester type
             </label>
             <button
               type="button"
-              onClick={() => setIsBuyerTypeOpen((prev) => !prev)}
+              onClick={() => setIsRequesterTypeOpen((prev) => !prev)}
               className="w-full bg-white dark:bg-gray-800 rounded-xl px-4 py-2.5 text-sm text-left flex items-center justify-between focus:ring-2 focus:ring-indigo-600 outline-none"
             >
               <span>
-                {demandBuyerType === 'all'
-                  ? 'All buyer types'
-                  : demandBuyerType.charAt(0).toUpperCase() + demandBuyerType.slice(1)}
+                {demandRequesterType === 'all'
+                  ? 'All requester types'
+                  : demandRequesterType.charAt(0).toUpperCase() + demandRequesterType.slice(1)}
               </span>
               <span className="text-gray-400">⌄</span>
             </button>
 
-            {isBuyerTypeOpen && (
+            {isRequesterTypeOpen && (
               <div className="absolute z-30 mt-2 w-full max-h-60 overflow-y-auto bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-2xl">
                 <div className="p-2">
                   {['all', 'individual', 'farmer', 'trader', 'processor', 'business'].map((value) => {
                     const label =
                       value === 'all'
-                        ? 'All buyer types'
+                        ? 'All requester types'
                         : value.charAt(0).toUpperCase() + value.slice(1);
-                    const selected = demandBuyerType === value;
+                    const selected = demandRequesterType === value;
 
                     return (
                       <button
                         key={value}
                         type="button"
                         onClick={() => {
-                          setDemandBuyerType(value);
-                          setIsBuyerTypeOpen(false);
+                          setDemandRequesterType(value);
+                          setIsRequesterTypeOpen(false);
                         }}
                         className={`w-full px-4 py-3 rounded-xl text-left flex items-center justify-between transition-all ${
                           selected

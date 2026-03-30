@@ -3,6 +3,7 @@ import { toast } from 'react-hot-toast';
 import { api } from '../lib/api';
 import { 
   User as UserType, 
+  UserRole,
   SellerUpgradeForm, 
   BusinessUpgradeForm, 
   CooperativeUpgradeForm, 
@@ -147,10 +148,10 @@ export const useAccountPageController = ({
   const [isSubmittingRole, setIsSubmittingRole] = React.useState(false);
   const [isSubmittingRoleSwitch, setIsSubmittingRoleSwitch] = React.useState(false);
 
-  const [selectedPrimaryRole, setSelectedPrimaryRole] = React.useState<UserType['primaryRole']>(user?.primaryRole || 'buyer');
+  const [selectedPrimaryRole, setSelectedPrimaryRole] = React.useState<UserType['primaryRole']>(user?.primaryRole);
 
   const accountState = {
-    isBuyer: user?.primaryRole === 'buyer',
+    isBuyer: !user?.primaryRole || user?.roles?.length === 0,
     isSeller: user?.primaryRole === 'seller',
     isBusiness: user?.primaryRole === 'business',
     isCooperative: user?.primaryRole === 'cooperative',
@@ -159,7 +160,7 @@ export const useAccountPageController = ({
     hasSellerProfile: !!user?.sellerProfile,
     hasOrgProfile: !!user?.organizationProfile,
     canManageListings:
-      ['seller', 'business', 'cooperative', 'ngo'].includes(user?.primaryRole || '') &&
+      !!user?.primaryRole &&
       (user?.sellerProfile?.verified || user?.organizationProfile?.verified || false),
   };
 
@@ -282,8 +283,7 @@ export const useAccountPageController = ({
 
     const nextRoles = Array.from(new Set([...(user.roles || []), selectedRole]));
 
-    const shouldSetPrimaryRole =
-      user.roles?.length === 1 && user.roles[0] === 'buyer';
+    const shouldSetPrimaryRole = !user.primaryRole || user.roles?.length === 0;
 
     const updatePayload: Partial<UserType> = {
       roles: nextRoles,
@@ -691,24 +691,14 @@ export const useAccountPageController = ({
     handleSellerProfileUpdate,
     handleOrganizationProfileUpdate,
     handlePrimaryRoleSwitch,
-    handleDeleteRole: async (roleToDelete: UserType['primaryRole']) => {
+    handleDeleteRole: async (roleToDelete: UserRole) => {
       if (!user) return;
-
-      if (roleToDelete === 'buyer' && user.roles?.length === 1) {
-        toast.error('You must have at least one role.');
-        return;
-      }
 
       const nextRoles = user.roles?.filter(r => r !== roleToDelete) || [];
       
-      if (nextRoles.length === 0) {
-        toast.error('You must have at least one role.');
-        return;
-      }
-
       let nextPrimaryRole = user.primaryRole;
       if (user.primaryRole === roleToDelete) {
-        nextPrimaryRole = nextRoles[0];
+        nextPrimaryRole = nextRoles.length > 0 ? nextRoles[0] : undefined;
       }
 
       const updatePayload: any = {
@@ -761,10 +751,10 @@ export const useAccountPageController = ({
     profileFormData,
     setProfileFormData,
     canSell: (user?.primaryRole === 'seller' && !!user.sellerProfile) ||
-      (['business', 'cooperative', 'ngo'].includes(user?.primaryRole || '') && !!user.organizationProfile),
+      (!!user?.primaryRole && ['business', 'cooperative', 'ngo'].includes(user.primaryRole) && !!user.organizationProfile),
     canEditCurrentProfile: user?.primaryRole === 'seller'
       ? !!user.sellerProfile
-      : ['business', 'cooperative', 'ngo'].includes(user?.primaryRole || '')
+      : (!!user?.primaryRole && ['business', 'cooperative', 'ngo'].includes(user.primaryRole))
         ? !!user.organizationProfile
         : true,
     accountState,

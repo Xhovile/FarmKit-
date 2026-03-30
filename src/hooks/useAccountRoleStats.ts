@@ -4,10 +4,10 @@ import { api } from '../lib/api';
 
 interface AccountRoleStats {
   savedCount: number;
-  totalRequests: number;
-  openRequests: number;
-  matchedRequests: number;
-  closedRequests: number;
+  totalDemands: number;
+  openDemands: number;
+  matchedDemands: number;
+  closedDemands: number;
   totalListings: number;
   activeListings: number;
   soldListings: number;
@@ -17,10 +17,10 @@ interface AccountRoleStats {
 
 const emptyStats: AccountRoleStats = {
   savedCount: 0,
-  totalRequests: 0,
-  openRequests: 0,
-  matchedRequests: 0,
-  closedRequests: 0,
+  totalDemands: 0,
+  openDemands: 0,
+  matchedDemands: 0,
+  closedDemands: 0,
   totalListings: 0,
   activeListings: 0,
   soldListings: 0,

@@ -1,7 +1,7 @@
 import React from 'react';
 import { motion, AnimatePresence } from 'motion/react';
-import { AddListingForm, AddRequestForm } from '../MarketplaceForms';
-import { MarketListing, BuyerRequest, User } from '../../types';
+import { AddListingForm, AddDemandForm } from '../MarketplaceForms';
+import { MarketListing, MarketDemand, User } from '../../types';
 import { toast } from 'react-hot-toast';
 import { api } from '../../lib/api';
 
@@ -9,7 +9,7 @@ interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
   editingListing: MarketListing | null;
-  editingRequest: BuyerRequest | null;
+  editingDemand: MarketDemand | null;
   formStep: number;
   setFormStep: (step: number) => void;
   t: (key: string) => string;
@@ -27,7 +27,7 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
   isOpen,
   onClose,
   editingListing,
-  editingRequest,
+  editingDemand,
   formStep,
   setFormStep,
   t,
@@ -58,14 +58,14 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
         className="relative w-full max-w-xl bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-2xl overflow-visible max-h-[90vh] flex flex-col"
       >
         <div className="p-8 md:p-10 overflow-y-auto max-h-[90vh]">
-          {editingRequest || formStep >= 10 ? (
-            <AddRequestForm 
+          {editingDemand || formStep >= 10 ? (
+            <AddDemandForm 
               t={t} 
               user={user} 
               step={formStep} 
               setStep={setFormStep} 
-              initialData={editingRequest}
-              isEditMode={!!editingRequest}
+              initialData={editingDemand}
+              isEditMode={!!editingDemand}
               onClose={onClose} 
               onSubmit={async (data) => {
                 if (!user) {
@@ -76,13 +76,13 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                 setLoading(true);
                 try {
                   let referenceImageUrl =
-                    data.removeExistingImage ? null : (editingRequest?.referenceImageUrl || null);
+                    data.removeExistingImage ? null : (editingDemand?.referenceImageUrl || null);
 
                   if (data.imageFile) {
                     referenceImageUrl = await uploadImageToCloudinary(data.imageFile);
                   }
 
-                  const requestData = {
+                  const demandData = {
                     commodity: data.commodity,
                     category: data.category || 'other',
                     quantity: Number(data.quantity),
@@ -91,26 +91,26 @@ const AddProductModal: React.FC<AddProductModalProps> = ({
                     location: data.location,
                     neededBy: data.neededBy || '',
                     urgency: data.urgency || 'normal',
-                    buyerType: data.buyerType || 'individual',
+                    requesterType: data.requesterType || 'individual',
                     deliveryPreference: data.deliveryPreference || 'pickup',
                     contactMethod: data.contactMethod || 'whatsapp',
                     description: data.description || '',
                     referenceImageUrl: referenceImageUrl,
-                    buyerName: user.name,
+                    userName: user.name,
                     phone: data.phone || user.phone,
                   };
 
-                  if (editingRequest?.id) {
-                    await api.put(`/api/buyer-requests/${editingRequest.id}`, requestData);
-                    toast.success('Request updated successfully!');
+                  if (editingDemand?.id) {
+                    await api.put(`/api/market-demands/${editingDemand.id}`, demandData);
+                    toast.success('Demand updated successfully!');
                   } else {
-                    await api.post('/api/buyer-requests', requestData);
-                    toast.success(t('market.requestPosted') || 'Request posted successfully!');
+                    await api.post('/api/market-demands', demandData);
+                    toast.success(t('market.demandPosted') || 'Demand posted successfully!');
                   }
 
                   onClose();
                 } catch (error: any) {
-                  console.error('Error saving request:', error);
+                  console.error('Error saving demand:', error);
                   toast.error(error.message || t('common.error') || 'An error occurred');
                 } finally {
                   setLoading(false);

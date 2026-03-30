@@ -1,22 +1,22 @@
 import { useEffect, useState } from 'react';
-import { BuyerRequest, User } from '../types';
+import { MarketDemand, User } from '../types';
 import { api } from '../lib/api';
 
-export const useBuyerRequests = (user: User | null) => {
-  const [requests, setRequests] = useState<BuyerRequest[]>([]);
+export const useMarketDemands = (user: User | null) => {
+  const [demands, setDemands] = useState<MarketDemand[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!user?.uid) {
-      setRequests([]);
+      setDemands([]);
       setLoading(false);
       return;
     }
 
-    const fetchRequests = async () => {
+    const fetchDemands = async () => {
       try {
-        const data = await api.get('/api/buyer-requests');
-        const items = data as BuyerRequest[];
+        const data = await api.get('/api/market-demands');
+        const items = data as MarketDemand[];
 
         items.sort((a, b) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
@@ -24,19 +24,19 @@ export const useBuyerRequests = (user: User | null) => {
           return dateB - dateA;
         });
 
-        setRequests(items);
+        setDemands(items);
       } catch (error) {
-        console.error('Error loading buyer requests:', error);
+        console.error('Error loading market demands:', error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchRequests();
-    const interval = setInterval(fetchRequests, 30000); // Poll every 30s
+    fetchDemands();
+    const interval = setInterval(fetchDemands, 30000); // Poll every 30s
 
     return () => clearInterval(interval);
   }, [user?.uid]);
 
-  return { requests, loading };
+  return { demands, loading };
 };

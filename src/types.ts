@@ -69,7 +69,7 @@ export interface MarketListing {
   expiryDate?: string;
 }
 
-export type UserRole = 'buyer' | 'seller' | 'business' | 'cooperative' | 'ngo';
+export type UserRole = 'seller' | 'business' | 'cooperative' | 'ngo';
 export type AccountStatus = 'basic' | 'verified' | 'premium';
 export type VerificationStatus = 'none' | 'pending' | 'verified' | 'rejected';
 
@@ -185,7 +185,7 @@ export interface User {
   bio: string;
   avatar: string;
 
-  primaryRole: UserRole;
+  primaryRole?: UserRole;
   roles: UserRole[];
 
   status: AccountStatus;
@@ -199,11 +199,11 @@ export interface User {
   emailVerified: boolean;
 }
 
-export type BuyerRequestStatus = 'open' | 'matched' | 'closed';
+export type DemandStatus = 'open' | 'matched' | 'closed';
 
-export type BuyerType = 'farmer' | 'trader' | 'processor' | 'business' | 'individual';
+export type RequesterType = 'farmer' | 'trader' | 'processor' | 'business' | 'individual';
 
-export interface BuyerRequest {
+export interface MarketDemand {
   id?: string;
 
   commodity: string;
@@ -221,7 +221,7 @@ export interface BuyerRequest {
   neededBy?: string;
   urgency?: 'normal' | 'urgent';
 
-  buyerType?: BuyerType;
+  requesterType?: RequesterType;
 
   deliveryPreference?: 'pickup' | 'seller_delivery' | 'third_party';
   contactMethod?: 'whatsapp' | 'phone';
@@ -230,11 +230,11 @@ export interface BuyerRequest {
 
   referenceImageUrl?: string | null;
 
-  buyerId: string;
-  buyerName: string;
+  userId: string;
+  userName: string;
   phone: string;
 
-  status: BuyerRequestStatus;
+  status: DemandStatus;
 
   createdAt: any;
   updatedAt?: any;

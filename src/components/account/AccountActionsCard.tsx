@@ -1,13 +1,13 @@
 import React from 'react';
 import { UserCircle, Languages, LogOut, Store, Settings, HelpCircle } from 'lucide-react';
-import { User as UserType } from '../../types';
+import { User as UserType, UserRole } from '../../types';
 import { auth } from '../../lib/firebase';
 import { toast } from 'react-hot-toast';
 
 interface AccountActionsCardProps {
   user: UserType;
   t: (key: string) => string;
-  roleLabelMap: Record<UserType['primaryRole'], string>;
+  roleLabelMap: Partial<Record<UserRole, string>>;
   openSwitchRole: () => void;
   openUpgradeRole: () => void;
   openEditSeller: () => void;
@@ -46,11 +46,13 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
     }
   };
 
+  const activeRoleLabel = user.primaryRole ? roleLabelMap[user.primaryRole] : t('account.account');
+
   return (
     <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg p-6 border border-gray-100 dark:border-gray-700 space-y-6">
       {/* Top Section: Primary Actions (Stacked) */}
       <div className="space-y-3">
-        {canEditCurrentProfile && user.primaryRole !== 'buyer' && (
+        {canEditCurrentProfile && user.primaryRole && (
           <button 
             onClick={user.primaryRole === 'seller' ? openEditSeller : openEditOrganization}
             className="w-full flex items-center justify-between p-4 bg-primary/5 dark:bg-primary/10 rounded-2xl border border-primary/10 hover:bg-primary/10 transition-all group"
@@ -65,7 +67,7 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
               </div>
               <div className="text-left">
                 <p className="text-[10px] font-bold text-primary uppercase tracking-wider">{t('account.activeRole')}</p>
-                <p className="font-bold text-sm">{roleLabelMap[user.primaryRole]}</p>
+                <p className="font-bold text-sm">{activeRoleLabel}</p>
               </div>
             </div>
             <span className="text-xs font-bold text-primary px-3 py-1 bg-white dark:bg-gray-800 rounded-lg shadow-sm">{t('common.manage')}</span>
@@ -79,18 +81,20 @@ const AccountActionsCard: React.FC<AccountActionsCardProps> = ({
           <div className="w-10 h-10 bg-amber-100 dark:bg-amber-900/30 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
             <Store className="w-5 h-5 text-amber-600 dark:text-amber-400" />
           </div>
-          <span className="font-bold text-sm">{canSell ? t('account.addAnotherRole') : t('account.becomeSellerOrOrg')}</span>
+          <span className="font-bold text-sm">{canSell ? t('account.addBusinessCapability') : t('account.addBusinessCapability')}</span>
         </button>
 
-        <button 
-          onClick={openSwitchRole}
-          className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
-        >
-          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
-            <UserCircle className="w-5 h-5 text-primary" />
-          </div>
-          <span className="font-bold text-sm">{t('account.switchRole')}</span>
-        </button>
+        {user.roles.length > 1 && (
+          <button 
+            onClick={openSwitchRole}
+            className="w-full flex items-center gap-4 p-4 bg-gray-50 dark:bg-gray-700/50 rounded-2xl border border-gray-100 dark:border-gray-700 hover:bg-gray-100 dark:hover:bg-gray-700 transition-all group"
+          >
+            <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center group-hover:scale-110 transition-transform">
+              <UserCircle className="w-5 h-5 text-primary" />
+            </div>
+            <span className="font-bold text-sm">{t('account.manageRoles')}</span>
+          </button>
+        )}
       </div>
 
       {/* Bottom Section: Secondary Actions (Icon Only) */}

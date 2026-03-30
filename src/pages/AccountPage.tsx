@@ -18,9 +18,9 @@ import {
   Save,
   ChevronRight
 } from 'lucide-react';
-import { User as UserType, BuyerRequest } from '../types';
+import { User as UserType, MarketDemand, UserRole } from '../types';
 import { malawiRegions, malawiDistrictsByRegion } from '../data/constants';
-import { useAccountPageController, AccountView } from '../hooks/useAccountPageController';
+import { useAccountPageController } from '../hooks/useAccountPageController';
 import AccountHeader from '../components/account/AccountHeader';
 import VerificationNotice from '../components/account/VerificationNotice';
 import PersonalAccountCard from '../components/account/PersonalAccountCard';
@@ -31,7 +31,7 @@ import RoleUpgradeForm from '../components/account/RoleUpgradeForm';
 import PrimaryRoleForm from '../components/account/PrimaryRoleForm';
 import EditSellerProfileForm from '../components/account/EditSellerProfileForm';
 import EditOrganizationProfileForm from '../components/account/EditOrganizationProfileForm';
-import MyBuyerRequestsSection from '../components/account/MyBuyerRequestsSection';
+import MyMarketDemandsSection from '../components/account/MyMarketDemandsSection';
 import MyListingsSection from '../components/account/MyListingsSection';
 import SavedItemsSection from '../components/account/SavedItemsSection';
 
@@ -47,8 +47,8 @@ interface AccountPageProps {
   setUser: (user: UserType | null) => void;
   setShowTour: (val: boolean) => void;
   setActiveTab: (tab: 'info' | 'market' | 'experts' | 'account') => void;
-  onUpdateBuyerRequestStatus: (
-    request: BuyerRequest,
+  onUpdateMarketDemandStatus: (
+    request: MarketDemand,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => Promise<void> | void;
 }
@@ -61,7 +61,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
   setUser,
   setShowTour,
   setActiveTab,
-  onUpdateBuyerRequestStatus,
+  onUpdateMarketDemandStatus,
 }) => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -135,8 +135,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     navigate('/account');
   };
 
-  const roleLabelMap: Record<UserType['primaryRole'], string> = {
-    buyer: t('account.buyer'),
+  const roleLabelMap: Record<UserRole, string> = {
     seller: t('account.seller'),
     business: t('account.business'),
     cooperative: t('account.cooperative'),
@@ -269,11 +268,11 @@ export const AccountPage: React.FC<AccountPageProps> = ({
           />
 
           {accountState.isBuyer && (
-            <MyBuyerRequestsSection
+            <MyMarketDemandsSection
               user={user}
               t={t}
               setActiveTab={setActiveTab}
-              onUpdateBuyerRequestStatus={onUpdateBuyerRequestStatus}
+              onUpdateMarketDemandStatus={onUpdateMarketDemandStatus}
             />
           )}
 

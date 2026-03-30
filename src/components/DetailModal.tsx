@@ -131,14 +131,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
   const [isFullscreenOpen, setIsFullscreenOpen] = useState(false);
 
   const isMarketListing = selectedItem?.type === 'market_listing';
-  const isBuyerRequest = selectedItem?.type === 'buyer_request';
+  const isMarketDemand = selectedItem?.type === 'market_demand';
 
   const specs = useMemo(() => {
     if (!selectedItem) return [];
     if (isMarketListing) return renderMarketSpecs(selectedItem);
-    if (isBuyerRequest) {
+    if (isMarketDemand) {
       return [
-        ['Buyer Type', selectedItem.buyerType?.replace(/_/g, ' ') || 'Individual'],
+        ['Requester Type', selectedItem.requesterType?.replace(/_/g, ' ') || 'Individual'],
         ['Urgency', selectedItem.urgency || 'Normal'],
         ['Delivery Preference', selectedItem.deliveryPreference?.replace(/_/g, ' ') || 'Not specified'],
         ['Contact Method', selectedItem.contactMethod || 'WhatsApp'],
@@ -148,7 +148,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
       ];
     }
     return [];
-  }, [selectedItem, isMarketListing, isBuyerRequest]);
+  }, [selectedItem, isMarketListing, isMarketDemand]);
 
   const saved = selectedItem?.id ? savedListingIds.includes(selectedItem.id) : false;
 
@@ -176,12 +176,12 @@ export const DetailModal: React.FC<DetailModalProps> = ({
       return `Check out this listing on FarmKit: ${selectedItem.title} - MK ${selectedItem.price?.toLocaleString()} / ${selectedItem.unit}`;
     }
 
-    if (isBuyerRequest) {
-      return `Buyer request on FarmKit: ${selectedItem.commodity} - ${selectedItem.quantity} ${selectedItem.unit} needed${selectedItem.priceRange ? ` (${selectedItem.priceRange})` : ''}`;
+    if (isMarketDemand) {
+      return `Market demand on FarmKit: ${selectedItem.commodity} - ${selectedItem.quantity} ${selectedItem.unit} needed${selectedItem.priceRange ? ` (${selectedItem.priceRange})` : ''}`;
     }
 
     return `${selectedItem.title || selectedItem.name || selectedItem.commodity || 'FarmKit item'}`;
-  }, [isMarketListing, isBuyerRequest, selectedItem]);
+  }, [isMarketListing, isMarketDemand, selectedItem]);
 
   const createdDateLabel = useMemo(() => {
     if (!selectedItem?.createdAt) return 'Recently added';
@@ -235,7 +235,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
         await navigator.share({
           title: isMarketListing
             ? selectedItem.title
-            : isBuyerRequest
+            : isMarketDemand
             ? selectedItem.commodity
             : (selectedItem.title || selectedItem.name || 'FarmKit'),
           text: shareText,
@@ -411,7 +411,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                         : MK {selectedItem.price?.toLocaleString()} / {selectedItem.unit}
                       </span>
                     )}
-                    {isBuyerRequest && (
+                    {isMarketDemand && (
                       <span className="text-gray-600 dark:text-gray-300 font-medium">
                         : {selectedItem.priceRange}
                       </span>
@@ -427,18 +427,18 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                   </p>
                 </div>
               </div>
-              {isMarketListing || isBuyerRequest ? (
+              {isMarketListing || isMarketDemand ? (
                 <>
                   <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-3.5 mb-6">
                     <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                       <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500 mb-1.5 font-semibold">
                         <Building2 className="w-4 h-4" />
-                        {isMarketListing ? 'Seller' : 'Buyer'}
+                        {isMarketListing ? 'Seller' : 'Requester'}
                       </div>
-                      <p className="font-semibold leading-snug">{selectedItem.businessName || selectedItem.buyerName}</p>
-                      {(selectedItem.sellerType || selectedItem.buyerType) && (
+                      <p className="font-semibold leading-snug">{selectedItem.businessName || selectedItem.userName}</p>
+                      {(selectedItem.sellerType || selectedItem.requesterType) && (
                         <p className="text-[10px] text-gray-400 uppercase font-bold mt-1">
-                          {(selectedItem.sellerType || selectedItem.buyerType).replace('_', ' ')}
+                          {(selectedItem.sellerType || selectedItem.requesterType).replace('_', ' ')}
                         </p>
                       )}
                     </div>
@@ -482,7 +482,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       </>
                     )}
 
-                    {isBuyerRequest && (
+                    {isMarketDemand && (
                       <>
                         <div className="rounded-[22px] border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900 px-4 py-3.5 shadow-[0_8px_24px_rgba(0,0,0,0.08)]">
                           <div className="flex items-center gap-2 text-[10px] uppercase tracking-[0.14em] text-gray-400 dark:text-gray-500 mb-1.5 font-semibold">
@@ -518,7 +518,7 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                       </span>
                     )}
 
-                    {isBuyerRequest && (
+                    {isMarketDemand && (
                       <span className={`px-3 py-1.5 border border-gray-200 dark:border-gray-800 rounded-full text-xs font-black uppercase tracking-widest shadow-sm ${
                         selectedItem.status === 'open' ? 'bg-emerald-500 text-white border-emerald-600' :
                         'bg-gray-500 text-white border-gray-600'
@@ -595,14 +595,14 @@ export const DetailModal: React.FC<DetailModalProps> = ({
                     <a
                       href={isMarketListing 
                         ? `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.sellerName}, I am interested in your ${selectedItem.title} on FarmKit.`
-                        : `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.buyerName}, I saw your request for ${selectedItem.commodity} on FarmKit.`
+                        : `https://wa.me/${selectedItem.phone}?text=Hello ${selectedItem.userName}, I saw your request for ${selectedItem.commodity} on FarmKit.`
                       }
                       target="_blank"
                       rel="noopener noreferrer"
                       className="py-4 bg-black text-white dark:bg-white dark:text-black rounded-2xl font-medium transition-all flex items-center justify-center gap-2 shadow-sm hover:opacity-90"
                     >
                       <MessageCircle className="w-5 h-5" />
-                      {isMarketListing ? 'Contact Seller' : 'Contact Buyer'}
+                      {isMarketListing ? 'Contact Seller' : 'Contact Requester'}
                     </a>
                   </div>
                 </>

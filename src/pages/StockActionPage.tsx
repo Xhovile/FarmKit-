@@ -5,7 +5,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { api } from '../lib/api';
 import { useTranslation } from '../hooks/useTranslation';
-import { MarketListing, BuyerRequest } from '../types';
+import { MarketListing, MarketDemand } from '../types';
 
 const StockActionPage: React.FC = () => {
   const { t } = useTranslation();
@@ -13,7 +13,7 @@ const StockActionPage: React.FC = () => {
   const location = useLocation();
   const state = location.state as { 
     listing?: MarketListing; 
-    request?: BuyerRequest;
+    request?: MarketDemand;
     type: 'sale' | 'restock' | 'found-quantity';
   } | null;
 
@@ -70,7 +70,7 @@ const StockActionPage: React.FC = () => {
           return;
         }
         const nextStatus = val >= (request.quantity ?? 0) ? 'matched' : (request.status === 'closed' ? 'closed' : 'open');
-        await api.put(`/api/buyer-requests/${request.id}`, {
+        await api.put(`/api/market-demands/${request.id}`, {
           quantityFound: val,
           status: nextStatus,
         });

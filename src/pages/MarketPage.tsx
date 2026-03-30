@@ -36,7 +36,7 @@ import {
 } from 'recharts';
 import { marketCategories, deliveryMethods } from '../data/constants';
 import { api } from '../lib/api';
-import { MarketListing, BuyerRequest, StockStatus, User } from '../types';
+import { MarketListing, MarketDemand, StockStatus, User } from '../types';
 
 const computeStockStatus = (
   availableQuantity: number,
@@ -65,7 +65,7 @@ const priceTrendData = [
 ];
 import { 
   ListingCard, 
-  BuyerRequestCard, 
+  MarketDemandCard, 
   MarketplaceFilters,
   DemandFilters,
   SellerOnboardingCTA,
@@ -83,12 +83,12 @@ interface MarketPageProps {
   marketListings: MarketListing[];
   setActiveTab: (tab: any) => void;
   setEditingListing: (listing: MarketListing | null) => void;
-  setEditingRequest: (request: BuyerRequest | null) => void;
+  setEditingDemand: (demand: MarketDemand | null) => void;
   incrementListingViews: (listingId?: string) => Promise<void> | void;
   toggleSavedListing: (listing: MarketListing) => Promise<void> | void;
   incrementListingShares: (listingId?: string) => Promise<void> | void;
-  onUpdateBuyerRequestStatus: (
-    request: BuyerRequest,
+  onUpdateMarketDemandStatus: (
+    demand: MarketDemand,
     nextStatus: 'open' | 'matched' | 'closed'
   ) => Promise<void> | void;
   savedListingIds: string[];
@@ -103,18 +103,18 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   marketListings,
   setActiveTab,
   setEditingListing,
-  setEditingRequest,
+  setEditingDemand,
   incrementListingViews,
   toggleSavedListing,
   incrementListingShares,
-  onUpdateBuyerRequestStatus,
+  onUpdateMarketDemandStatus,
   savedListingIds
 }) => {
   const navigate = useNavigate();
   const [marketTab, setMarketTab] = useState<'supply' | 'demand' | 'insights'>('supply');
   const [activeCategory, setActiveCategory] = useState('all');
-  const [requests, setRequests] = useState<BuyerRequest[]>([]);
-  const [isRequestsLoading, setIsRequestsLoading] = useState(true);
+  const [demands, setDemands] = useState<MarketDemand[]>([]);
+  const [isDemandsLoading, setIsDemandsLoading] = useState(true);
   const [hiddenListingIds, setHiddenListingIds] = useState<string[]>([]);
 
   // New Filters
@@ -126,35 +126,35 @@ export const MarketPage: React.FC<MarketPageProps> = ({
   const [demandCategory, setDemandCategory] = useState('all');
   const [demandRegion, setDemandRegion] = useState('all');
   const [demandUrgency, setDemandUrgency] = useState('all');
-  const [demandBuyerType, setDemandBuyerType] = useState('all');
+  const [demandRequesterType, setDemandRequesterType] = useState('all');
   const [demandStatus, setDemandStatus] = useState('open');
 
-  const [foundQtyRequest, setFoundQtyRequest] = useState<BuyerRequest | null>(null);
+  const [foundQtyDemand, setFoundQtyDemand] = useState<MarketDemand | null>(null);
   const [foundQtyValue, setFoundQtyValue] = useState('');
 
   useEffect(() => {
-    const fetchRequests = async () => {
+    const fetchDemands = async () => {
       try {
-        const data = await api.get('/api/buyer-requests');
-        const newRequests = data as BuyerRequest[];
+        const data = await api.get('/api/market-demands');
+        const newDemands = data as MarketDemand[];
         
         // Client-side sort (ISO strings)
-        newRequests.sort((a, b) => {
+        newDemands.sort((a, b) => {
           const dateA = a.createdAt ? new Date(a.createdAt).getTime() : 0;
           const dateB = b.createdAt ? new Date(b.createdAt).getTime() : 0;
           return dateB - dateA;
         });
         
-        setRequests(newRequests);
+        setDemands(newDemands);
       } catch (error) {
-        console.error('Error loading buyer requests:', error);
+        console.error('Error loading market demands:', error);
       } finally {
-        setIsRequestsLoading(false);
+        setIsDemandsLoading(false);
       }
     };
 
-    fetchRequests();
-    const interval = setInterval(fetchRequests, 30000); // Poll every 30s
+    fetchDemands();
+    const interval = setInterval(fetchDemands, 30000); // Poll every 30s
 
     return () => clearInterval(interval);
   }, []);
@@ -181,7 +181,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
 
   useEffect(() => {
     // Sync logic removed as we use navigation now
-  }, [requests]);
+  }, [demands]);
 
   const isPremium = user?.status === 'premium' || user?.status === 'verified';
   const onUpgrade = () => setActiveTab('account');
@@ -261,8 +261,8 @@ export const MarketPage: React.FC<MarketPageProps> = ({
     navigate(`/item-detail/${listing.id}`, { state: { item: listing, type: 'market_listing', from: 'market' } });
   };
 
-  const handleOpenRequestDetails = (request: BuyerRequest) => {
-    navigate(`/item-detail/${request.id}`, { state: { item: request, type: 'buyer_request', from: 'market' } });
+  const handleOpenDemandDetails = (demand: MarketDemand) => {
+    navigate(`/item-detail/${demand.id}`, { state: { item: demand, type: 'market_demand', from: 'market' } });
   };
 
   const verifiedSellers = Array.from(
@@ -436,7 +436,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 onChange={(e) => setMarketSearchQuery(e.target.value)}
                 placeholder={
                   marketTab === 'supply' ? t('market.searchProducts') : 
-                  t('market.searchRequests')
+                  t('market.searchDemands')
                 }
                 className="w-full pl-12 pr-4 py-4 bg-gray-50 dark:bg-gray-700/50 border-none rounded-2xl focus:ring-2 focus:ring-primary outline-none text-sm"
               />
@@ -467,7 +467,7 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 className={`px-6 py-3 rounded-2xl font-bold flex items-center gap-2 transition-all shadow-md active:scale-95 ${marketTab === 'supply' ? 'bg-primary text-white shadow-primary/10' : 'bg-indigo-600 text-white shadow-indigo-500/10'}`}
               >
                 <PlusCircle className="w-5 h-5" />
-                {marketTab === 'supply' ? t('market.addListing') : t('market.postRequest')}
+                {marketTab === 'supply' ? t('market.addListing') : t('market.postDemand')}
               </button>
             )}
           </div>
@@ -593,19 +593,19 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                 setDemandRegion={setDemandRegion}
                 demandUrgency={demandUrgency}
                 setDemandUrgency={setDemandUrgency}
-                demandBuyerType={demandBuyerType}
-                setDemandBuyerType={setDemandBuyerType}
+                demandRequesterType={demandRequesterType}
+                setDemandRequesterType={setDemandRequesterType}
                 demandStatus={demandStatus}
                 setDemandStatus={setDemandStatus}
                 t={t}
               />
 
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {requests.length === 0 ? (
+              {demands.length === 0 ? (
                 <div className="col-span-full bg-white dark:bg-gray-800 rounded-[2.5rem] p-12 text-center border border-gray-100 dark:border-gray-700">
                   <ClipboardList className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                  <h3 className="text-xl font-bold mb-2">{t('market.noRequests')}</h3>
-                  <p className="text-gray-500 mb-8 max-w-xs mx-auto">{t('market.beFirstToRequest')}</p>
+                  <h3 className="text-xl font-bold mb-2">{t('market.noDemands')}</h3>
+                  <p className="text-gray-500 mb-8 max-w-xs mx-auto">{t('market.beFirstToDemand')}</p>
                   <button 
                     onClick={() => {
                       if (user) {
@@ -617,95 +617,95 @@ export const MarketPage: React.FC<MarketPageProps> = ({
                     }}
                     className="px-8 py-4 bg-indigo-600 text-white font-black rounded-2xl shadow-lg shadow-indigo-500/20"
                   >
-                    {t('market.postRequest')}
+                    {t('market.postDemand')}
                   </button>
                 </div>
               ) : (
                 <>
-                  {requests
-                    .filter((req) => {
+                  {demands
+                    .filter((demand) => {
                       const q = marketSearchQuery.toLowerCase();
 
                       const matchesSearch =
-                        req.commodity.toLowerCase().includes(q) ||
-                        req.location.toLowerCase().includes(q) ||
-                        req.buyerName.toLowerCase().includes(q);
+                        demand.commodity.toLowerCase().includes(q) ||
+                        demand.location.toLowerCase().includes(q) ||
+                        demand.userName.toLowerCase().includes(q);
 
                       const matchesCategory =
-                        demandCategory === 'all' || req.category === demandCategory;
+                        demandCategory === 'all' || demand.category === demandCategory;
 
                       const matchesRegion =
-                        demandRegion === 'all' || req.locationData?.region === demandRegion;
+                        demandRegion === 'all' || demand.locationData?.region === demandRegion;
 
                       const matchesUrgency =
-                        demandUrgency === 'all' || req.urgency === demandUrgency;
+                        demandUrgency === 'all' || demand.urgency === demandUrgency;
 
-                      const matchesBuyerType =
-                        demandBuyerType === 'all' || req.buyerType === demandBuyerType;
+                      const matchesRequesterType =
+                        demandRequesterType === 'all' || demand.requesterType === demandRequesterType;
 
                       const matchesStatus =
-                        demandStatus === 'all' || req.status === demandStatus;
+                        demandStatus === 'all' || demand.status === demandStatus;
 
                       return (
                         matchesSearch &&
                         matchesCategory &&
                         matchesRegion &&
                         matchesUrgency &&
-                        matchesBuyerType &&
+                        matchesRequesterType &&
                         matchesStatus
                       );
                     })
-                    .map((req) => (
-                      <BuyerRequestCard
-                        key={req.id}
-                        request={req}
+                    .map((demand) => (
+                      <MarketDemandCard
+                        key={demand.id}
+                        demand={demand}
                         t={t}
                         currentUserId={user?.uid}
-                        onOpenDetails={handleOpenRequestDetails}
-                        onUpdateStatus={onUpdateBuyerRequestStatus}
-                        onUpdateFoundQuantity={(request) => {
-                          navigate('/stock-action', { state: { request, type: 'found-quantity', from: 'market' } });
+                        onOpenDetails={handleOpenDemandDetails}
+                        onUpdateStatus={onUpdateMarketDemandStatus}
+                        onUpdateFoundQuantity={(demand) => {
+                          navigate('/stock-action', { state: { demand, type: 'found-quantity', from: 'market' } });
                         }}
-                        onEditRequest={(request) => {
-                          navigate('/add-product', { state: { editingRequest: request, from: 'market' } });
+                        onEditDemand={(demand) => {
+                          navigate('/add-product', { state: { editingDemand: demand, from: 'market' } });
                         }}
                       />
                     ))}
 
-                  {requests.filter((req) => {
+                  {demands.filter((demand) => {
                     const q = marketSearchQuery.toLowerCase();
 
                     const matchesSearch =
-                      req.commodity.toLowerCase().includes(q) ||
-                      req.location.toLowerCase().includes(q) ||
-                      req.buyerName.toLowerCase().includes(q);
+                      demand.commodity.toLowerCase().includes(q) ||
+                      demand.location.toLowerCase().includes(q) ||
+                      demand.userName.toLowerCase().includes(q);
 
                     const matchesCategory =
-                      demandCategory === 'all' || req.category === demandCategory;
+                      demandCategory === 'all' || demand.category === demandCategory;
 
                     const matchesRegion =
-                      demandRegion === 'all' || req.locationData?.region === demandRegion;
+                      demandRegion === 'all' || demand.locationData?.region === demandRegion;
 
                     const matchesUrgency =
-                      demandUrgency === 'all' || req.urgency === demandUrgency;
+                      demandUrgency === 'all' || demand.urgency === demandUrgency;
 
-                    const matchesBuyerType =
-                      demandBuyerType === 'all' || req.buyerType === demandBuyerType;
+                    const matchesRequesterType =
+                      demandRequesterType === 'all' || demand.requesterType === demandRequesterType;
 
                     const matchesStatus =
-                      demandStatus === 'all' || req.status === demandStatus;
+                      demandStatus === 'all' || demand.status === demandStatus;
 
                     return (
                       matchesSearch &&
                       matchesCategory &&
                       matchesRegion &&
                       matchesUrgency &&
-                      matchesBuyerType &&
+                      matchesRequesterType &&
                       matchesStatus
                     );
                   }).length === 0 && (
                     <div className="col-span-full bg-white dark:bg-gray-800 rounded-3xl border border-dashed border-gray-200 dark:border-gray-700 p-10 text-center">
-                      <h3 className="text-lg font-bold mb-2">No matching requests</h3>
+                      <h3 className="text-lg font-bold mb-2">No matching demands</h3>
                       <p className="text-sm text-gray-500">
                         Try changing your demand filters or search terms.
                       </p>

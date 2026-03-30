@@ -28,9 +28,9 @@
       },
       "required": ["title", "category", "price", "unit", "quantity", "sellerId", "status", "createdAt"]
     },
-    "BuyerRequest": {
-      "title": "Buyer Request",
-      "description": "A request from a buyer looking for a specific commodity.",
+    "MarketDemand": {
+      "title": "Market Demand",
+      "description": "A request from a user looking for a specific commodity.",
       "type": "object",
       "properties": {
         "commodity": { "type": "string" },
@@ -41,14 +41,15 @@
         "priceRange": { "type": "string" },
         "location": { "type": "string" },
         "urgency": { "type": "string", "enum": ["normal", "urgent"] },
-        "buyerId": { "type": "string" },
-        "buyerName": { "type": "string" },
+        "userId": { "type": "string" },
+        "userName": { "type": "string" },
+        "requesterType": { "type": "string", "enum": ["individual", "farmer", "trader", "processor", "business"] },
         "phone": { "type": "string" },
         "status": { "type": "string", "enum": ["open", "matched", "closed"] },
         "createdAt": { "type": "string", "format": "date-time" },
         "updatedAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["commodity", "category", "quantity", "unit", "buyerId", "status", "createdAt"]
+      "required": ["commodity", "category", "quantity", "unit", "userId", "status", "createdAt"]
     },
     "User": {
       "title": "User",
@@ -62,8 +63,8 @@
         "location": { "type": "string" },
         "bio": { "type": "string" },
         "avatar": { "type": "string" },
-        "primaryRole": { "type": "string", "enum": ["buyer", "seller", "business", "cooperative", "ngo"] },
-        "roles": { "type": "array", "items": { "type": "string", "enum": ["buyer", "seller", "business", "cooperative", "ngo"] } },
+        "primaryRole": { "type": "string", "enum": ["seller", "business", "cooperative", "ngo"] },
+        "roles": { "type": "array", "items": { "type": "string", "enum": ["seller", "business", "cooperative", "ngo"] } },
         "status": { "type": "string", "enum": ["basic", "verified", "premium"] },
         "sellerProfile": { "$ref": "SellerProfile" },
         "organizationProfile": { "$ref": "OrganizationProfile" },
@@ -89,7 +90,7 @@
         "emailVerified": { "type": "boolean" },
         "createdAt": { "type": "string", "format": "date-time" }
       },
-      "required": ["uid", "email", "name", "primaryRole", "roles", "status", "createdAt"]
+      "required": ["uid", "email", "name", "roles", "status", "createdAt"]
     },
     "SellerProfile": {
       "title": "Seller Profile",
@@ -144,9 +145,9 @@
       "schema": "MarketListing",
       "description": "Collection of products for sale."
     },
-    "buyer_requests": {
-      "schema": "BuyerRequest",
-      "description": "Collection of buyer requests."
+    "market_demands": {
+      "schema": "MarketDemand",
+      "description": "Collection of market demands."
     },
     "users": {
       "schema": "User",

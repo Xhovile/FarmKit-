@@ -17,13 +17,13 @@ service cloud.firestore {
     //   - status: string (required, enum: ['active', 'sold', 'hidden'])
     //   - createdAt: timestamp (required, immutable)
     //
-    // Collection: buyer_requests
+    // Collection: market_demands
     // Fields:
     //   - commodity: string (required)
     //   - category: string (required)
     //   - quantity: number (required)
     //   - unit: string (required)
-    //   - buyerId: string (required, immutable)
+    //   - userId: string (required, immutable)
     //   - status: string (required, enum: ['open', 'matched', 'closed'])
     //   - createdAt: timestamp (required, immutable)
     //
@@ -36,7 +36,7 @@ service cloud.firestore {
     //   - location: string (optional)
     //   - bio: string (optional)
     //   - avatar: string (optional)
-    //   - primaryRole: string (required, enum: ['buyer', 'seller', 'business', 'cooperative', 'ngo'])
+    //   - primaryRole: string (optional, enum: ['seller', 'business', 'cooperative', 'ngo'])
     //   - roles: list (required)
     //   - status: string (required, enum: ['basic', 'verified', 'premium'])
     //   - sellerProfile: map (optional)
@@ -100,24 +100,23 @@ service cloud.firestore {
              data.createdAt is timestamp;
     }
 
-    function isValidRequest(data) {
+    function isValidDemand(data) {
       return data.commodity is string && data.commodity.size() > 0 && data.commodity.size() < 100 &&
              data.category is string &&
              data.quantity is number && data.quantity >= 0 &&
              data.unit is string &&
-             data.buyerId is string && data.buyerId == request.auth.uid &&
+             data.userId is string && data.userId == request.auth.uid &&
              data.status in ['open', 'matched', 'closed'] &&
              data.createdAt is timestamp;
     }
 
     function isValidRole(role) {
-      return role in ['buyer', 'seller', 'business', 'cooperative', 'ngo'];
+      return role in ['seller', 'business', 'cooperative', 'ngo'];
     }
 
     function areValidRoles(roles) {
       return roles is list &&
-             roles.size() > 0 &&
-             roles.hasOnly(['buyer', 'seller', 'business', 'cooperative', 'ngo']);
+             roles.hasOnly(['seller', 'business', 'cooperative', 'ngo']);
     }
 
     function isValidUser(data) {
@@ -126,7 +125,7 @@ service cloud.firestore {
              data.name.size() < 100 &&
              data.email is string &&
              isValidEmail(data.email) &&
-             isValidRole(data.primaryRole) &&
+             (!('primaryRole' in data) || data.primaryRole == null || isValidRole(data.primaryRole)) &&
              areValidRoles(data.roles) &&
              data.status in ['basic', 'verified', 'premium'] &&
              (!('verification' in data) || data.verification is map);
@@ -154,17 +153,17 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && (isOwner(resource.data.sellerId) || isAdmin());
     }
 
-    match /buyer_requests/{requestId} {
+    match /market_demands/{demandId} {
       allow read: if true; // Publicly readable
       allow create: if isAuthenticated() && 
-                      hasRequiredFields(['commodity', 'category', 'quantity', 'unit', 'buyerId', 'status', 'createdAt']) &&
-                      isValidRequest(request.resource.data);
+                      hasRequiredFields(['commodity', 'category', 'quantity', 'unit', 'userId', 'status', 'createdAt']) &&
+                      isValidDemand(request.resource.data);
       allow update: if isAuthenticated() && 
-                      (isOwner(resource.data.buyerId) || isAdmin()) &&
-                      isValidRequest(request.resource.data) &&
-                      request.resource.data.buyerId == resource.data.buyerId &&
+                      (isOwner(resource.data.userId) || isAdmin()) &&
+                      isValidDemand(request.resource.data) &&
+                      request.resource.data.userId == resource.data.userId &&
                       request.resource.data.createdAt == resource.data.createdAt;
-      allow delete: if isAuthenticated() && (isOwner(resource.data.buyerId) || isAdmin());
+      allow delete: if isAuthenticated() && (isOwner(resource.data.userId) || isAdmin());
     }
 
     match /users/{userId} {
@@ -174,7 +173,6 @@ service cloud.firestore {
       
       allow create: if isOwner(userId) && isValidUser(request.resource.data) && 
                       request.resource.data.status == 'basic' &&
-                      request.resource.data.roles == ['buyer'] &&
                       (!('role' in request.resource.data) || isAdmin());
       allow update: if isOwner(userId) && isValidUser(request.resource.data) && 
                       (request.resource.data.status == resource.data.status || isAdmin()) &&

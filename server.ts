@@ -109,7 +109,7 @@ async function startServer() {
       const db = adminDb();
       const userRef = db.collection('users').doc(uid!);
       const userData = {
-        uid, name, email, phone, location, bio, avatar, primaryRole, roles, status, emailVerified, sellerProfile, organizationProfile,
+        uid, name, email, phone, location, bio, avatar, primaryRole: primaryRole || null, roles: roles || [], status, emailVerified, sellerProfile, organizationProfile,
         updatedAt: new Date().toISOString()
       };
       
@@ -290,10 +290,10 @@ async function startServer() {
     }
   });
 
-  // --- Buyer Request Routes ---
-  app.get('/api/buyer-requests', async (req, res) => {
+  // --- Market Demand Routes ---
+  app.get('/api/market-demands', async (req, res) => {
     try {
-      const snapshot = await adminDb().collection('buyer_requests')
+      const snapshot = await adminDb().collection('market_demands')
         .where('status', '==', 'open')
         .get();
       
@@ -315,19 +315,19 @@ async function startServer() {
     }
   });
 
-  app.post('/api/buyer-requests', authMiddleware, async (req: AuthRequest, res) => {
+  app.post('/api/market-demands', authMiddleware, async (req: AuthRequest, res) => {
     const data = req.body;
-    const buyerId = req.user?.uid;
+    const userId = req.user?.uid;
 
     try {
       const requestData = {
         ...data,
-        buyerId,
+        userId,
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       
-      const docRef = await adminDb().collection('buyer_requests').add(requestData);
+      const docRef = await adminDb().collection('market_demands').add(requestData);
       const newDoc = await docRef.get();
       res.json(toCamelCase({ id: newDoc.id, ...newDoc.data() }));
     } catch (error: any) {
@@ -335,16 +335,16 @@ async function startServer() {
     }
   });
 
-  app.put('/api/buyer-requests/:id', authMiddleware, async (req: AuthRequest, res) => {
+  app.put('/api/market-demands/:id', authMiddleware, async (req: AuthRequest, res) => {
     const updates = req.body;
-    const buyerId = req.user?.uid;
+    const userId = req.user?.uid;
 
     try {
-      const docRef = adminDb().collection('buyer_requests').doc(req.params.id);
+      const docRef = adminDb().collection('market_demands').doc(req.params.id);
       const doc = await docRef.get();
       
-      if (!doc.exists) return res.status(404).json({ error: 'Request not found' });
-      if (doc.data()?.buyerId !== buyerId) return res.status(403).json({ error: 'Unauthorized' });
+      if (!doc.exists) return res.status(404).json({ error: 'Demand not found' });
+      if (doc.data()?.userId !== userId) return res.status(403).json({ error: 'Unauthorized' });
 
       await docRef.set({ ...updates, updatedAt: new Date().toISOString() }, { merge: true });
       const updatedDoc = await docRef.get();
@@ -482,23 +482,23 @@ async function startServer() {
         .where('sellerId', '==', uid)
         .get();
       
-      const requestsSnapshot = await adminDb().collection('buyer_requests')
-        .where('buyerId', '==', uid)
+      const demandsSnapshot = await adminDb().collection('market_demands')
+        .where('userId', '==', uid)
         .get();
       
       const savedSnapshot = await adminDb().collection('users').doc(uid).collection('saved_listings').get();
 
       const listings = listingsSnapshot.docs.map(d => d.data());
-      const requests = requestsSnapshot.docs.map(d => d.data());
+      const demands = demandsSnapshot.docs.map(d => d.data());
 
-      console.log(`[API] Found ${listings.length} listings and ${requests.length} requests for user ${uid}`);
+      console.log(`[API] Found ${listings.length} listings and ${demands.length} demands for user ${uid}`);
 
       const stats = {
         savedCount: savedSnapshot.size,
-        totalRequests: requests.length,
-        openRequests: requests.filter(r => r.status === 'open').length,
-        matchedRequests: requests.filter(r => r.status === 'matched').length,
-        closedRequests: requests.filter(r => r.status === 'closed').length,
+        totalDemands: demands.length,
+        openDemands: demands.filter(r => r.status === 'open').length,
+        matchedDemands: demands.filter(r => r.status === 'matched').length,
+        closedDemands: demands.filter(r => r.status === 'closed').length,
         totalListings: listings.length,
         activeListings: listings.filter(l => l.status === 'active').length,
         soldListings: listings.filter(l => l.status === 'sold').length,

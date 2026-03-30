@@ -9,7 +9,7 @@ import {
   ShieldCheck,
   BadgeCheck,
 } from 'lucide-react';
-import { User as UserType } from '../../types';
+import { User as UserType, UserRole } from '../../types';
 
 interface AccountHeaderProps {
   user: UserType;
@@ -20,8 +20,7 @@ interface AccountHeaderProps {
   onAvatarUpload?: (file: File) => Promise<void>;
 }
 
-const roleLabelMap = (t: (k: string) => string): Record<UserType['primaryRole'], string> => ({
-  buyer: t('account.buyer'),
+const roleLabelMap = (t: (k: string) => string): Partial<Record<UserRole, string>> => ({
   seller: t('account.seller'),
   business: t('account.business'),
   cooperative: t('account.cooperative'),
@@ -87,6 +86,8 @@ const AccountHeader: React.FC<AccountHeaderProps> = ({
     ? new Date(user.createdAt).toLocaleDateString()
     : '—';
 
+  const activeRoleLabel = user.primaryRole ? roleLabelMap(t)[user.primaryRole] : t('account.account');
+
   return (
     <div className="space-y-4">
       <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg overflow-hidden border border-gray-100 dark:border-gray-700">
@@ -140,7 +141,7 @@ const AccountHeader: React.FC<AccountHeaderProps> = ({
 
                 <div className="mt-2 flex flex-wrap items-center gap-2">
                   <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-primary/10 text-primary">
-                    {roleLabelMap(t)[user.primaryRole]}
+                    {activeRoleLabel}
                   </span>
 
                   <span className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold ${statusClassMap[user.status]}`}>
@@ -198,7 +199,7 @@ const AccountHeader: React.FC<AccountHeaderProps> = ({
               {t('account.accountStatus')}: {statusLabelMap(t)[user.status]}
             </div>
             <div className="px-3 py-2 rounded-2xl bg-gray-50 dark:bg-gray-700/50 text-sm text-gray-600 dark:text-gray-300">
-              {t('account.activeRole')}: {roleLabelMap(t)[user.primaryRole]}
+              {t('account.activeRole')}: {activeRoleLabel}
             </div>
           </div>
         </div>
