@@ -22,7 +22,7 @@ import { User as UserType, BuyerRequest } from '../types';
 import { malawiRegions, malawiDistrictsByRegion } from '../data/constants';
 import { useAccountPageController, AccountView } from '../hooks/useAccountPageController';
 import AccountHeader from '../components/account/AccountHeader';
-import AccountHealthCard from '../components/account/AccountHealthCard';
+import VerificationNotice from '../components/account/VerificationNotice';
 import PersonalAccountCard from '../components/account/PersonalAccountCard';
 import SellerProfileCard from '../components/account/SellerProfileCard';
 import OrganizationProfileCard from '../components/account/OrganizationProfileCard';
@@ -93,6 +93,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
     handleSellerProfileUpdate,
     handleOrganizationProfileUpdate,
     handlePrimaryRoleSwitch,
+    handleDeleteRole,
     handleAvatarUpload,
     showSettings,
     setShowSettings,
@@ -228,12 +229,12 @@ export const AccountPage: React.FC<AccountPageProps> = ({
             }
           />
 
-          <AccountHealthCard
-            user={user}
-            t={t}
-            onVerify={() => navigate('upgrade/verify')}
-            onCompleteProfile={() => navigate('edit-profile')}
-          />
+          {user.verification?.status !== 'verified' && (
+            <VerificationNotice
+              verification={user.verification}
+              onVerify={() => navigate('/account/upgrade/verify')}
+            />
+          )}
 
           <RoleDashboardSection
             user={user}
@@ -474,6 +475,7 @@ export const AccountPage: React.FC<AccountPageProps> = ({
               selectedPrimaryRole={selectedPrimaryRole}
               setSelectedPrimaryRole={setSelectedPrimaryRole}
               handleSwitchPrimaryRole={handlePrimaryRoleSwitchWithNav}
+              handleDeleteRole={handleDeleteRole}
               isSubmittingRoleSwitch={isSubmittingRoleSwitch}
               roleLabelMap={roleLabelMap}
             />

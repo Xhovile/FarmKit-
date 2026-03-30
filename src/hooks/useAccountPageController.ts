@@ -691,6 +691,55 @@ export const useAccountPageController = ({
     handleSellerProfileUpdate,
     handleOrganizationProfileUpdate,
     handlePrimaryRoleSwitch,
+    handleDeleteRole: async (roleToDelete: UserType['primaryRole']) => {
+      if (!user) return;
+
+      if (roleToDelete === 'buyer' && user.roles?.length === 1) {
+        toast.error('You must have at least one role.');
+        return;
+      }
+
+      const nextRoles = user.roles?.filter(r => r !== roleToDelete) || [];
+      
+      if (nextRoles.length === 0) {
+        toast.error('You must have at least one role.');
+        return;
+      }
+
+      let nextPrimaryRole = user.primaryRole;
+      if (user.primaryRole === roleToDelete) {
+        nextPrimaryRole = nextRoles[0];
+      }
+
+      const updatePayload: any = {
+        roles: nextRoles,
+        primaryRole: nextPrimaryRole,
+      };
+
+      // Clean up profiles if the role being deleted is the only one using that profile type
+      if (roleToDelete === 'seller') {
+        updatePayload.sellerProfile = null;
+      }
+      
+      const orgRoles: UserType['primaryRole'][] = ['business', 'cooperative', 'ngo'];
+      if (orgRoles.includes(roleToDelete)) {
+        const remainingOrgRoles = nextRoles.filter(r => orgRoles.includes(r));
+        if (remainingOrgRoles.length === 0) {
+          updatePayload.organizationProfile = null;
+        }
+      }
+
+      try {
+        setIsSubmittingRoleSwitch(true);
+        const result = await api.put('/api/users/me', updatePayload);
+        setUser(result as UserType);
+        toast.success(`${roleToDelete.charAt(0).toUpperCase() + roleToDelete.slice(1)} role removed.`);
+      } catch (error: any) {
+        toast.error(error.message || 'Failed to remove role.');
+      } finally {
+        setIsSubmittingRoleSwitch(false);
+      }
+    },
     handleAvatarUpload: async (file: File) => {
       if (!user) return;
       
